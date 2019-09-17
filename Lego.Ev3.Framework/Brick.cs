@@ -190,7 +190,7 @@ namespace Lego.Ev3.Framework
                 await Reset();
 
                 //  USB drive, SD drive Info
-                bool sdCardPresent = await MemoryMethods.Exists(Socket, FileSystemPath.SDCard.GetRelativePath());
+                bool sdCardPresent = await MemoryMethods.Exists(Socket, FileExplorer.SDCARD_PATH);
                 if (sdCardPresent)
                 {
                     SDCard = new SDCard();

@@ -17,7 +17,7 @@ namespace Lego.Ev3.Framework
         /// </summary>
         public int Free { get; internal set; }
 
-        internal SDCard() : base(FileSystemPath.SDCard) { }
+        internal SDCard() : base(FileExplorer.SDCARD_PATH) { }
        
     }
 }

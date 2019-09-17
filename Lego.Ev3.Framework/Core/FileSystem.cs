@@ -19,17 +19,14 @@ namespace Lego.Ev3.Framework.Core
         /// </summary>
         private readonly string _path;
 
-        public FileSystemPath Path { get; }
-
 
         /// <summary>
         /// Initializes FileSystem class and sets up fileSystem Path to provided predefined path
         /// </summary>
         /// <param name="path">the predefined brick path</param>
-        protected FileSystem(FileSystemPath path)
+        protected FileSystem(string path)
         {
-            Path = path;
-            _path = path.GetRelativePath();
+            _path = path;
         }
 
 
@@ -85,7 +82,7 @@ namespace Lego.Ev3.Framework.Core
         }
 
 
-        internal static bool IsReservedDirectoryName(string name)
+        public static bool IsReservedDirectoryName(string name)
         {
             switch (name.ToLowerInvariant())
             {

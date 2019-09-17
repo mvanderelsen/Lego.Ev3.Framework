@@ -112,9 +112,42 @@ namespace Lego.Ev3.Framework.Core
     /// </example>
     public static class FileExplorer
     {
-        internal const string ROOT_PATH = "../";
-        internal const string DIRECTORY_SEPERATOR = "/";
-        internal const string ALTERNATE_DIRECTORY_SEPERATOR = "\\";
+        /* 
+
+see bytecodes.h
+FOLDERS
+
+#define   vmMEMORY_FOLDER               "/mnt/ramdisk"                //!< Folder for non volatile user programs/data
+#define   vmPROGRAM_FOLDER              "../prjs/BrkProg_SAVE"        //!< Folder for On Brick Programming programs
+#define   vmDATALOG_FOLDER              "../prjs/BrkDL_SAVE"          //!< Folder for On Brick Data log files
+#define   vmSDCARD_FOLDER               "../prjs/SD_Card"             //!< Folder for SD card mount
+#define   vmUSBSTICK_FOLDER             "../prjs/USB_Stick"           //!< Folder for USB stick mount
+
+#define   vmPRJS_DIR                    "../prjs"                     //!< Project folder
+#define   vmAPPS_DIR                    "../apps"                     //!< Apps folder
+#define   vmTOOLS_DIR                   "../tools"                    //!< Tools folder
+#define   vmTMP_DIR                     "../tmp"                      //!< Temporary folder
+
+#define   vmSETTINGS_DIR                "../sys/settings"             //!< Folder for non volatile settings
+
+#define   vmDIR_DEEPT                   127                           //!< Max directory items allocated including "." and ".." 
+* 
+*/
+        public const string ROOT_PATH = "../";
+
+        public const string PROJECTS_PATH = "../prjs/";
+
+        public const string SDCARD_PATH = "../prjs/SD_Card/";
+
+        public const string USBSTICK_PATH = "../prjs/USB_Stick/";
+
+        public const string TOOLS_PATH = "../tools/";
+
+        public const string APPLICATION_PATH = "../apps/";
+
+        private const string DIRECTORY_SEPERATOR = "/";
+        private const string ALTERNATE_DIRECTORY_SEPERATOR = "\\";
+        private const string UP_PATH = "./";
 
         #region extension path checks
         private static string ToBrickPath(this string path)
@@ -136,7 +169,7 @@ namespace Lego.Ev3.Framework.Core
         private static string ToBrickFileName(this string name)
         {
             if (string.IsNullOrEmpty(name)) throw new ArgumentNullException(nameof(name));
-            if (!name.Contains(DIRECTORY_SEPERATOR) || name.Contains(ALTERNATE_DIRECTORY_SEPERATOR)) throw new ArgumentException(nameof(name), "name is not a valid brick file name");
+            if (name.Contains(DIRECTORY_SEPERATOR) || name.Contains(ALTERNATE_DIRECTORY_SEPERATOR)) throw new ArgumentException(nameof(name), "name is not a valid brick file name");
             return name;
         }
         #endregion
@@ -306,7 +339,7 @@ namespace Lego.Ev3.Framework.Core
 
                 if (item.EndsWith(DIRECTORY_SEPERATOR))
                 {
-                    if (item != ROOT_PATH)
+                    if (item != ROOT_PATH && item != UP_PATH)
                     {
                         string directoryPath = System.IO.Path.Combine(path, item);
                         directories.Add(new Directory(directoryPath));

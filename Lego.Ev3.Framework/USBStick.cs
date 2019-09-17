@@ -18,6 +18,6 @@ namespace Lego.Ev3.Framework
         /// </summary>
         public int Free { get; internal set; }
 
-        internal USBStick() : base(FileSystemPath.USBStick) { }
+        internal USBStick() : base(FileExplorer.USBSTICK_PATH) { }
     }
 }
