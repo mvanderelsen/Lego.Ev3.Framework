@@ -19,12 +19,13 @@ namespace Lego.Ev3.Framework.Firmware
         /// <param name="type">Type of the command</param>
         /// <param name="globalAllocation">Maximum of 1024 bytes. Reservation (allocation) of global variables using a compressed format reserved in byte 5 and the 2 lsb of byte 6 (DirectCommmand Only).</param>
         /// <param name="localAllocation">Maximum of 64 bytes. Reservation (allocation) of local variables using a compressed format reserved in the upper 6 bits of byte 6 (DirectCommmand Only).</param>
-        public CommandBuilder(CommandType type, ushort globalAllocation = 0, ushort localAllocation = 0, bool eventId = false)
+        /// <param name="useEventId">Use fixed allocated id as command id</param>
+        public CommandBuilder(CommandType type, ushort globalAllocation = 0, ushort localAllocation = 0, bool useEventId = false)
         {
             if (globalAllocation > 1024) throw new ArgumentException("Global buffer must be less than 1024 bytes", nameof(globalAllocation));
             if (localAllocation > 64) throw new ArgumentException("Local buffer must be less than 64 bytes", nameof(localAllocation));
 
-            Id = eventId ? CommandHandle.EventId : CommandHandle.NewId();
+            Id = useEventId ? CommandHandle.EVENT_ID : CommandHandle.NewId();
             Type = type;
 
             LittleEndian(0); // Command size, Little Endian. Command size not including these 2 bytes. Blank for setting at ToCommand
@@ -33,7 +34,6 @@ namespace Lego.Ev3.Framework.Firmware
             LittleEndian(Id);
 
             Raw((byte)type); // write command type
-
 
             switch(Type)
             {

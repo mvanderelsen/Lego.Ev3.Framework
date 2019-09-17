@@ -202,48 +202,49 @@ namespace Lego.Ev3.Framework.Firmware
             return index - startIndex;
         }
 
-        internal static async Task<SDCardDrive> GetSDCardDrive(Socket socket)
-        {
+        //TODO
+        //internal static async Task<SDCardDrive> GetSDCardDrive(Socket socket)
+        //{
 
-            Command cmd = null;
-            using (CommandBuilder cb = new CommandBuilder(CommandType.DIRECT_COMMAND_REPLY, 9, 0))
-            {
-                //GetSDCard_BatchCommand(cb, 0);
-                cb.OpCode(OP.opUI_READ);
-                cb.Raw((byte)UI_READ_SUBCODE.GET_SDCARD);
-                cb.GlobalIndex(0);
-                cb.GlobalIndex(1);
-                cb.GlobalIndex(5);
-                cmd = cb.ToCommand();
-            }
+        //    Command cmd = null;
+        //    using (CommandBuilder cb = new CommandBuilder(CommandType.DIRECT_COMMAND_REPLY, 9, 0))
+        //    {
+        //        //GetSDCard_BatchCommand(cb, 0);
+        //        cb.OpCode(OP.opUI_READ);
+        //        cb.Raw((byte)UI_READ_SUBCODE.GET_SDCARD);
+        //        cb.GlobalIndex(0);
+        //        cb.GlobalIndex(1);
+        //        cb.GlobalIndex(5);
+        //        cmd = cb.ToCommand();
+        //    }
 
 
-            Response response = await socket.Execute(cmd);
+        //    Response response = await socket.Execute(cmd);
 
-            SDCardDrive drive = null;
+        //    SDCardDrive drive = null;
 
-            if (response.Type == ResponseType.OK)
-            {
-                byte[] data = response.PayLoad;
-                drive = SDCardDriveFromReplyData(data, 0);
-            }
-            return drive;
-        }
+        //    if (response.Type == ResponseType.OK)
+        //    {
+        //        byte[] data = response.PayLoad;
+        //        drive = SDCardDriveFromReplyData(data, 0);
+        //    }
+        //    return drive;
+        //}
 
-        internal static SDCardDrive SDCardDriveFromReplyData(byte[] data, int index)
-        {
-            SDCardDrive drive = new SDCardDrive();
-            drive.State = (DriveState)data[index];
-            if (drive.State == DriveState.OK)
-            {
-                index += DataType.DATA8.ByteLength();
-                drive.SDCard = new SDCard();
-                drive.SDCard.Total = BitConverter.ToInt32(data, index);
-                index += DataType.DATA32.ByteLength();
-                drive.SDCard.Free = BitConverter.ToInt32(data, index);
-            }
-            return drive;
-        }
+        //internal static SDCardDrive SDCardDriveFromReplyData(byte[] data, int index)
+        //{
+        //    SDCardDrive drive = new SDCardDrive();
+        //    drive.State = (DriveState)data[index];
+        //    if (drive.State == DriveState.OK)
+        //    {
+        //        index += DataType.DATA8.ByteLength();
+        //        drive.SDCard = new SDCard();
+        //        drive.SDCard.Total = BitConverter.ToInt32(data, index);
+        //        index += DataType.DATA32.ByteLength();
+        //        drive.SDCard.Free = BitConverter.ToInt32(data, index);
+        //    }
+        //    return drive;
+        //}
 
         //CMD: GET_SDCARD= 0x1D 
         //Return

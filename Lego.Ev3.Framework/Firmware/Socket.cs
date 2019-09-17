@@ -79,7 +79,7 @@ namespace Lego.Ev3.Framework.Firmware
                         if (triggeredPorts.Count == 0 && buttonByteLength == 0) return;
 
                         Command cmd = null;
-                        using (CommandBuilder cb = new CommandBuilder(CommandType.DIRECT_COMMAND_REPLY, index, 0, eventId:true))
+                        using (CommandBuilder cb = new CommandBuilder(CommandType.DIRECT_COMMAND_REPLY, index, 0, useEventId:true))
                         {
                             cb.Raw(batch);
                             cmd = cb.ToCommand();

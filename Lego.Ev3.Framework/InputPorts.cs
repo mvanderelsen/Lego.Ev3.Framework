@@ -1,6 +1,4 @@
-﻿using Lego.Ev3.Framework.Firmware;
-using System.Threading.Tasks;
-namespace Lego.Ev3.Framework
+﻿namespace Lego.Ev3.Framework
 {
     /// <summary>
     /// All input ports on a brick
@@ -44,20 +42,5 @@ namespace Lego.Ev3.Framework
             Three = new InputPort(layer, InputPortName.Three);
             Four = new InputPort(layer, InputPortName.Four);
         }
-
-        #region Firmware Methods
-
-
-
-        /// <summary>
-        /// Clear all device counters and values
-        /// </summary>
-        /// <returns></returns>
-        public async Task Reset()
-        {
-            await InputMethods.Reset(Brick.Socket, Layer);
-        }
-
-        #endregion
     }
 }
