@@ -37,7 +37,7 @@ namespace Lego.Ev3.Framework.Firmware
         /// <summary>
         /// File exists
         /// </summary>
-        FILE_EXITS = 0x07,
+        FILE_EXISTS = 0x07,
         /// <summary>
         /// end of file EOF
         /// </summary>

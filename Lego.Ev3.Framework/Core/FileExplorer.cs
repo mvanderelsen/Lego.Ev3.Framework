@@ -112,30 +112,54 @@ namespace Lego.Ev3.Framework.Core
     /// </example>
     public static class FileExplorer
     {
-        /// <summary>
-        /// Gets the Root directory on the brick
-        /// </summary>
-        public static Directory Root { get; } = new Directory("../");
+        internal const string ROOT_PATH = "../";
+        internal const string DIRECTORY_SEPERATOR = "/";
+        internal const string ALTERNATE_DIRECTORY_SEPERATOR = "\\";
 
+        #region extension path checks
+        private static string ToBrickPath(this string path)
+        {
+            if (string.IsNullOrEmpty(path)) throw new ArgumentNullException(nameof(path));
+            path = path.Replace(ALTERNATE_DIRECTORY_SEPERATOR, DIRECTORY_SEPERATOR);
+            if (!path.EndsWith(DIRECTORY_SEPERATOR)) path = $"{path}{DIRECTORY_SEPERATOR}";
+            if (!path.StartsWith(ROOT_PATH)) throw new ArgumentException(nameof(path), "path is not a valid brick path");
+            return path;
+        }
 
+        private static string ToBrickDirectoryName(this string name)
+        {
+            if (string.IsNullOrEmpty(name)) throw new ArgumentNullException(nameof(name));
+            if (!name.Contains(DIRECTORY_SEPERATOR) || name.Contains(ALTERNATE_DIRECTORY_SEPERATOR)) throw new ArgumentException(nameof(name), "name is not a valid brick directory name");
+            return name;
+        }
+
+        private static string ToBrickFileName(this string name)
+        {
+            if (string.IsNullOrEmpty(name)) throw new ArgumentNullException(nameof(name));
+            if (!name.Contains(DIRECTORY_SEPERATOR) || name.Contains(ALTERNATE_DIRECTORY_SEPERATOR)) throw new ArgumentException(nameof(name), "name is not a valid brick file name");
+            return name;
+        }
+        #endregion
+
+        #region core file explorer methods
         /// <summary>
         /// Lists all files and directories for given path
         /// </summary>
-        /// <param name="path">The relative path must start with ../</param>
-        /// <returns>Files and directories</returns>
+        /// <param name="path">The relative path, must start with ../</param>
+        /// <returns>Files and directories as <c>string[]</c></returns>
         public static async Task<string[]> List(string path)
         {
-            return await FileSystemMethods.ListFiles(Brick.Socket, path);
+            return await FileSystemMethods.ListFiles(Brick.Socket, path.ToBrickPath());
         }
 
         /// <summary>
-        /// Deletes a file/directory on the brick or sd card
+        /// Deletes a file or directory
         /// </summary>
-        /// <param name="path">The relative path must start with ../</param>
-        /// <returns>SYSTEM_COMMAND_STATUS</returns>
+        /// <param name="path">The relative path, must start with ../</param>
+        /// <returns><c>true</c> if deleted otherwise <c>false</c></returns>
         public static async Task<bool> Delete(string path)
         {
-            SYSTEM_COMMAND_STATUS status = await FileSystemMethods.DeleteFile(Brick.Socket, path);
+            SYSTEM_COMMAND_STATUS status = await FileSystemMethods.DeleteFile(Brick.Socket, path.ToBrickPath());
             return status == SYSTEM_COMMAND_STATUS.SUCCESS;
         }
 
@@ -146,39 +170,43 @@ namespace Lego.Ev3.Framework.Core
         /// <returns></returns>
         public static async Task Remove(string path)
         {
-            await MemoryMethods.Remove(Brick.Socket, path);
+            await MemoryMethods.Remove(Brick.Socket, path.ToBrickPath());
         }
 
         /// <summary>
-        /// Test if path exists on brick
+        /// Tests if path exists on brick
         /// </summary>
-        /// <param name="path"></param>
-        /// <returns></returns>
+        /// <param name="path">The relative path, must start with ../</param>
+        /// <returns><c>true</c> if exists otherwise <c>false</c></returns>
         public static async Task<bool> Exists(string path)
         {
-            return await MemoryMethods.Exists(Brick.Socket, path);
+            return await MemoryMethods.Exists(Brick.Socket, path.ToBrickPath());
         }
 
         /// <summary>
         /// Method creates new directory. An existing directory will not be overriden.
         /// </summary>
-        ///  <param name="path">The relative path must start with ../</param>
+        /// <param name="path">The relative path, must start with ../</param>
         /// <param name="name">The name of the directory</param>
-        /// <returns>Bool if created</returns>
-        public static async Task<bool> CreateDirectory(string path, string name)
+        /// <returns><c>true</c> if exists otherwise <c>false</c></returns>
+        public static async Task<bool> CreateDirectory(string path)
         {
-            string directoryPath = System.IO.Path.Combine(path, $"{name}/");
-            SYSTEM_COMMAND_STATUS status = await FileSystemMethods.CreateDirectory(Brick.Socket, directoryPath);
-            return status == SYSTEM_COMMAND_STATUS.SUCCESS;
+            path = path.ToBrickPath();
+            System.IO.Path.GetFileName(System.IO.Path.GetDirectoryName(path)).ToBrickDirectoryName();
+            SYSTEM_COMMAND_STATUS status = await FileSystemMethods.CreateDirectory(Brick.Socket, path);
+            if (status != SYSTEM_COMMAND_STATUS.SUCCESS && status != SYSTEM_COMMAND_STATUS.FILE_EXISTS) return false;
+            return true;
         }
 
         /// <summary>
         /// Makes directory but uses COM => MemoryMethod
         /// </summary>
-        /// <param name="path"></param>
-        /// <returns></returns>
+        /// <param name="path">The relative path, must start with ../</param>
+        /// <returns><c>true</c> if exists otherwise <c>false</c></returns>
         public static async Task<bool> MakeDirectory(string path)
         {
+            path = path.ToBrickPath();
+            System.IO.Path.GetFileName(System.IO.Path.GetDirectoryName(path)).ToBrickDirectoryName();
             return await MemoryMethods.MakeFolder(Brick.Socket, path);
         }
 
@@ -186,12 +214,12 @@ namespace Lego.Ev3.Framework.Core
         /// Uploads a file
         /// </summary>
         /// <param name="localFilePath">The absolute local filePath to a lego file on the local machine</param>
-        /// <param name="path">The relative path must start with ../</param>
+        /// <param name="path">The relative path, must start with ../</param>
         /// <param name="fileName">The fileName as stored on brick incl. extension</param>
-        /// <returns>SYSTEM_COMMAND_STATUS</returns>
+        /// <returns><c>true</c> if success otherwise <c>false</c></returns>
         public static async Task<bool> UploadFile(string localFilePath, string path, string fileName)
         {
-
+            if (!System.IO.File.Exists(localFilePath)) throw new ArgumentException(nameof(localFilePath));
             byte[] file = await Task.FromResult(System.IO.File.ReadAllBytes(localFilePath));
             return await UploadFile(file, path, fileName);
         }
@@ -202,10 +230,9 @@ namespace Lego.Ev3.Framework.Core
         /// <param name="stream">The stream to a lego file on the local machine</param>
         /// <param name="path">The relative path must start with ../</param>
         /// <param name="fileName">The fileName as stored on brick incl. extension</param>
-        /// <returns>SYSTEM_COMMAND_STATUS</returns>
+        /// <returns><c>true</c> if success otherwise <c>false</c></returns>
         public static async Task<bool> UploadFile(System.IO.Stream stream, string path, string fileName)
         {
-
             byte[] file = null;
             using (System.IO.MemoryStream ms = new System.IO.MemoryStream())
             {
@@ -220,59 +247,131 @@ namespace Lego.Ev3.Framework.Core
         /// Uploads a file
         /// </summary>
         /// <param name="file">The byte[] filedata of a lego file on the local machine or resource file</param>
-        /// <param name="path">The relative path must start with ../</param>
+        /// <param name="path">The relative path, must start with ../</param>
         /// <param name="fileName">The renamed fileName as stored on brick incl. extension</param>
-        /// <returns>SYSTEM_COMMAND_STATUS</returns>
+        /// <returns><c>true</c> if success otherwise <c>false</c></returns>
         public static async Task<bool> UploadFile(byte[] file, string path, string fileName)
         {
+            path = path.ToBrickPath();
+            fileName = fileName.ToBrickFileName();
+
             string brickPath = System.IO.Path.Combine(path, fileName);
             SYSTEM_COMMAND_STATUS status = await FileSystemMethods.UploadFileToBrick(Brick.Socket, file, brickPath);
-            return status == SYSTEM_COMMAND_STATUS.SUCCESS;
+            if (status != SYSTEM_COMMAND_STATUS.SUCCESS && status != SYSTEM_COMMAND_STATUS.FILE_EXISTS) return false;
+            return true;
         }
+
+
+        /// <summary>
+        /// Downloads a file from the Brick and returns file as byte[]
+        /// </summary>
+        /// <param name="path">relative path to the file on the brick</param>
+        /// <returns></returns>
+        public static async Task<byte[]> DownloadFile(string path)
+        {
+            string fileName = System.IO.Path.GetFileName(path).ToBrickFileName();
+            path = System.IO.Path.GetDirectoryName(path);
+            path = path.ToBrickPath();
+            path = System.IO.Path.Combine(path, fileName);
+            return await FileSystemMethods.DownLoadFileFromBrick(Brick.Socket, path);
+        }
+
+        /// <summary>
+        /// Gets the item count of path
+        /// </summary>
+        /// <param name="path"></param>
+        /// <returns></returns>
+        public static async Task<int> GetItemCount(string path)
+        {
+            return await MemoryMethods.GetItemCount(Brick.Socket, path.ToBrickPath());
+        }
+        #endregion
+
+        #region directory
 
         /// <summary>
         /// Gets directory handles to directories on the brick. Use with great care upon deleting!!
         /// </summary>
-        /// <param name="path">Full path to directory e.g. ../sys/ui/</param>
-        /// <returns></returns>
+        /// <param name="path">Full relative path to a directory e.g. ../sys/ui/</param>
+        /// <returns><c>Directory[]</c></returns>
         public static async Task<Directory[]> GetDirectories(string path)
         {
-            if (!path.StartsWith("../")) throw new ArgumentException("Invalid path!");
-            if (!path.EndsWith("/")) path = path + "/";
-            List<Directory> dirs = await Directory.GetDirectories(path, false);
-            return dirs.ToArray();
+            path = path.ToBrickPath();
+
+            List<Directory> directories = new List<Directory>();
+            string[] entries = await FileSystemMethods.ListFiles(Brick.Socket, path);
+            foreach (string entry in entries)
+            {
+                string item = entry.Trim();
+
+                if (item.EndsWith(DIRECTORY_SEPERATOR))
+                {
+                    if (item != ROOT_PATH)
+                    {
+                        string directoryPath = System.IO.Path.Combine(path, item);
+                        directories.Add(new Directory(directoryPath));
+                    }
+                }
+            }
+            directories.Sort(delegate (Directory obj1, Directory obj2) { return obj1.Name.CompareTo(obj2.Name); });
+            return directories.ToArray();
         }
 
         /// <summary>
         /// Gets a directory handle to a directory on the brick. Use with great care upon deleting!!
         /// </summary>
-        /// <param name="path">Full path to directory e.g. ../sys/ui/</param>
+        /// <param name="path">Full relative path to a directory e.g. ../sys/ui/</param>
         /// <returns></returns>
         public static async Task<Directory> GetDirectory(string path)
         {
-            if (path == "../") return Root;
-            if (!path.StartsWith("../")) throw new ArgumentException("Invalid path!");
-            if (!path.EndsWith("/")) path += "/";
-
+            path = path.ToBrickPath();
+            if (path == ROOT_PATH) return new Directory(ROOT_PATH);
             bool b = await MemoryMethods.Exists(Brick.Socket, path);
             if (b) return new Directory(path);
             return null;
         }
 
+        #endregion
+
+        #region file
+
         /// <summary>
         /// Gets file handles to files on the brick. Use with great care upon deleting!!
         /// </summary>
-        /// <param name="path">Full path to directory e.g. ../sys/ui/</param>
+        /// <param name="path">Full relative path to a directory e.g. ../sys/ui/</param>
         /// <returns></returns>
         public static async Task<File[]> GetFiles(string path)
         {
-            if (!path.StartsWith("../")) throw new ArgumentException("Invalid path!");
-            //if (!path.EndsWith("/")) path = path + "/";
-            List<File> files = await File.GetFiles(path);
+            path = path.ToBrickPath();
+
+            List<File> files = new List<File>();
+            string[] entries = await Firmware.FileSystemMethods.ListFiles(Brick.Socket, path);
+            foreach (string entry in entries)
+            {
+                string item = entry.Trim();
+                //skip directories and empty lines
+                if (!string.IsNullOrWhiteSpace(item) && !item.EndsWith(DIRECTORY_SEPERATOR))
+                {
+                    //fileInfo:   32 chars (hex) of MD5SUM + space + 8 chars (hex) of filesize + space + filename
+                    string[] fileInfo = entry.Split(' ');
+                    if (fileInfo.Length >= 3)
+                    {
+                        string md5sum = fileInfo[0].Trim();
+                        int byteSize = Convert.ToInt32(fileInfo[1].Trim(), 16);
+                        string fileName = "";
+                        for (int i = 2; i < fileInfo.Length; i++)
+                        {
+                            fileName += fileInfo[i];
+                            fileName += " ";
+                        }
+                        fileName = fileName.Trim();
+                        files.Add(new File(path, fileName, md5sum, byteSize));
+                    }
+                }
+            }
+            files.Sort(delegate (File obj1, File obj2) { return obj1.Name.CompareTo(obj2.Name); });
             return files.ToArray();
         }
-
-
 
         /// <summary>
         /// Gets a file handle to a robotfile on the brick. Use with great care upon deleting!!
@@ -283,9 +382,17 @@ namespace Lego.Ev3.Framework.Core
         {
             string fileName = System.IO.Path.GetFileName(path);
             path = System.IO.Path.GetDirectoryName(path);
-            path = path.Replace("\\", "/") + "/";
-            return await File.GetFile(path, fileName);
+            path = path.ToBrickPath();
+            File[] files = await GetFiles(path);
+            foreach (File file in files)
+            {
+                if (file.Name.Equals(fileName, StringComparison.InvariantCultureIgnoreCase)) return file;
+            }
+            return null;
         }
+
+        #endregion
+
 
         /// <summary>
         /// Test method wether local file is a lego ev3 robot file.
@@ -298,26 +405,11 @@ namespace Lego.Ev3.Framework.Core
             return FileSystemMethods.IsRobotFile(filePath);
         }
 
-
-        /// <summary>
-        /// Downloads a file from the Brick and returns file as byte[]
-        /// </summary>
-        /// <param name="path">relative path to the file on the brick</param>
-        /// <returns></returns>
-        public static async Task<byte[]> DownloadFile(string path)
+        public static FileType GetFileType(string filePath)
         {
-            return await FileSystemMethods.DownLoadFileFromBrick(Brick.Socket, path);
+            return FileSystemMethods.GetFileType(filePath);
         }
 
-        /// <summary>
-        /// Gets the item count of path
-        /// </summary>
-        /// <param name="path"></param>
-        /// <returns></returns>
-        public static async Task<int> GetItemCount(string path)
-        {
-            return await MemoryMethods.GetItemCount(Brick.Socket, path);
-        }
 
 
         /// <summary>
@@ -328,7 +420,7 @@ namespace Lego.Ev3.Framework.Core
         {
             XmlDocument xd = new XmlDocument();
             XmlElement root = xd.CreateElement("FileSystem");
-            await WriteToXml(xd, root, Root);
+            await WriteToXml(xd, root, new Directory(ROOT_PATH));
             xd.AppendChild(root);
             return xd;
         }

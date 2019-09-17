@@ -6,6 +6,12 @@
     <Company />
     <Description>C# communication framework for the LEGO® MINDSTORMS® EV3 Brick.</Description>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+    <RepositoryUrl>https://github.com/mvanderelsen/Lego.Ev3.Framework</RepositoryUrl>
+    <RepositoryType>GitHub</RepositoryType>
+    <PackageTags>Lego, Ev3, Mindstorms</PackageTags>
+    <PackageLicenseExpression></PackageLicenseExpression>
+    <PackageLicenseFile></PackageLicenseFile>
+    <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
   </PropertyGroup>
 
   <ItemGroup>

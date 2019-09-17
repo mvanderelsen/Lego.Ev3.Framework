@@ -79,7 +79,7 @@ namespace Lego.Ev3.Framework.Core
                     }
                 default:
                     {
-                        throw new NotImplementedException("Folder " + folder + " must be implemented!");
+                        throw new NotImplementedException(nameof(folder));
                     }
             }
         }

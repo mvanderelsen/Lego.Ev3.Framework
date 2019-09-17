@@ -1,7 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using Lego.Ev3.Framework.Core;
+using System;
 using System.Threading.Tasks;
-using I = System.IO;
 
 namespace Lego.Ev3.Framework
 {
@@ -14,43 +13,38 @@ namespace Lego.Ev3.Framework
         /// Gets or sets an unique Id to identify file
         /// Default set to fileName without extension
         /// </summary>
-        public string Id { get; set; }
+        public string Id { get; }
 
         /// <summary>
         /// Full name of the file including extension
         /// </summary>
-        public string Name { get; private set; }
+        public string Name { get; }
 
         /// <summary>
         /// Size of the file in bytes
         /// </summary>
-        public int Size { get; private set; }
+        public int Size { get; }
 
         /// <summary>
         /// MD5SUM
         /// </summary>
-        public string MD5SUM { get; private set; }
+        public string MD5SUM { get; }
 
         /// <summary>
         /// The type of the file
         /// </summary>
-        public FileType Type { get; private set; }
+        public FileType Type { get; }
 
         /// <summary>
         /// Relative path to the file on the brick
         /// </summary>
-        public string Path { get; internal set; }
-
-        /// <summary>
-        /// Indicator if file was found through regular FileSystem methods or added from Memory items.
-        /// </summary>
-        public bool Hidden { get; internal set; }
+        public string Path { get; }
 
         internal File(string directoryPath, string fileName, string md5sum, int size)
         {
-            Id = I.Path.GetFileNameWithoutExtension(fileName);
+            Id = System.IO.Path.GetFileNameWithoutExtension(fileName);
             Name = fileName;
-            Path = I.Path.Combine(directoryPath, fileName);
+            Path = System.IO.Path.Combine(directoryPath, fileName);
             MD5SUM = md5sum;
             Size = size;
             Type = Firmware.FileSystemMethods.GetFileType(fileName);
@@ -85,55 +79,14 @@ namespace Lego.Ev3.Framework
             return $"{byteLength} bytes";
         }
 
-        internal static async Task<List<File>> GetFiles(string path)
-        {
-            List<File> files = new List<File>();
-            string[] entries = await Firmware.FileSystemMethods.ListFiles(Brick.Socket, path);
-            foreach (string entry in entries)
-            {
-                string item = entry.Trim();
-                //skip directories and empty lines
-                if (!item.EndsWith("/")  && ! string.IsNullOrWhiteSpace(item))
-                {
-                    //fileInfo:   32 chars (hex) of MD5SUM + space + 8 chars (hex) of filesize + space + filename
-                    string[] fileInfo = entry.Split(' ');
-                    if(fileInfo.Length >=  3)
-                    {
-                        string md5sum = fileInfo[0].Trim();
-                        int byteSize = Convert.ToInt32(fileInfo[1].Trim(), 16);
-                        string fileName = "";
-                        for (int i = 2; i < fileInfo.Length; i++)
-                        {
-                            fileName += fileInfo[i];
-                            fileName += " ";
-                        }
-                        fileName = fileName.Trim();
-                        files.Add(new File(path, fileName, md5sum, byteSize));
-                    }
-                }
-            }
-            files.Sort(delegate(File obj1, File obj2) { return obj1.Name.CompareTo(obj2.Name); });
-            return files;
-        }
-
-
-        internal static async Task<File> GetFile(string path, string fileName)
-        {
-            fileName = fileName.ToLowerInvariant();
-            List<File> files = await GetFiles(path);
-            return files.Find(t => t.Name.ToLowerInvariant() == fileName);
-        }
-
 
         /// <summary>
         /// Deletes this lego robot file
         /// Use with care!!
         /// </summary>
-        /// <exception cref="InvalidOperationException"></exception>
-        public async Task Delete()
+        public async Task<bool> Delete()
         {
-            if (Type == FileType.SystemFile || Hidden) return;
-            await Firmware.FileSystemMethods.DeleteFile(Brick.Socket, Path);
+            return await FileExplorer.Delete(Path);
         }
 
         /// <summary>
@@ -142,54 +95,34 @@ namespace Lego.Ev3.Framework
         /// <returns>byte[] data of the file</returns>
         public async Task<byte[]> Download()
         {
-            return await Firmware.FileSystemMethods.DownLoadFileFromBrick(Brick.Socket, Path);
+            return await FileExplorer.DownloadFile(Path);
         }
 
 
         /// <summary>
         /// Downloads the file to specified directory path. if directory does not exists it creates the directory
         /// </summary>
-        /// <param name="path">path to a directory</param>
+        /// <param name="localFilePath">path to a directory on the local machine</param>
         /// <returns></returns>
-        public async Task Download(string path)
+        public async Task Download(string localFilePath)
         {
             byte[] data = await Download();
-            await Download(path, Name, data);
+            await Download(localFilePath, Name, data);
         }
 
 
-        protected async Task Download(string path, string fileName, byte[] data)
+        protected async Task Download(string localFilePath, string fileName, byte[] data)
         {
-            if (string.IsNullOrWhiteSpace(path)) throw new ArgumentNullException(nameof(path));
-            path = I.Path.GetDirectoryName(path);
-            if (!I.Directory.Exists(path)) I.Directory.CreateDirectory(path);
-            path = I.Path.Combine(path, fileName);
-            using (I.FileStream fileStream = I.File.Create(path))
+            if (string.IsNullOrWhiteSpace(localFilePath)) throw new ArgumentNullException(nameof(localFilePath));
+            localFilePath = System.IO.Path.GetDirectoryName(localFilePath);
+            if (!System.IO.Directory.Exists(localFilePath)) System.IO.Directory.CreateDirectory(localFilePath);
+            localFilePath = System.IO.Path.Combine(localFilePath, fileName);
+            using (System.IO.FileStream fileStream = System.IO.File.Create(localFilePath))
             {
-                await fileStream.WriteAsync(data, 0, data.Length);
+               await fileStream.WriteAsync(data, 0, data.Length);
             }
         }
 
-
-        /// <summary>
-        /// Test method wether local file is a lego ev3 robot file.
-        /// Will test fileName extension only (*.rgf|*.rbf|*.rsf|*.rdf|*.rtf|*.rpf|*.rcf|*.raf)
-        /// </summary>
-        /// <param name="filePath">Absolute local path or fileName of a lego file on the local machine</param>
-        /// <returns></returns>
-        public static bool IsRobotFile(string filePath)
-        {
-            return Firmware.FileSystemMethods.IsRobotFile(filePath);
-        }
-
-
-        /// <summary>
-        /// Gets the file type pending on fileName's extension
-        /// </summary>
-        public static FileType GetType(string path)
-        {
-            return Firmware.FileSystemMethods.GetFileType(path);
-        }
 
         #region operators
         /// <summary>

@@ -1,8 +1,6 @@
 ﻿using System;
-using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
-using F = Lego.Ev3.Framework.Firmware;
-using I = System.IO;
 
 namespace Lego.Ev3.Framework.Core
 {
@@ -15,10 +13,13 @@ namespace Lego.Ev3.Framework.Core
     /// </summary>
     public abstract class FileSystem
     {
+
         /// <summary>
         /// The relative path to this filesystem on brick, sdcard or usb stick.
         /// </summary>
-        public string Path { get; private set; }
+        private readonly string _path;
+
+        public FileSystemPath Path { get; }
 
 
         /// <summary>
@@ -27,7 +28,8 @@ namespace Lego.Ev3.Framework.Core
         /// <param name="path">the predefined brick path</param>
         protected FileSystem(FileSystemPath path)
         {
-            Path = path.GetRelativePath();
+            Path = path;
+            _path = path.GetRelativePath();
         }
 
 
@@ -37,60 +39,70 @@ namespace Lego.Ev3.Framework.Core
         /// <returns></returns>
         public async Task<Directory[]> GetDirectories()
         {
-            List<Directory> directories = await Directory.GetDirectories(Path);
-            return directories.ToArray();
+            Directory[] directories  = await FileExplorer.GetDirectories(_path);
+            return directories.Where(d => !IsReservedDirectoryName(d.Name)).ToArray();
         }
 
         /// <summary>
         /// Gets a directory on this drive
         /// </summary>
         /// <returns>null if not found otherwise the directory</returns>
+        /// <exception cref="ArgumentNullException">name is required</exception>
         public async Task<Directory> GetDirectory(string name)
         {
-            if (string.IsNullOrWhiteSpace(name)) return null;
-            name = name.ToLowerInvariant().Trim();
-            List<Directory> directories = await Directory.GetDirectories(Path);
-            return directories.Find(t => t.Name.ToLowerInvariant() == name);
+            if (string.IsNullOrWhiteSpace(name)) throw new ArgumentNullException(nameof(name));
+            if (IsReservedDirectoryName(name)) return null;
+            string path = System.IO.Path.Combine(_path, name);
+            return await FileExplorer.GetDirectory(path);
         }
 
         /// <summary>
         /// Checks if directory exists
         /// </summary>
-        /// <param name="name">Name of the directory</param>
-        /// <returns>True if exists</returns>
+        /// <param name="name">name of the directory</param>
+        /// <returns><c>true</c> if exists otherwise <c>false</c></returns>
         public async Task<bool> DirectoryExists(string name)
         {
-            name = name.ToLowerInvariant().Trim();
-            Directory[] dirs = await GetDirectories();
-            foreach (Directory dir in dirs)
-            {
-                if (dir.Name.ToLowerInvariant() == name) return true;
-            }
-            return false;
+            if (string.IsNullOrWhiteSpace(name)) return false;
+            if (IsReservedDirectoryName(name)) return false;
+            string path = System.IO.Path.Combine(_path, name);
+            return await FileExplorer.Exists(path);
         }
 
         /// <summary>
         /// Method creates new directory. Any existing directory will not be overriden.
         /// </summary>
         /// <param name="name">The name of the directory</param>
-        /// <exception cref="ArgumentNullException">Name must be provided</exception>
-        /// <exception cref="ArgumentException">Name can not contains slashes or be a reserved system name</exception>
-        /// <exception cref="InvalidOperationException"></exception>
-        /// <returns>Directory</returns>
+        /// <returns><c>Directory</c> if exists otherwise <c>null</c></returns>
         public async Task<Directory> CreateDirectory(string name)
         {
-            if (string.IsNullOrWhiteSpace(name)) throw new ArgumentNullException("name", "Name must be provided");
-            if (name.Contains("/") || name.Contains("\\")) throw new ArgumentException("name", "Name can not contain slashes");
-
-            if (Directory.IsSystemDirectory(name)) throw new ArgumentException("name", "Name has reserved system value: " + name);
-
-            string directoryPath = I.Path.Combine(Path, name + "/");
-            F.SYSTEM_COMMAND_STATUS status = await Firmware.FileSystemMethods.CreateDirectory(Brick.Socket, directoryPath);
-            if (status != F.SYSTEM_COMMAND_STATUS.SUCCESS && status != F.SYSTEM_COMMAND_STATUS.FILE_EXITS)
-            {
-                throw new InvalidOperationException(status.ToString());
-            }
-            return new Directory(directoryPath);
+            if (string.IsNullOrWhiteSpace(name)) return null;
+            if (IsReservedDirectoryName(name)) return null;
+            string path = System.IO.Path.Combine(_path, name);
+            bool success = await FileExplorer.CreateDirectory(path);
+            if (success) return new Directory(path);
+            return null;
         }
+
+
+        internal static bool IsReservedDirectoryName(string name)
+        {
+            switch (name.ToLowerInvariant())
+            {
+                case "sd_card":
+                case "usb_stick":
+                case "brkprog_save":
+                case "brkdl_save":
+                case "test":
+                case "":
+                case ".":
+                case "..":
+                    {
+                        return true;
+                    }
+            }
+            return false;
+        }
+
     }
 }

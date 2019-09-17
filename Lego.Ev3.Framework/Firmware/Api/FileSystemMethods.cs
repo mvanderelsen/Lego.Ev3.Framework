@@ -292,7 +292,7 @@ namespace Lego.Ev3.Framework.Firmware
             int fileSize = file.Length;
 
             Response response = await BeginDownLoad(socket, fileSize, brickFilePath);
-            if (response.Status == SYSTEM_COMMAND_STATUS.FILE_EXITS) return response.Status; // do not override existing files
+            if (response.Status == SYSTEM_COMMAND_STATUS.FILE_EXISTS) return response.Status; // do not override existing files
             if (response.Type == ResponseType.ERROR && response.Status == SYSTEM_COMMAND_STATUS.SUCCESS) return SYSTEM_COMMAND_STATUS.UNKNOWN_ERROR;
             if (response.Type == ResponseType.ERROR && response.Status != SYSTEM_COMMAND_STATUS.SUCCESS) return response.Status;
 

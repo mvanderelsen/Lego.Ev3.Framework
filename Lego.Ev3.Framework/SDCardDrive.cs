@@ -25,7 +25,7 @@ namespace Lego.Ev3.Framework
 
 
         /// <summary>
-        /// Refreshes all battery information
+        /// Refreshes sd card drive
         /// </summary>
         /// <returns></returns>
         public async Task Refresh()
