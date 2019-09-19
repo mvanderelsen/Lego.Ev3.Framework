@@ -1,5 +1,5 @@
 ﻿
-namespace Lego.Ev3.Framework
+namespace Lego.Ev3.Framework.Devices
 {
     /// <summary>
     /// Interface for devices that can be connected to a Output Port

@@ -130,42 +130,42 @@ namespace Lego.Ev3.Framework.Firmware
             return index - startIndex;
         }
 
-        internal static async Task<USBStickDrive> GetUSBDrive(Socket socket)
-        {
+        //internal static async Task<USBStickDrive> GetUSBDrive(Socket socket)
+        //{
 
-            Command cmd = null;
-            using (CommandBuilder cb = new CommandBuilder(CommandType.DIRECT_COMMAND_REPLY, 9, 0))
-            {
-                GetUSB_BatchCommand(cb, 0);
-                cmd = cb.ToCommand();
-            }
-            Response response = await socket.Execute(cmd);
+        //    Command cmd = null;
+        //    using (CommandBuilder cb = new CommandBuilder(CommandType.DIRECT_COMMAND_REPLY, 9, 0))
+        //    {
+        //        GetUSB_BatchCommand(cb, 0);
+        //        cmd = cb.ToCommand();
+        //    }
+        //    Response response = await socket.Execute(cmd);
 
 
-            USBStickDrive drive = null;
+        //    USBStickDrive drive = null;
 
-            if (response.Type == ResponseType.OK)
-            {
-                byte[] data = response.PayLoad;
-                drive = USBDriveFromReplyData(data, 0);
-            }
-            return drive;
-        }
+        //    if (response.Type == ResponseType.OK)
+        //    {
+        //        byte[] data = response.PayLoad;
+        //        drive = USBDriveFromReplyData(data, 0);
+        //    }
+        //    return drive;
+        //}
 
-        internal static USBStickDrive USBDriveFromReplyData(byte[] data, int index)
-        {
-            USBStickDrive drive = new USBStickDrive();
-            drive.State = (DriveState)data[index];
-            if(drive.State == DriveState.OK)
-            {
-                index += DataType.DATA8.ByteLength();
-                drive.USBStick = new USBStick();
-                drive.USBStick.Total = BitConverter.ToInt32(data, index);
-                index += DataType.DATA32.ByteLength();
-                drive.USBStick.Free = BitConverter.ToInt32(data, index);
-            }
-            return drive;
-        }
+        //internal static USBStickDrive USBDriveFromReplyData(byte[] data, int index)
+        //{
+        //    USBStickDrive drive = new USBStickDrive();
+        //    drive.State = (DriveState)data[index];
+        //    if(drive.State == DriveState.OK)
+        //    {
+        //        index += DataType.DATA8.ByteLength();
+        //        drive.USBStick = new USBStick();
+        //        drive.USBStick.Total = BitConverter.ToInt32(data, index);
+        //        index += DataType.DATA32.ByteLength();
+        //        drive.USBStick.Free = BitConverter.ToInt32(data, index);
+        //    }
+        //    return drive;
+        //}
 
         //CMD: GET_USBSTICK = 0x1E
         //Return

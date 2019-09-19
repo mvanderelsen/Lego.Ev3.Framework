@@ -1,7 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.ComponentModel;
-using System.Text;
 
 namespace Lego.Ev3.Framework.Configuration
 {
@@ -31,6 +29,12 @@ namespace Lego.Ev3.Framework.Configuration
         [EditorBrowsable(EditorBrowsableState.Never)]
         public override int GetHashCode() => base.GetHashCode();
 
+        /// <summary>
+        ///     Gets the <c>Type</c> of the the current instance.
+        /// </summary>
+        /// <returns> The type of the current object. </returns>
+        [EditorBrowsable(EditorBrowsableState.Never)]
+        public new Type GetType() => base.GetType();
         #endregion
     }
 }

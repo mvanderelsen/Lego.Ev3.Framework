@@ -60,7 +60,7 @@ namespace Lego.Ev3.Framework
         /// <summary>
         /// Name of the brick
         /// </summary>
-        public string Name { get; }
+        public string Name { get; private set; }
 
         /// <summary>
         /// A FileSystem Drive
@@ -129,8 +129,6 @@ namespace Lego.Ev3.Framework
             Options = options ?? new BrickOptions();
             Logger = logger ?? new NullLogger<Brick>();
 
-            Name = "Ev3 brick";
-
             SystemPort = new SystemPort();
             SoundPort = new SoundPort();
             DisplayPort = new DisplayPort();
@@ -188,6 +186,8 @@ namespace Lego.Ev3.Framework
                 //reset and stop all devices. Might be overkill but just to make sure nothing is running.
                 await Stop();
                 await Reset();
+
+                Name = await FileExplorer.GetBrickName();
 
                 //  USB drive, SD drive Info
                 bool sdCardPresent = await MemoryMethods.Exists(Socket, FileExplorer.SDCARD_PATH);

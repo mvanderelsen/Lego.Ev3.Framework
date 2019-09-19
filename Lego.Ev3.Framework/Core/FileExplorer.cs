@@ -1,6 +1,7 @@
 ﻿using Lego.Ev3.Framework.Firmware;
 using System;
 using System.Collections.Generic;
+using System.Text;
 using System.Threading.Tasks;
 using System.Xml;
 
@@ -148,6 +149,7 @@ FOLDERS
         private const string DIRECTORY_SEPERATOR = "/";
         private const string ALTERNATE_DIRECTORY_SEPERATOR = "\\";
         private const string UP_PATH = "./";
+        private const string BRICK_NAME_PATH = "../sys/settings/BrickName";
 
         #region extension path checks
         private static string ToBrickPath(this string path)
@@ -390,15 +392,16 @@ FOLDERS
                     if (fileInfo.Length >= 3)
                     {
                         string md5sum = fileInfo[0].Trim();
-                        int byteSize = Convert.ToInt32(fileInfo[1].Trim(), 16);
-                        string fileName = "";
-                        for (int i = 2; i < fileInfo.Length; i++)
+                        int byteSize = 0;
+                        try
                         {
-                            fileName += fileInfo[i];
-                            fileName += " ";
+                            byteSize = Convert.ToInt32(fileInfo[1].Trim(), 16);
                         }
-                        fileName = fileName.Trim();
-                        files.Add(new File(path, fileName, md5sum, byteSize));
+                        catch (OverflowException)
+                        {
+                        }
+                        string fileName = string.Join(" ", fileInfo, 2, fileInfo.Length - 2);
+                        if(!string.IsNullOrWhiteSpace(fileName)) files.Add(new File(path, fileName, md5sum, byteSize));
                     }
                 }
             }
@@ -425,6 +428,13 @@ FOLDERS
         }
 
         #endregion
+
+
+        public static async Task<string> GetBrickName()
+        {
+            byte[] data = await DownloadFile(BRICK_NAME_PATH);
+            return Encoding.ASCII.GetString(data);
+        }
 
 
         /// <summary>
