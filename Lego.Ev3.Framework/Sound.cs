@@ -1,7 +1,5 @@
 ﻿using Lego.Ev3.Framework.Firmware;
 using System;
-using System.Collections.Generic;
-using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -12,49 +10,10 @@ namespace Lego.Ev3.Framework
     /// Port to all sound methods
     /// Methods can only be called after Brick is connected
     /// </summary>
-    /// <example>
-    /// Example illustrates handling soundfiles through the soundport
-    /// <code>
-    /// using Lego.Ev3.Framework;
-    /// using System.Threading.Tasks;
-    /// 
-    /// namespace Examples.SoundPort
-    /// {
-    ///     public class Controller:Brick
-    ///     {
-    /// 
-    ///         public async Task Start()
-    ///         {
-    ///             //connect to the brick first
-    ///             await Connect();
-    /// 
-    ///             // get the project resource directory
-    ///             Directory directory = await Drive.Projects.GetDirectory("My Project");
-    ///             if (directory == null) directory = await Drive.Projects.CreateDirectory("My Project");
-    ///             
-    ///             
-    ///             //gets all soundfiles in the directory
-    ///             SoundFile[] sounds = await directory.GetSoundFiles();
-    /// 
-    ///             if (sounds.Length > 0) SoundPort.PlayLoop(sounds[1], 30, 2, 0);
-    ///             else
-    ///             {
-    ///                 //upload a new soundfile
-    ///                 SoundFile newSound = await directory.UploadFile(@"C:\Tmp\newSound.rsf");
-    /// 
-    ///                 //play the new soundfile
-    ///                 SoundPort.Play(newSound, 60);
-    ///             }
-    /// 
-    ///         }
-    ///     }
-    /// }
-    /// </code>
-    /// </example>
-    public sealed class SoundPort
+    public sealed class Sound
     {
 
-        internal SoundPort(){}
+        internal Sound() { }
 
         #region Play SoundFiles and Tones
 
@@ -180,7 +139,7 @@ namespace Lego.Ev3.Framework
         /// <returns></returns>
         public async Task Stop()
         {
-             await SoundMethods.Break(Brick.Socket);
+            await SoundMethods.Break(Brick.Socket);
         }
 
         /// <summary>
@@ -199,21 +158,5 @@ namespace Lego.Ev3.Framework
         internal static async Task Ready(Socket socket)
          
         */
-
-        /// <summary>
-        /// Gets all SoundFiles natively stored on brick within firmware.
-        /// </summary>
-        public SoundFile[] GetOnBrickSoundFiles()
-        {
-            List<SoundFile> sounds = new List<SoundFile>();
-            for(int i=1; i <=12; i++)
-            {
-                string id = string.Format("OnBrickSound{0:00}", i);
-                SoundFile sound = new SoundFile(id, id + ".rsf", "../apps/Brick Program/" + id + ".rsf");
-                sound.IsOnBrickFile = true;
-                sounds.Add(sound);
-            }
-            return sounds.ToArray();
-        }
-}
+    }
 }

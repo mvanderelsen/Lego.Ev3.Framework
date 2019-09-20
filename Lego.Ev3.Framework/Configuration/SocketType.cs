@@ -9,13 +9,13 @@
         /// Usb Socket
         /// </summary>
         Usb,
-        ///// <summary>
-        ///// Bluetooth socket requires COM address
-        ///// </summary>
-        //Bluetooth,
-        ///// <summary>
-        ///// Network socket requires IP address
-        ///// </summary>
-        //Network
+        /// <summary>
+        /// Bluetooth socket requires COM address
+        /// </summary>
+        Bluetooth,
+        /// <summary>
+        /// Network socket requires IP address
+        /// </summary>
+        Network
     }
 }

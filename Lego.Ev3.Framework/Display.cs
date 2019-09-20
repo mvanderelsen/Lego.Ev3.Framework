@@ -1,6 +1,4 @@
 ﻿using Lego.Ev3.Framework.Firmware;
-using System;
-using System.Collections.Generic;
 using System.Threading.Tasks;
 
 namespace Lego.Ev3.Framework
@@ -37,7 +35,7 @@ namespace Lego.Ev3.Framework
     /// 
     /// </code>
     /// </example>
-    public sealed class DisplayPort
+    public sealed class Display
     {
         /// <summary>
         /// Width of the lcd display in pixels
@@ -49,7 +47,7 @@ namespace Lego.Ev3.Framework
         /// </summary>
         public const int HEIGHT = 128;
 
-        internal DisplayPort() { }
+        internal Display() { }
 
 
         /// <summary>
@@ -61,33 +59,8 @@ namespace Lego.Ev3.Framework
         /// <param name="color">Specify either black or white</param>
         public async Task Draw(GraphicFile file, int x = 0, int y = 0, UIColor color = UIColor.Black)
         {
-            Validate(file, x, y);
-            await UIDrawMethods.BMPFile(Brick.Socket, file.FilePath, x, y, color);
-        }
-
-        private void Validate(GraphicFile file, int x, int y)
-        {
             //TODO check width and height of graphic file in compare with width and height
-            if (x < 0 || x > 177) throw new ArgumentOutOfRangeException("X must between [0-177]");
-            if (y < 0 || y > 127) throw new ArgumentOutOfRangeException("Y must between [0-127]");
-        }
-
-        /// <summary>
-        /// Gets all Graphics natively stored on brick within firmware.
-        /// </summary>
-        public GraphicFile[] GetOnBrickGraphicFiles()
-        {
-            List<GraphicFile> graphics = new List<GraphicFile>();
-            for (int i = 1; i <= 12; i++)
-            {
-                string id = string.Format("OnBrickImage{0:00}", i);
-                GraphicFile graphic = new GraphicFile(id, id + ".rgf", "../apps/Brick Program/" + id + ".rgf")
-                {
-                    IsOnBrickFile = true
-                };
-                graphics.Add(graphic);
-            }
-            return graphics.ToArray();
+            await UIDrawMethods.BMPFile(Brick.Socket, file.FilePath, x, y, color);
         }
     }
 }

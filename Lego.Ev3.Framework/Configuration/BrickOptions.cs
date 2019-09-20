@@ -39,17 +39,17 @@ namespace Lego.Ev3.Framework.Configuration
             Socket = new SocketOptions { Type = SocketType.Usb };
         }
 
-        //public void UseBlueToothSocket(int comPortNumber)
-        //{
-        //    if (comPortNumber < 1 || comPortNumber > 256) throw new ArgumentOutOfRangeException(nameof(comPortNumber));
-        //    Socket = new SocketOptions { Type = SocketType.Bluetooth, Address=$"COM{comPortNumber}" };
-        //}
+        public void UseBlueToothSocket(int comPortNumber)
+        {
+            if (comPortNumber < 1 || comPortNumber > 256) throw new ArgumentOutOfRangeException(nameof(comPortNumber));
+            Socket = new SocketOptions { Type = SocketType.Bluetooth, Address = $"COM{comPortNumber}" };
+        }
 
-        //public void UseNetworkSocket(string ipAddress)
-        //{
-        //    if (string.IsNullOrEmpty(ipAddress)) throw new ArgumentNullException(nameof(ipAddress), "IPAddress is required");
-        //    Socket = new SocketOptions { Type = SocketType.Bluetooth, Address = ipAddress };
-        //}
+        public void UseNetworkSocket(string ipAddress)
+        {
+            if (string.IsNullOrEmpty(ipAddress)) throw new ArgumentNullException(nameof(ipAddress), "IPAddress is required");
+            Socket = new SocketOptions { Type = SocketType.Bluetooth, Address = ipAddress };
+        }
         #endregion
 
         #region devices

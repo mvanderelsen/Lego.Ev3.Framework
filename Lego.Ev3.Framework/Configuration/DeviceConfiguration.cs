@@ -1,4 +1,5 @@
 ﻿using Lego.Ev3.Framework.Configuration;
+using Lego.Ev3.Framework.Internals;
 using System;
 using System.Collections.Generic;
 
@@ -19,49 +20,49 @@ namespace Lego.Ev3.Framework
                     case DeviceType.MediumMotor:
                         {
                             OutputPortName port = (OutputPortName)Enum.Parse(typeof(OutputPortName), device.Port, true);
-                            int portNumber = (((int)layer + 1) * 16) + (int)port;
+                            int portNumber = port.AbsolutePortNumber(layer);
                             LoadMediumMotor(device.Id).Connect(brickPorts.Output.Ports[portNumber]);
                             break;
                         }
                     case DeviceType.LargeMotor:
                         {
                             OutputPortName port = (OutputPortName)Enum.Parse(typeof(OutputPortName), device.Port, true);
-                            int portNumber = (((int)layer + 1) * 16) + (int)port;
+                            int portNumber = port.AbsolutePortNumber(layer);
                             LoadLargeMotor(device.Id).Connect(brickPorts.Output.Ports[portNumber]);
                             break;
                         }
                     case DeviceType.TouchSensor:
                         {
                             InputPortName port = (InputPortName)Enum.Parse(typeof(InputPortName), device.Port, true);
-                            int portNumber = ((int)layer * 8) + (int)port;
+                            int portNumber = port.AbsolutePortNumber(layer);
                             LoadTouchSensor(device.Id).Connect(brickPorts.Input.Ports[portNumber]);
                             break;
                         }
                     case DeviceType.ColorSensor:
                         {
                             InputPortName port = (InputPortName)Enum.Parse(typeof(InputPortName), device.Port, true);
-                            int portNumber = ((int)layer * 8) + (int)port;
+                            int portNumber = port.AbsolutePortNumber(layer);
                             LoadColorSensor(device.Id).Connect(brickPorts.Input.Ports[portNumber]);
                             break;
                         }
                     case DeviceType.GyroscopeSensor:
                         {
                             InputPortName port = (InputPortName)Enum.Parse(typeof(InputPortName), device.Port, true);
-                            int portNumber = ((int)layer * 8) + (int)port;
+                            int portNumber = port.AbsolutePortNumber(layer);
                             LoadGyroscopeSensor(device.Id).Connect(brickPorts.Input.Ports[portNumber]);
                             break;
                         }
                     case DeviceType.InfraredSensor:
                         {
                             InputPortName port = (InputPortName)Enum.Parse(typeof(InputPortName), device.Port, true);
-                            int portNumber = ((int)layer * 8) + (int)port;
+                            int portNumber = port.AbsolutePortNumber(layer);
                             LoadInfraredSensor(device.Id).Connect(brickPorts.Input.Ports[portNumber]);
                             break;
                         }
                     case DeviceType.UltrasonicSensor:
                         {
                             InputPortName port = (InputPortName)Enum.Parse(typeof(InputPortName), device.Port, true);
-                            int portNumber = ((int)layer * 8) + (int)port;
+                            int portNumber = port.AbsolutePortNumber(layer);
                             LoadUltrasonicSensor(device.Id).Connect(brickPorts.Input.Ports[portNumber]);
                             break;
                         }

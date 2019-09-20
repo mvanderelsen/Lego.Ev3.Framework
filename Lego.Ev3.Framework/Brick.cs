@@ -91,12 +91,12 @@ namespace Lego.Ev3.Framework
         /// <summary>
         /// Port for all sound methods
         /// </summary>
-        public SoundPort SoundPort { get; }
+        public Sound Sound { get; }
 
         /// <summary>
         /// Port for all display methods
         /// </summary>
-        public DisplayPort DisplayPort { get; }
+        public Display Display { get; }
 
         /// <summary>
         /// Second daisy chained brick IO Ports
@@ -114,9 +114,9 @@ namespace Lego.Ev3.Framework
         public IOPorts Slave3 { get; }
 
         /// <summary>
-        /// Port for settings and system/test methods
+        /// Console for advanced methods
         /// </summary>
-        public SystemPort SystemPort { get; }
+        public BrickConsole Console { get; }
 
 
         /// <summary>
@@ -129,9 +129,9 @@ namespace Lego.Ev3.Framework
             Options = options ?? new BrickOptions();
             Logger = logger ?? new NullLogger<Brick>();
 
-            SystemPort = new SystemPort();
-            SoundPort = new SoundPort();
-            DisplayPort = new DisplayPort();
+            Console = new BrickConsole();
+            Sound = new Sound();
+            Display = new Display();
             Led = new Led();
             Battery = new Battery();
             Drive = new Drive();
@@ -139,15 +139,14 @@ namespace Lego.Ev3.Framework
 
             //Init IO Ports
             IOPort = new IOPort();
-            IOPort.AddPorts(this);
-        
             Slave1 = new IOPorts(ChainLayer.Two);
-            IOPort.AddPorts(Slave1);
-
             Slave2 = new IOPorts(ChainLayer.Three);
-            IOPort.AddPorts(Slave2);
-
             Slave3 = new IOPorts(ChainLayer.Four);
+
+            //add ports to internal dictionary
+            IOPort.AddPorts(this);
+            IOPort.AddPorts(Slave1);
+            IOPort.AddPorts(Slave2);
             IOPort.AddPorts(Slave3);
 
             //connect any devices from configuration if available
@@ -173,11 +172,22 @@ namespace Lego.Ev3.Framework
                 case SocketType.Usb:
                     {
                         _socket = new Socket(new Sockets.UsbSocket());
-                        Logger.LogInformation("Connecting to brick on Usb socket");
+                        break;
+                    }
+                case SocketType.Bluetooth:
+                    {
+                        _socket = new Socket(new Sockets.BlueToothSocket(Options.Socket.Address));
+                        break;
+                    }
+                case SocketType.Network:
+                    {
+                        _socket = new Socket(new Sockets.NetworkSocket(Options.Socket.Address));
                         break;
                     }
                 default: throw new NotImplementedException(nameof(Options.Socket.Type));
             }
+
+            Logger.LogInformation($"Connecting to brick on {_socket.ConnectionInfo}");
 
             try
             {
@@ -189,7 +199,7 @@ namespace Lego.Ev3.Framework
 
                 Name = await FileExplorer.GetBrickName();
 
-                //  USB drive, SD drive Info
+                //TODO Usb
                 bool sdCardPresent = await MemoryMethods.Exists(Socket, FileExplorer.SDCARD_PATH);
                 if (sdCardPresent)
                 {
@@ -219,7 +229,7 @@ namespace Lego.Ev3.Framework
         {
             if (IsConnected)
             {
-                await Task.WhenAll(SoundPort.Stop(), IOPort.Stop());
+                await Task.WhenAll(Sound.Stop(), IOPort.Stop());
             }
         }
 

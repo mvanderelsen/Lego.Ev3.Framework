@@ -10,9 +10,8 @@ namespace Lego.Ev3.Framework.Sockets
 {
     internal class UsbSocket : SocketBase, IDisposable, ISocket
     {
-        // full-size report
-        private byte[] _inputReport;
-        private byte[] _outputReport;
+        private byte[] _input;
+        private byte[] _output;
         private FileStream _stream;
         private CancellationTokenSource _cancellationTokenSource;
 
@@ -27,38 +26,34 @@ namespace Lego.Ev3.Framework.Sockets
         /// <summary>
         /// Connect to the EV3 brick.
         /// </summary>
-        public async Task Connect()
+        public Task<bool> Connect()
         {
-            if (IsConnected) return;
-
+            if (IsConnected) return Task.FromResult(true);
             _cancellationTokenSource = new CancellationTokenSource();
             CancellationToken = _cancellationTokenSource.Token;
-            await Task.Run(() =>
-            {
-                ConnectToEv3();
-            });
+            ConnectToEv3();
             OpenSocket();
+            return Task.FromResult(IsConnected);
         }
 
         /// <summary>
         /// Disconnect from the EV3 brick.
         /// </summary>
-        public async Task Disconnect()
+        public Task Disconnect()
         {
             // close up the stream and handle
             if (IsConnected)
             {
-                await Task.Run(() =>
-                {
-                    _cancellationTokenSource.Cancel();
-                    _stream.SafeFileHandle.Close();
-                    _stream.Close();
-                    _stream = null;
-                    _inputReport = null;
-                    _outputReport = null;
-                    Clear();
-                });
+                _cancellationTokenSource.Cancel();
+                _cancellationTokenSource.Dispose();
+                _stream.SafeFileHandle.Close();
+                _stream.Close();
+                _stream = null;
+                _input = null;
+                _output = null;
+                Clear();
             }
+            return Task.CompletedTask;
         }
 
         private void OpenSocket()
@@ -67,40 +62,36 @@ namespace Lego.Ev3.Framework.Sockets
             {
                 while (!CancellationToken.IsCancellationRequested)
                 {
-                    await _stream.ReadAsync(_inputReport, 0, _inputReport.Length, CancellationToken);
+                    await _stream.ReadAsync(_input, 0, _input.Length, CancellationToken);
 
-                    short size = (short)(_inputReport[1] | _inputReport[2] << 8);
+                    short size = (short)(_input[1] | _input[2] << 8);
                     if (size > 0)
                     {
                         byte[] payLoad = new byte[size];
-                        Array.Copy(_inputReport, 3, payLoad, 0, size);
+                        Array.Copy(_input, 3, payLoad, 0, size);
                         Responses.TryAdd(Response.GetId(payLoad), payLoad);
                     }
                 }
             }, CancellationToken, TaskCreationOptions.LongRunning, TaskScheduler.Current);
+
             Task.Factory.StartNew(async () =>
             {
                 while (!CancellationToken.IsCancellationRequested)
                 {
+                    byte[] payLoad;
 
-                    if (Commands.Count > 0)
+                    if (Commands.TryDequeue(out payLoad))
                     {
-                        if (Commands.TryDequeue(out byte[] payLoad))
-                        {
-                            payLoad.CopyTo(_outputReport, 1);
-                            await _stream.WriteAsync(_outputReport, 0, _outputReport.Length);
-                            _stream.Flush();
-                        }
+                        payLoad.CopyTo(_output, 1);
+                        await _stream.WriteAsync(_output, 0, _output.Length);
+                        _stream.Flush();
                     }
 
-                    if (Events.Count > 0)
+                    if (Events.TryDequeue(out payLoad))
                     {
-                        if (Events.TryDequeue(out byte[] payLoad))
-                        {
-                            payLoad.CopyTo(_outputReport, 1);
-                            await _stream.WriteAsync(_outputReport, 0, _outputReport.Length);
-                            _stream.Flush();
-                        }
+                        payLoad.CopyTo(_output, 1);
+                        await _stream.WriteAsync(_output, 0, _output.Length);
+                        _stream.Flush();
                     }
                 }
             }, CancellationToken, TaskCreationOptions.LongRunning, TaskScheduler.Current);
@@ -180,11 +171,11 @@ namespace Lego.Ev3.Framework.Sockets
 
                             HidImports.HidD_FreePreparsedData(ref preparsedData);
 
-                            _inputReport = new byte[caps.InputReportByteLength];
-                            _outputReport = new byte[caps.OutputReportByteLength];
+                            _input = new byte[caps.InputReportByteLength];
+                            _output = new byte[caps.OutputReportByteLength];
 
                             // create a nice .NET FileStream wrapping the handle above
-                            _stream = new FileStream(handle, FileAccess.ReadWrite, _inputReport.Length, true);
+                            _stream = new FileStream(handle, FileAccess.ReadWrite, _input.Length, true);
 
                             break;
                         }

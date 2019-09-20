@@ -13,7 +13,7 @@ namespace Lego.Ev3.Framework.Core
         /// <summary>
         /// Gets or sets if file is default on brick through firmware resource so not deletable
         /// </summary>
-        /// <see cref="SoundPort.GetOnBrickSoundFiles"/>
+        /// <see cref="Sound.GetOnBrickSoundFiles"/>
         internal bool IsOnBrickFile { get; set; }
 
         /// <summary>
