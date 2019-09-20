@@ -1,22 +1,21 @@
-﻿
-namespace Lego.Ev3.Framework
+﻿namespace Lego.Ev3.Framework
 {
     /// <summary>
-    /// Drive information
+    /// Memory information
     /// </summary>
-    public struct DriveInfo
+    public struct MemoryInfo
     {
         /// <summary>
-        /// Total drive size in KB
+        /// Total memory size in KB
         /// </summary>
         public int Total { get; }
 
         /// <summary>
-        /// Free drive size in KB
+        /// Free memory size in KB
         /// </summary>
         public int Free { get; }
 
-        internal DriveInfo(int[] values)
+        internal MemoryInfo(int[] values)
         {
             Total = values[0];
             Free = values[1];

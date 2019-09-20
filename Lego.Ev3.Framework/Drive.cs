@@ -1,6 +1,4 @@
-﻿using Lego.Ev3.Framework.Firmware;
-using Lego.Ev3.Framework.Core;
-using System.Threading.Tasks;
+﻿using Lego.Ev3.Framework.Core;
 
 namespace Lego.Ev3.Framework
 {
@@ -13,16 +11,5 @@ namespace Lego.Ev3.Framework
     {
 
         internal Drive():base(FileExplorer.PROJECTS_PATH) {}
-
-
-        /// <summary>
-        /// Gets drive information about total and free states.
-        /// </summary>
-        /// <returns></returns>
-        public async Task<DriveInfo> GetDriveInfo()
-        {
-            int[] values = await MemoryMethods.MemoryUsage(Brick.Socket);
-            return new DriveInfo(values);
-        }
     }
 }

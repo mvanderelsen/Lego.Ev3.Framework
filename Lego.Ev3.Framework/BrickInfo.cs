@@ -27,32 +27,17 @@ namespace Lego.Ev3.Framework
         /// </summary>
         public string Version { get; private set; }
 
-        /// <summary>
-        /// IP if assigned
-        /// </summary>
-        public string IP { get; private set; }
-
-        /// <summary>
-        /// Memory informatie total and free Kb
-        /// </summary>
-        public MemoryInfo Memory { get; private set; }
-
-        /// <summary>
-        /// Connection type
-        /// </summary>
-        public string Connection { get; private set; }
 
         internal BrickInfo() { }
 
 
         public override string ToString()
         {
-            return $"{OS} {Firmware} {Hardware} {Memory} Version:{Version} Ip:{IP} Connection:{Connection}";
+            return $"{OS} {Firmware} {Hardware} Version:{Version}";
         }
 
         internal static async Task<BrickInfo> GetBrickInfo()
         {
-            int[] memory = await MemoryMethods.MemoryUsage(Brick.Socket);
 
             BrickInfo info = new BrickInfo
             {
@@ -76,81 +61,50 @@ namespace Lego.Ev3.Framework
                 },
 
                 Version = await UIReadMethods.GetVersion(Brick.Socket),
-                IP = await UIReadMethods.GetIP(Brick.Socket),
 
-
-
-                Memory = new MemoryInfo
-                {
-                    Total = memory[0],
-                    Free = memory[1]
-                },
-
-                Connection = Brick.Socket.ConnectionInfo
             };
             return info;
 
         }
 
-    }
-
-    public class FirmwareInfo
-    {
-        public string Version { get; internal set; }
-
-        public string Build { get; internal set; }
-
-        internal FirmwareInfo() { }
-
-        public override string ToString()
+        public class FirmwareInfo
         {
-            return $"Firmware Version:{Version} Build:{Build}";
+            public string Version { get; internal set; }
+
+            public string Build { get; internal set; }
+
+            internal FirmwareInfo() { }
+
+            public override string ToString()
+            {
+                return $"Firmware Version:{Version} Build:{Build}";
+            }
         }
-    }
 
-    public class OSInfo
-    {
-        public string Version { get; internal set; }
-
-        public string Build { get; internal set; }
-
-        internal OSInfo() { }
-
-        public override string ToString()
+        public class OSInfo
         {
-            return $"OS Version:{Version} Build:{Build}";
+            public string Version { get; internal set; }
+
+            public string Build { get; internal set; }
+
+            internal OSInfo() { }
+
+            public override string ToString()
+            {
+                return $"OS Version:{Version} Build:{Build}";
+            }
         }
-    }
 
-    public class HardwareInfo
-    {
-        public string Version { get; internal set; }
-
-        internal HardwareInfo() { }
-
-        public override string ToString()
+        public class HardwareInfo
         {
-            return $"Hardware Version:{Version}";
-        }
-    }
+            public string Version { get; internal set; }
 
-    public class MemoryInfo
-    {
-        /// <summary>
-        /// Free memory in Kb
-        /// </summary>
-        public int Free { get; internal set; }
+            internal HardwareInfo() { }
 
-        /// <summary>
-        /// Total memory in Kb
-        /// </summary>
-        public int Total { get; internal set; }
-
-        internal MemoryInfo() { }
-
-        public override string ToString()
-        {
-            return $"Memory Free:{File.FileSize(Free * 1024)} Total:{File.FileSize(Total*1024)}";
+            public override string ToString()
+            {
+                return $"Hardware Version:{Version}";
+            }
         }
     }
 }

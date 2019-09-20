@@ -99,6 +99,11 @@ namespace Lego.Ev3.Framework
         public Display Display { get; }
 
         /// <summary>
+        /// Port to memory methods
+        /// </summary>
+        public Memory Memory { get; set; }
+
+        /// <summary>
         /// Second daisy chained brick IO Ports
         /// </summary>
         public IOPorts Slave1 { get; }
@@ -118,7 +123,6 @@ namespace Lego.Ev3.Framework
         /// </summary>
         public BrickConsole Console { get; }
 
-
         /// <summary>
         /// 
         /// </summary>
@@ -136,6 +140,7 @@ namespace Lego.Ev3.Framework
             Battery = new Battery();
             Drive = new Drive();
             Buttons = new Buttons();
+            Memory = new Memory();
 
             //Init IO Ports
             IOPort = new IOPort();

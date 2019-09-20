@@ -13,6 +13,25 @@ namespace Lego.Ev3.Framework
     {
         internal BrickConsole() {}
 
+
+        /// <summary>
+        /// Gets the brick IP address if assigned else null
+        /// </summary>
+        /// <returns></returns>
+        public async Task<string> GetIpAddress()
+        {
+            return await UIReadMethods.GetIP(Brick.Socket);
+        }
+
+        /// <summary>
+        /// Gets the connectionInfo e.g. "Usb", "BlueTooth COM5", "Network 192.168.1.1"
+        /// </summary>
+        /// <returns></returns>
+        public string GetConnnectionInfo()
+        {
+            return Brick.Socket.ConnectionInfo;
+        }
+
         /// <summary>
         /// Read information about external device
         /// </summary>
