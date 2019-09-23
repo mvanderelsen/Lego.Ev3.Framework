@@ -85,7 +85,7 @@ namespace Lego.Ev3.Framework.Core
             if (string.IsNullOrWhiteSpace(path)) throw new ArgumentNullException(nameof(path));
             path = I.Path.GetDirectoryName(path);
             if (!I.Directory.Exists(path)) I.Directory.CreateDirectory(path);
-            path = I.Path.Combine(path, fileName);
+            path = $"{path}{fileName}";
             using (I.FileStream fileStream = I.File.Create(path))
             {
                 await fileStream.WriteAsync(data, 0, data.Length);

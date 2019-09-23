@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Xml;
 
@@ -147,56 +148,51 @@ FOLDERS
         public const string APPLICATION_PATH = "../apps/";
 
         private const string DIRECTORY_SEPERATOR = "/";
-        private const string ALTERNATE_DIRECTORY_SEPERATOR = "\\";
         private const string UP_PATH = "./";
         private const string BRICK_NAME_PATH = "../sys/settings/BrickName";
 
-        #region extension path checks
-        private static string ToBrickPath(this string path)
+
+        //brick will allow more like # and @ todo
+        public const string BRICK_NAME_EXPRESSION = "[a-zA-Z0-9 _~]";
+        public static string BRICK_FILENAME_EXPRESSION = $@"({BRICK_NAME_EXPRESSION})+(\.(\w)+)?";
+        private static string BRICK_DIRECTORY_PATH_EXPRESSION = $@"^\.\./(({BRICK_NAME_EXPRESSION}+)/)*$";
+        private static string BRICK_FILE_PATH_EXPRESSION = $@"^\.\./(({BRICK_NAME_EXPRESSION}+)/)*{BRICK_FILENAME_EXPRESSION}$";
+
+        #region  validation checks
+        private static string GetValidatedDirectoryPath(this string path)
         {
             if (string.IsNullOrEmpty(path)) throw new ArgumentNullException(nameof(path));
-            path = path.Replace(ALTERNATE_DIRECTORY_SEPERATOR, DIRECTORY_SEPERATOR);
             if (!path.EndsWith(DIRECTORY_SEPERATOR)) path = $"{path}{DIRECTORY_SEPERATOR}";
-            if (!path.StartsWith(ROOT_PATH)) throw new ArgumentException(nameof(path), "path is not a valid brick path");
+            if(!Regex.IsMatch(path,BRICK_DIRECTORY_PATH_EXPRESSION)) throw new ArgumentException(nameof(path), "path is not a valid brick directory path");
             return path;
         }
 
-        private static string ToBrickDirectoryName(this string name)
+        private static string GetValidateFilePath(this string path)
+        {
+            if (string.IsNullOrEmpty(path)) throw new ArgumentNullException(nameof(path));
+            if (!Regex.IsMatch(path, BRICK_FILE_PATH_EXPRESSION)) throw new ArgumentException(nameof(path), "path is not a valid brick file path");
+            return path;
+        }
+
+        public static string GetValidateDirectoryName(string name)
         {
             if (string.IsNullOrEmpty(name)) throw new ArgumentNullException(nameof(name));
-            if (!name.Contains(DIRECTORY_SEPERATOR) || name.Contains(ALTERNATE_DIRECTORY_SEPERATOR)) throw new ArgumentException(nameof(name), "name is not a valid brick directory name");
+            if (!Regex.IsMatch(name, $"^{BRICK_NAME_EXPRESSION}+$")) throw new ArgumentException(nameof(name), "name is not a valid brick directory name");
             return name;
         }
 
-        private static string ToBrickFileName(this string name)
+        public static string GetValidateFileName(string fileName)
         {
-            if (string.IsNullOrEmpty(name)) throw new ArgumentNullException(nameof(name));
-            if (name.Contains(DIRECTORY_SEPERATOR) || name.Contains(ALTERNATE_DIRECTORY_SEPERATOR)) throw new ArgumentException(nameof(name), "name is not a valid brick file name");
-            return name;
+            if (string.IsNullOrEmpty(fileName)) throw new ArgumentNullException(nameof(fileName));
+            if (!Regex.IsMatch(fileName, $"^{BRICK_FILENAME_EXPRESSION}$")) throw new ArgumentException(nameof(fileName), "name is not a valid brick file name");
+            return fileName;
         }
+
+
         #endregion
 
         #region core file explorer methods
-        /// <summary>
-        /// Lists all files and directories for given path
-        /// </summary>
-        /// <param name="path">The relative path, must start with ../</param>
-        /// <returns>Files and directories as <c>string[]</c></returns>
-        public static async Task<string[]> List(string path)
-        {
-            return await FileSystemMethods.ListFiles(Brick.Socket, path.ToBrickPath());
-        }
 
-        /// <summary>
-        /// Deletes a file or directory
-        /// </summary>
-        /// <param name="path">The relative path, must start with ../</param>
-        /// <returns><c>true</c> if deleted otherwise <c>false</c></returns>
-        public static async Task<bool> Delete(string path)
-        {
-            SYSTEM_COMMAND_STATUS status = await FileSystemMethods.DeleteFile(Brick.Socket, path.ToBrickPath());
-            return status == SYSTEM_COMMAND_STATUS.SUCCESS;
-        }
 
         /// <summary>
         /// Deletes a file/directory on the brick this can even be a system file.. USE WITH GREAT CARE!!
@@ -205,7 +201,7 @@ FOLDERS
         /// <returns></returns>
         public static async Task Remove(string path)
         {
-            await MemoryMethods.Remove(Brick.Socket, path.ToBrickPath());
+            await MemoryMethods.Remove(Brick.Socket, path);
         }
 
         /// <summary>
@@ -215,34 +211,7 @@ FOLDERS
         /// <returns><c>true</c> if exists otherwise <c>false</c></returns>
         public static async Task<bool> Exists(string path)
         {
-            return await MemoryMethods.Exists(Brick.Socket, path.ToBrickPath());
-        }
-
-        /// <summary>
-        /// Method creates new directory. An existing directory will not be overriden.
-        /// </summary>
-        /// <param name="path">The relative path, must start with ../</param>
-        /// <param name="name">The name of the directory</param>
-        /// <returns><c>true</c> if exists otherwise <c>false</c></returns>
-        public static async Task<bool> CreateDirectory(string path)
-        {
-            path = path.ToBrickPath();
-            System.IO.Path.GetFileName(System.IO.Path.GetDirectoryName(path)).ToBrickDirectoryName();
-            SYSTEM_COMMAND_STATUS status = await FileSystemMethods.CreateDirectory(Brick.Socket, path);
-            if (status != SYSTEM_COMMAND_STATUS.SUCCESS && status != SYSTEM_COMMAND_STATUS.FILE_EXISTS) return false;
-            return true;
-        }
-
-        /// <summary>
-        /// Makes directory but uses COM => MemoryMethod
-        /// </summary>
-        /// <param name="path">The relative path, must start with ../</param>
-        /// <returns><c>true</c> if exists otherwise <c>false</c></returns>
-        public static async Task<bool> MakeDirectory(string path)
-        {
-            path = path.ToBrickPath();
-            System.IO.Path.GetFileName(System.IO.Path.GetDirectoryName(path)).ToBrickDirectoryName();
-            return await MemoryMethods.MakeFolder(Brick.Socket, path);
+            return await MemoryMethods.Exists(Brick.Socket, path);
         }
 
         /// <summary>
@@ -287,10 +256,10 @@ FOLDERS
         /// <returns><c>true</c> if success otherwise <c>false</c></returns>
         public static async Task<bool> UploadFile(byte[] file, string path, string fileName)
         {
-            path = path.ToBrickPath();
-            fileName = fileName.ToBrickFileName();
+            path = path.GetValidatedDirectoryPath();
+            fileName = GetValidateFileName(fileName);
 
-            string brickPath = System.IO.Path.Combine(path, fileName);
+            string brickPath = $"{path}{fileName}";
             SYSTEM_COMMAND_STATUS status = await FileSystemMethods.UploadFileToBrick(Brick.Socket, file, brickPath);
             if (status != SYSTEM_COMMAND_STATUS.SUCCESS && status != SYSTEM_COMMAND_STATUS.FILE_EXISTS) return false;
             return true;
@@ -304,25 +273,66 @@ FOLDERS
         /// <returns></returns>
         public static async Task<byte[]> DownloadFile(string path)
         {
-            string fileName = System.IO.Path.GetFileName(path).ToBrickFileName();
-            path = System.IO.Path.GetDirectoryName(path);
-            path = path.ToBrickPath();
-            path = System.IO.Path.Combine(path, fileName);
+            path = path.GetValidateFilePath();
             return await FileSystemMethods.DownLoadFileFromBrick(Brick.Socket, path);
         }
 
-        /// <summary>
-        /// Gets the item count of path
-        /// </summary>
-        /// <param name="path"></param>
-        /// <returns></returns>
-        public static async Task<int> GetItemCount(string path)
-        {
-            return await MemoryMethods.GetItemCount(Brick.Socket, path.ToBrickPath());
-        }
         #endregion
 
         #region directory
+
+        /// <summary>
+        /// Deletes a file or directory
+        /// </summary>
+        /// <param name="path">The relative path, must start with ../</param>
+        /// <returns><c>true</c> if deleted otherwise <c>false</c></returns>
+        public static async Task<bool> DeleteDirectory(string path, bool recursive = false)
+        {
+            path = path.GetValidatedDirectoryPath();
+            if (recursive)
+            {
+                File[] files = await GetFiles(path);
+                foreach (File file in files)
+                {
+                    await DeleteFile(file.Path);
+                }
+
+                Directory[] directories = await GetDirectories(path);
+                foreach (Directory directory in directories)
+                {
+                    await DeleteDirectory(directory.Path, recursive);
+                }
+            }
+            SYSTEM_COMMAND_STATUS status = await FileSystemMethods.DeleteFile(Brick.Socket, path);
+            return status == SYSTEM_COMMAND_STATUS.SUCCESS;
+        }
+
+
+        /// <summary>
+        /// Method creates new directory. An existing directory will not be overriden.
+        /// </summary>
+        /// <param name="path">The relative path, must start with ../</param>
+        /// <param name="name">The name of the directory</param>
+        /// <returns><c>true</c> if exists otherwise <c>false</c></returns>
+        public static async Task<bool> CreateDirectory(string path)
+        {
+            path = path.GetValidatedDirectoryPath();
+            SYSTEM_COMMAND_STATUS status = await FileSystemMethods.CreateDirectory(Brick.Socket, path);
+            if (status != SYSTEM_COMMAND_STATUS.SUCCESS && status != SYSTEM_COMMAND_STATUS.FILE_EXISTS) return false;
+            return true;
+        }
+
+        /// <summary>
+        /// Makes directory but uses COM => MemoryMethod
+        /// </summary>
+        /// <param name="path">The relative path, must start with ../</param>
+        /// <returns><c>true</c> if exists otherwise <c>false</c></returns>
+        public static async Task<bool> MakeDirectory(string path)
+        {
+            path = path.GetValidatedDirectoryPath();
+            return await MemoryMethods.MakeFolder(Brick.Socket, path);
+        }
+
 
         /// <summary>
         /// Gets directory handles to directories on the brick. Use with great care upon deleting!!
@@ -331,7 +341,7 @@ FOLDERS
         /// <returns><c>Directory[]</c></returns>
         public static async Task<Directory[]> GetDirectories(string path)
         {
-            path = path.ToBrickPath();
+            path = path.GetValidatedDirectoryPath();
 
             List<Directory> directories = new List<Directory>();
             string[] entries = await FileSystemMethods.ListFiles(Brick.Socket, path);
@@ -343,7 +353,7 @@ FOLDERS
                 {
                     if (item != ROOT_PATH && item != UP_PATH)
                     {
-                        string directoryPath = System.IO.Path.Combine(path, item);
+                        string directoryPath = $"{path}{item}";
                         directories.Add(new Directory(directoryPath));
                     }
                 }
@@ -359,16 +369,48 @@ FOLDERS
         /// <returns></returns>
         public static async Task<Directory> GetDirectory(string path)
         {
-            path = path.ToBrickPath();
+            path = path.GetValidatedDirectoryPath();
             if (path == ROOT_PATH) return new Directory(ROOT_PATH);
             bool b = await MemoryMethods.Exists(Brick.Socket, path);
             if (b) return new Directory(path);
             return null;
         }
 
+
+        /// <summary>
+        /// Gets the item count of path
+        /// </summary>
+        /// <param name="path"></param>
+        /// <returns></returns>
+        public static async Task<int> GetItemCount(string path)
+        {
+            return await MemoryMethods.GetItemCount(Brick.Socket, path.GetValidatedDirectoryPath());
+        }
+
+        /// <summary>
+        /// Lists all files and directories for given path
+        /// </summary>
+        /// <param name="path">The relative path, must start with ../</param>
+        /// <returns>Files and directories as <c>string[]</c></returns>
+        public static async Task<string[]> List(string path)
+        {
+            return await FileSystemMethods.ListFiles(Brick.Socket, path.GetValidatedDirectoryPath());
+        }
         #endregion
 
         #region file
+
+        /// <summary>
+        /// Deletes a file
+        /// </summary>
+        /// <param name="path">The relative path, must start with ../</param>
+        /// <returns><c>true</c> if deleted otherwise <c>false</c></returns>
+        public static async Task<bool> DeleteFile(string path)
+        {
+            path = path.GetValidateFilePath();
+            SYSTEM_COMMAND_STATUS status = await FileSystemMethods.DeleteFile(Brick.Socket, path);
+            return status == SYSTEM_COMMAND_STATUS.SUCCESS;
+        }
 
         /// <summary>
         /// Gets file handles to files on the brick. Use with great care upon deleting!!
@@ -377,7 +419,7 @@ FOLDERS
         /// <returns></returns>
         public static async Task<File[]> GetFiles(string path)
         {
-            path = path.ToBrickPath();
+            path = path.GetValidatedDirectoryPath();
 
             List<File> files = new List<File>();
             string[] entries = await Firmware.FileSystemMethods.ListFiles(Brick.Socket, path);
@@ -417,8 +459,7 @@ FOLDERS
         public static async Task<File> GetFile(string path)
         {
             string fileName = System.IO.Path.GetFileName(path);
-            path = System.IO.Path.GetDirectoryName(path);
-            path = path.ToBrickPath();
+            path = System.IO.Path.GetDirectoryName(path).Replace(System.IO.Path.DirectorySeparatorChar, System.IO.Path.AltDirectorySeparatorChar);
             File[] files = await GetFiles(path);
             foreach (File file in files)
             {
@@ -433,7 +474,8 @@ FOLDERS
         public static async Task<string> GetBrickName()
         {
             byte[] data = await DownloadFile(BRICK_NAME_PATH);
-            return Encoding.ASCII.GetString(data);
+            string name =  Encoding.ASCII.GetString(data);
+            return name.TrimEnd('\0', '\n');
         }
 
 

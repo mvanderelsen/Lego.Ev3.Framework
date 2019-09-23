@@ -49,7 +49,7 @@ namespace Lego.Ev3.Framework.Core
         {
             if (string.IsNullOrWhiteSpace(name)) throw new ArgumentNullException(nameof(name));
             if (IsReservedDirectoryName(name)) return null;
-            string path = System.IO.Path.Combine(_path, name);
+            string path = $"{_path}{name}";
             return await FileExplorer.GetDirectory(path);
         }
 
@@ -62,7 +62,7 @@ namespace Lego.Ev3.Framework.Core
         {
             if (string.IsNullOrWhiteSpace(name)) return false;
             if (IsReservedDirectoryName(name)) return false;
-            string path = System.IO.Path.Combine(_path, name);
+            string path = $"{_path}{name}";
             return await FileExplorer.Exists(path);
         }
 
@@ -75,7 +75,7 @@ namespace Lego.Ev3.Framework.Core
         {
             if (string.IsNullOrWhiteSpace(name)) return null;
             if (IsReservedDirectoryName(name)) return null;
-            string path = System.IO.Path.Combine(_path, name);
+            string path = $"{_path}{name}";
             bool success = await FileExplorer.CreateDirectory(path);
             if (success) return new Directory(path);
             return null;
@@ -90,7 +90,6 @@ namespace Lego.Ev3.Framework.Core
                 case "usb_stick":
                 case "brkprog_save":
                 case "brkdl_save":
-                case "test":
                 case "":
                 case ".":
                 case "..":

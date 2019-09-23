@@ -44,7 +44,7 @@ namespace Lego.Ev3.Framework
         {
             Id = System.IO.Path.GetFileNameWithoutExtension(fileName);
             Name = fileName;
-            Path = System.IO.Path.Combine(directoryPath, fileName);
+            Path = $"{directoryPath}{fileName}";
             MD5SUM = md5sum;
             Size = size;
             Type = Firmware.FileSystemMethods.GetFileType(fileName);
@@ -86,7 +86,7 @@ namespace Lego.Ev3.Framework
         /// </summary>
         public async Task<bool> Delete()
         {
-            return await FileExplorer.Delete(Path);
+            return await FileExplorer.DeleteFile(Path);
         }
 
         /// <summary>
@@ -116,10 +116,10 @@ namespace Lego.Ev3.Framework
             if (string.IsNullOrWhiteSpace(localFilePath)) throw new ArgumentNullException(nameof(localFilePath));
             localFilePath = System.IO.Path.GetDirectoryName(localFilePath);
             if (!System.IO.Directory.Exists(localFilePath)) System.IO.Directory.CreateDirectory(localFilePath);
-            localFilePath = System.IO.Path.Combine(localFilePath, fileName);
+            localFilePath = $"{localFilePath}{fileName}";
             using (System.IO.FileStream fileStream = System.IO.File.Create(localFilePath))
             {
-               await fileStream.WriteAsync(data, 0, data.Length);
+               if(data != null) await fileStream.WriteAsync(data, 0, data.Length);
             }
         }
 

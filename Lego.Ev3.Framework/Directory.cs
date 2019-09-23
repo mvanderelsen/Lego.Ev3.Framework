@@ -45,7 +45,7 @@ namespace Lego.Ev3.Framework
         /// <returns><c>File</c></returns>
         public async Task<File> GetFile(string fileName)
         {
-            string path = System.IO.Path.Combine(Path, fileName);
+            string path = $"{Path}{fileName}";
             return await FileExplorer.GetFile(path);
         }
 
