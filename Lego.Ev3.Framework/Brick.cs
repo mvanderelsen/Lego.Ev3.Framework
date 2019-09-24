@@ -213,8 +213,9 @@ namespace Lego.Ev3.Framework
 
 
                 if (Options.PowerUpSelfTest != null && Options.PowerUpSelfTest.Enabled) await PowerUpSelfTest();
+                else await InitializeDevices();
 
-                if(startEventMonitor) Socket.StartEventMonitor(IOPort.Input.Ports, Buttons);
+                if(startEventMonitor && IsConnected) Socket.StartEventMonitor(IOPort.Input.Ports, Buttons);
 
             }
             catch (Exception e)
@@ -251,15 +252,15 @@ namespace Lego.Ev3.Framework
 
         /// <summary>
         /// Disconnect brick from socket.
-        /// Will call Stop and Reset before closing socket
+        /// Will call Stop before closing socket
         /// </summary>
         public async Task Disconnect()
         {
             if (IsConnected)
             {
                 await Stop();
-                await Reset();
                 await _socket.Disconnect();
+                Logger.LogInformation("Disconnected from brick");
             }
         }
 
@@ -292,6 +293,22 @@ namespace Lego.Ev3.Framework
                 return (T)device;
             }
         }
+
+        private async Task InitializeDevices()
+        {
+            foreach (int key in IOPort.Input.Ports.Keys)
+            {
+                InputPort port = IOPort.Input.Ports[key];
+                if (port.Status == PortStatus.OK) await port.InitializeDevice();
+            }
+
+            foreach (int key in IOPort.Output.Ports.Keys)
+            {
+                OutputPort port = IOPort.Output.Ports[key];
+                if (port.Status == PortStatus.OK) await port.InitializeDevice();
+            }
+        }
+
 
         /// <summary>
         /// Checks if all devices are properly connected to the brick. False on any device/port error forcing brick to disconnect

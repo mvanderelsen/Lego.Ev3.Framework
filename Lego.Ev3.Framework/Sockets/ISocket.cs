@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Lego.Ev3.Framework.Firmware;
+using System;
 using System.Collections.Concurrent;
 using System.Threading;
 using System.Threading.Tasks;
@@ -18,6 +19,8 @@ namespace Lego.Ev3.Framework.Sockets
         CancellationToken CancellationToken { get; }
 
         ConcurrentDictionary<ushort, byte[]> Responses { get; }
+
+        ConcurrentQueue<Command> NoReplyCommands { get; }
 
         ConcurrentQueue<byte[]> Commands { get; }
 

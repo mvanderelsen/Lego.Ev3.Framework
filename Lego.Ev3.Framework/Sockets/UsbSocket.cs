@@ -78,6 +78,14 @@ namespace Lego.Ev3.Framework.Sockets
             {
                 while (!CancellationToken.IsCancellationRequested)
                 {
+                    if (NoReplyCommands.TryDequeue(out Command command))
+                    {
+                        command.PayLoad.CopyTo(_output, 1);
+                        await _stream.WriteAsync(_output, 0, _output.Length);
+                        _stream.Flush();
+                        Responses.TryAdd(command.Id, null);
+                    }
+
                     byte[] payLoad;
 
                     if (Commands.TryDequeue(out payLoad))

@@ -174,9 +174,31 @@ namespace Lego.Ev3.Framework.Firmware
                 case CommandType.DIRECT_COMMAND_NO_REPLY:
                 case CommandType.SYSTEM_COMMAND_NO_REPLY:
                     {
-                        if (isEvent) _socket.Events.Enqueue(command.PayLoad);
-                        else _socket.Commands.Enqueue(command.PayLoad);
-                        return await Task.FromResult(Response.Ok(command));
+                        _socket.NoReplyCommands.Enqueue(command);
+                        return await Task.Run(async () =>
+                        {
+                            int retry = 0;
+                            while (!_socket.CancellationToken.IsCancellationRequested && retry < 20)
+                            {
+
+                                foreach (ushort id in _socket.Responses.Keys)
+                                {
+                                    if (id == command.Id)
+                                    {
+                                        _socket.Responses.TryRemove(id, out _);
+                                        return Response.Ok(command);
+                                    }
+                                }
+                                try
+                                {
+                                    await Task.Delay(10, _socket.CancellationToken);
+                                }
+                                catch (TaskCanceledException) { }
+                                retry++;
+                            }
+                            return Response.Error(command);
+                        });
+
                     }
                 case CommandType.DIRECT_COMMAND_REPLY:
                 case CommandType.SYSTEM_COMMAND_REPLY:
@@ -205,7 +227,11 @@ namespace Lego.Ev3.Framework.Firmware
                                     }
                                 }
 
-                                await Task.Delay(10, _socket.CancellationToken);
+                                try
+                                {
+                                    await Task.Delay(10, _socket.CancellationToken);
+                                }
+                                catch (TaskCanceledException) { }
                                 retry++;
                             }
                             Handles.TryRemove(command.Id, out _);

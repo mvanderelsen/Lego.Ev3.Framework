@@ -67,6 +67,12 @@ namespace Lego.Ev3.Framework.Sockets
             {
                 while (!CancellationToken.IsCancellationRequested)
                 {
+                    if (NoReplyCommands.TryDequeue(out Command command))
+                    {
+                        lock (_serialPort) _serialPort.Write(command.PayLoad, 0, command.PayLoad.Length);
+                        Responses.TryAdd(command.Id, null);
+                    }
+
                     byte[] payLoad;
 
                     if (Commands.TryDequeue(out payLoad))
