@@ -24,11 +24,11 @@ namespace Lego.Ev3.Framework
         }
 
         /// <summary>
-        /// Method allows two motors to sync and expose synchronized methods
+        /// Method allows two motors to synchronize and expose synchronized methods
         /// </summary>
-        /// <param name="motor">The motor where this motor is synced with</param>
-        /// <returns>a set of synced motors</returns>
-        public SynchronizedMotors Sync(MediumMotor motor)
+        /// <param name="motor">The motor where this motor is synchronized with</param>
+        /// <returns>a set of synchronized motors</returns>
+        public SynchronizedMotors Synchronize(MediumMotor motor)
         {
             return new SynchronizedMotors(this, motor);
         }
