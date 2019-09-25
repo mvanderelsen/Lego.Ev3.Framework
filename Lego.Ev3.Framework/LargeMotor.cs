@@ -1,5 +1,4 @@
-﻿using System;
-using Lego.Ev3.Framework.Devices;
+﻿using Lego.Ev3.Framework.Devices;
 
 namespace Lego.Ev3.Framework
 {
@@ -25,13 +24,13 @@ namespace Lego.Ev3.Framework
         }
 
         /// <summary>
-        /// Method allows two motors to sync and expose synchronized methods
+        /// Method allows two motors to synchronize and expose synchronized methods
         /// </summary>
-        /// <param name="motor">The motor where this motor is synced with</param>
-        /// <returns>a set of synced motors</returns>
-        public SyncMotors Sync(LargeMotor motor)
+        /// <param name="motor">The motor where this motor is synchronized with</param>
+        /// <returns>a set of synchronized motors</returns>
+        public SynchronizedMotors Synchronize(LargeMotor motor)
         {
-            return new SyncMotors(this, motor);
+            return new SynchronizedMotors(this, motor);
         }
     }
 }

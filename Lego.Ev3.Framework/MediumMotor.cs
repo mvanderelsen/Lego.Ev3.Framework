@@ -28,9 +28,9 @@ namespace Lego.Ev3.Framework
         /// </summary>
         /// <param name="motor">The motor where this motor is synced with</param>
         /// <returns>a set of synced motors</returns>
-        public SyncMotors Sync(MediumMotor motor)
+        public SynchronizedMotors Sync(MediumMotor motor)
         {
-            return new SyncMotors(this, motor);
+            return new SynchronizedMotors(this, motor);
         }
     }
 }

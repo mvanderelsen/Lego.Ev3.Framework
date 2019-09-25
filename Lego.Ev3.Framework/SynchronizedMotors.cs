@@ -11,14 +11,14 @@ namespace Lego.Ev3.Framework
     /// Enables synchonizing two motors. 
     /// Synchonization should be used when motors should run as synchrone as possible, for example to achieve a model driving straight. 
     /// </summary>
-    public sealed class SyncMotors
+    public sealed class SynchronizedMotors
     {
         private Motor Motor1 { get; set; }
 
         private Motor Motor2 { get; set; }
 
 
-        internal SyncMotors(Motor motor1, Motor motor2)
+        internal SynchronizedMotors(Motor motor1, Motor motor2)
         {
             if (motor1 == null || motor2 == null) throw new InvalidOperationException("Must combine two valid motors. Can not be null.");
             if (motor1.Equals(motor2)) throw new InvalidOperationException("Can not sync motor with it self");

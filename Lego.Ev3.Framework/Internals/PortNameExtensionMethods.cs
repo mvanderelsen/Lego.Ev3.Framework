@@ -4,7 +4,7 @@
     {
         public static int AbsolutePortNumber(this InputPortName port, ChainLayer layer)
         {
-            return ((int)layer * 8) + (int)port;
+            return ((int)layer * 4) + (int)port;
         }
 
         public static int AbsolutePortNumber(this OutputPortName port, ChainLayer layer)
