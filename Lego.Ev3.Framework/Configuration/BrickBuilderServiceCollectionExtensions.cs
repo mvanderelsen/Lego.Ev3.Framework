@@ -8,9 +8,9 @@ namespace Microsoft.Extensions.DependencyInjection
     public static class BrickBuilderServiceCollectionExtensions
     {
         /// <summary>
-        /// Creates a builder.
+        /// Creates a builder
         /// </summary>
-        /// <param name="services">The services.</param>
+        /// <param name="services">The services</param>
         /// <returns></returns>
         public static IServiceCollection AddBrick(this IServiceCollection services)
         {
@@ -22,10 +22,10 @@ namespace Microsoft.Extensions.DependencyInjection
         }
 
         /// <summary>
-        /// Adds Brick.
+        /// Adds Brick
         /// </summary>
-        /// <param name="services">The services.</param>
-        /// <param name="setupAction">The setup action.</param>
+        /// <param name="services">The services</param>
+        /// <param name="setupAction">The setup action</param>
         /// <returns></returns>
         public static IServiceCollection AddBrick(this IServiceCollection services, Action<BrickOptions> setupAction)
         {
@@ -34,10 +34,10 @@ namespace Microsoft.Extensions.DependencyInjection
         }
 
         /// <summary>
-        /// Adds the IdentityServer.
+        /// Adds the Brick
         /// </summary>
-        /// <param name="services">The services.</param>
-        /// <param name="configuration">The configuration.</param>
+        /// <param name="services">The services</param>
+        /// <param name="configuration">The configuration</param>
         /// <returns></returns>
         public static IServiceCollection AddBrick(this IServiceCollection services, IConfiguration configuration)
         {
