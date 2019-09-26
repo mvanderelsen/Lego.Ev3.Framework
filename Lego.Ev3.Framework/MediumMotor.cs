@@ -1,5 +1,6 @@
-﻿using System;
-using Lego.Ev3.Framework.Devices;
+﻿using Lego.Ev3.Framework.Devices;
+using System.Threading.Tasks;
+
 namespace Lego.Ev3.Framework
 {
     /// <summary>

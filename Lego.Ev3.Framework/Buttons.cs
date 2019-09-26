@@ -103,6 +103,7 @@ namespace Lego.Ev3.Framework
             if (Back.OnClickSubscribed)
             {
                 Back.ClickBatchCommand(payLoadBuilder, index);
+                index++;
                 byteLength++;
                 ClickButtonsInCommand.Add(Back);
             }

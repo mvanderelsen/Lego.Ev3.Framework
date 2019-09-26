@@ -12,9 +12,32 @@ namespace Lego.Ev3.Framework.Configuration
         [EditorBrowsable(EditorBrowsableState.Never)]
         public PowerUpSelfTestOptions PowerUpSelfTest { get; set; } = new PowerUpSelfTestOptions();
 
+        [EditorBrowsable(EditorBrowsableState.Never)]
+        public EventMonitorOptions EventMonitor { get; set; } = new EventMonitorOptions();
 
         [EditorBrowsable(EditorBrowsableState.Never)]
         public List<DeviceOptions> Devices { get; set; } = new List<DeviceOptions>();
+
+        #region eventmonitor
+
+        /// <summary>
+        /// Configures the event monitor
+        /// </summary>
+        /// <param name="interval">poll interval in  milliseconds</param>
+        public void ConfigureEventMonitor(int interval = 100)
+        {
+            EventMonitor.Enabled = true;
+            EventMonitor.Interval = interval;
+        }
+
+        /// <summary>
+        /// No events will be monitored. Only use if you will manually poll all events
+        /// </summary>
+        public void DisableEventMonitor()
+        {
+            EventMonitor.Enabled = false;
+        }
+        #endregion
 
         #region powerupselftest
         public void ConfigurePowerUpSelfTest(bool beepOnOK = true, bool beepOnAutoConnect = true, bool beepOnError = true, bool autoConnectDevices = false, bool disconnectOnError = true)

@@ -13,10 +13,10 @@ namespace Lego.Ev3.Framework.Firmware
         /// <summary>
         /// Method called from autopoll to build batch command
         /// </summary>
-        internal static DataType Pressed_BatchCommand(PayLoadBuilder payLoadBuilder, int button, int index)
+        internal static DataType Clicked_BatchCommand(PayLoadBuilder payLoadBuilder, int button, int index)
         {
             payLoadBuilder.Raw((byte)OP.opUI_BUTTON);
-            payLoadBuilder.Raw((byte)UI_BUTTON_SUBCODE.PRESSED);
+            payLoadBuilder.Raw((byte)UI_BUTTON_SUBCODE.GET_BUMBED);
             payLoadBuilder.PAR8((byte)button);
             payLoadBuilder.GlobalIndex(index);
             return DataType.DATA8;
@@ -39,12 +39,12 @@ namespace Lego.Ev3.Framework.Firmware
         /// CMD: PRESSED = 0x09
         /// </remarks>
         /// <returns>true if pressed</returns>
-        internal static async Task<bool> Pressed(Socket socket, int button)
+        internal static async Task<bool> Clicked(Socket socket, int button)
         {
             Command cmd = null;
             using (CommandBuilder cb = new CommandBuilder(CommandType.DIRECT_COMMAND_REPLY, 1, 0))
             {
-                Pressed_BatchCommand(cb, button, 0);
+                Clicked_BatchCommand(cb, button, 0);
                 cmd = cb.ToCommand();
             }
             Response response = await socket.Execute(cmd);
@@ -58,6 +58,18 @@ namespace Lego.Ev3.Framework.Firmware
             return isPressed;
         }
 
+
+        internal static async Task Flush(Socket socket)
+        {
+            Command cmd = null;
+            using (CommandBuilder cb = new CommandBuilder(CommandType.DIRECT_COMMAND_NO_REPLY))
+            {
+                cb.Raw((byte)OP.opUI_BUTTON);
+                cb.Raw((byte)UI_BUTTON_SUBCODE.FLUSH);
+                cmd = cb.ToCommand();
+            }
+            await socket.Execute(cmd);
+        }
 
 
         //        Instruction opUI_BUTTON(CMD, …) LEGO® MINDSTORMS® EV3 Firmware Developer Kit
@@ -118,7 +130,7 @@ namespace Lego.Ev3.Framework.Firmware
         //(Data16) VALUE – Vertical arrows data(-1: Left, +1: Right, 0: Not pressed)
         //Description
         //Enable reading current arrow position within the vertical plane.
- 
+
         //CMD: SET_BACK_BLOCK = 0x0A
         //Argument
         //(Data8) BLOCKED – Set UI back button blocked flag

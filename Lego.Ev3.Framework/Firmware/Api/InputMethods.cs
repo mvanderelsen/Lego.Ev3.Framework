@@ -88,7 +88,7 @@ namespace Lego.Ev3.Framework.Firmware
             {
                 cb.OpCode(OP.opINPUT_DEVICE_LIST);
                 cb.PAR8(maximum);
-                cb.GlobalIndex(0);  
+                cb.GlobalIndex(0);
                 cb.GlobalIndex(1);
                 cmd = cb.ToCommand();
             }
@@ -157,9 +157,9 @@ namespace Lego.Ev3.Framework.Firmware
             if (response.Type == ResponseType.OK)
             {
                 byte[] data = response.PayLoad;
-                return new Format(data[0], (DataType)data[1],data[2],data[3]);
+                return new Format(data[0], (DataType)data[1], data[2], data[3]);
             }
-            return new Format(-1,DataType.NONE,-1,-1);
+            return new Format(-1, DataType.NONE, -1, -1);
         }
 
         /// <summary>
@@ -268,7 +268,7 @@ namespace Lego.Ev3.Framework.Firmware
             if (response.Type == ResponseType.OK)
             {
                 byte[] data = response.PayLoad;
-                return new DeviceTypeMode((DeviceType)data[0],(DeviceMode)data[1]);
+                return new DeviceTypeMode((DeviceType)data[0], (DeviceMode)data[1]);
             }
             return new DeviceTypeMode();
         }
@@ -702,7 +702,7 @@ namespace Lego.Ev3.Framework.Firmware
         /// <summary>
         /// Method called from autopoll to build batch command
         /// </summary>
-        internal static DataType GetReadySIValue_BatchCommand(PayLoadBuilder dataBuilder, ChainLayer layer, int port, int type = 0, int mode =-1, int numberofValues =1, int index = 0)
+        internal static DataType GetReadySIValue_BatchCommand(PayLoadBuilder dataBuilder, ChainLayer layer, int port, int type = 0, int mode = -1, int numberofValues = 1, int index = 0)
         {
             dataBuilder.Raw((byte)OP.opINPUT_DEVICE);
             dataBuilder.Raw((byte)INPUT_DEVICE_SUBCODE.READY_SI);
@@ -884,20 +884,71 @@ namespace Lego.Ev3.Framework.Firmware
         }
 
 
+        /// <summary>
+        /// Method called from autopoll to build batch command
+        /// </summary>
+        internal static DataType GetReadyPct_BatchCommand(PayLoadBuilder dataBuilder, ChainLayer layer, int port, ushort type = 0, int mode = -1, int numberOfValues = 1, int index = 1)
+        {
+            dataBuilder.Raw((byte)OP.opINPUT_DEVICE);
+            dataBuilder.Raw((byte)INPUT_DEVICE_SUBCODE.READY_PCT);
+            dataBuilder.PAR8((byte)layer);
+            dataBuilder.PAR8((byte)port);
+            dataBuilder.PAR8((byte)type);
+            dataBuilder.PAR8((byte)mode);
+            dataBuilder.PAR8((byte)numberOfValues);
+            dataBuilder.GlobalIndex(index);
+            return DataType.DATA32;
+        }
+
+        /// <summary>
+        /// This function enables reading specific device and mode in Pct
+        /// </summary>
+        /// <param name="socket">Socket for executing command to brick</param>
+        /// <param name="port">Port</param>
+        /// <param name="type">Type of the device (0 = Don’t change type)</param>
+        /// <param name="mode"> Device mode [0 - 7] (-1 = Don’t change mode)</param>
+        /// <param name="numberOfValues">Number of values to expect in return</param>
+        /// <returns></returns>
+        /// <remarks>
+        /// Instruction 
+        ///        opINPUT_DEVICE
+        ///         CMD: READY_PCT = 0x1B
+        ///Arguments
+        ///(Data8) LAYER – Specify chain layer number [0-3]
+        ///(Data8) NO – Port number
+        ///(Data8) TYPE – Specify device type (0 = Don’t change type)
+        ///(Data8) MODE – Device mode [0-7] (-1 = Don’t change mode)
+        ///(Data8) VALUES – Number of return values
+        ///Returns (Depending on number of data samples requested in (VALUES))
+        ///(Data8) VALUE1 – First value received from sensor in the specified mode
+        /// </remarks>
+        internal static async Task<int> GetReadyPct(Socket socket, int port, ushort type = 0, int mode = -1, int numberOfValues = 1)
+        {
+            if (port < 0 || port > 31) throw new ArgumentException("Number of port must be between 0 and 31", "port");
+            ChainLayer layer = GetLayer(port);
+
+            Command cmd = null;
+            using (CommandBuilder cb = new CommandBuilder(CommandType.DIRECT_COMMAND_REPLY, 4, 0))
+            {
+                GetReadyPct_BatchCommand(cb, layer, port, type, mode, numberOfValues, 1);
+                cmd = cb.ToCommand();
+            }
+            Response response = await socket.Execute(cmd);
+
+            int value = 0;
+            if (response.Type == ResponseType.OK)
+            {
+                byte[] data = response.PayLoad;
+                if (data.Length > 0)
+                {
+                    value = BitConverter.ToInt32(data, 0);
+                }
+            }
+            return value;
+        }
+
         /*opINPUT_DEVICE
 
-
-         * CMD: READY_PCT = 0x1B
-Arguments
-(Data8) LAYER – Specify chain layer number [0-3]
-(Data8) NO – Port number
-(Data8) TYPE – Specify device type (0 = Don’t change type)
-(Data8) MODE – Device mode [0-7] (-1 = Don’t change mode)
-(Data8) VALUES – Number of return values
-Returns (Depending on number of data samples requested in (VALUES))
-(Data8) VALUE1 – First value received from sensor in the specified mode
-         * 
-         * 
          * 
 
          * 

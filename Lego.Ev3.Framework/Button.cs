@@ -34,7 +34,7 @@ namespace Lego.Ev3.Framework
 
         internal void ClickBatchCommand(PayLoadBuilder payLoadBuilder, int index)
         {
-            UIButtonMethods.Pressed_BatchCommand(payLoadBuilder, (int)Type, index);
+            UIButtonMethods.Clicked_BatchCommand(payLoadBuilder, (int)Type, index);
         }
 
         internal void RaiseClickEvent()

@@ -91,7 +91,9 @@ namespace Lego.Ev3.Framework
         public static ColorSensor LoadColorSensor(string id)
         {
             DeviceOptions device = LoadDevice(id, DeviceType.ColorSensor);
-            return new ColorSensor { Id = id};
+            ColorSensor obj = (device.Mode != null && Enum.IsDefined(typeof(ColorSensorMode), device.Mode)) ? new ColorSensor((ColorSensorMode)Enum.Parse(typeof(ColorSensorMode), device.Mode, true)) : new ColorSensor();
+            obj.Id = id;
+            return obj;
         }
 
         public static GyroscopeSensor LoadGyroscopeSensor(string id)

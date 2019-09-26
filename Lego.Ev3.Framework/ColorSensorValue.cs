@@ -5,30 +5,36 @@ namespace Lego.Ev3.Framework
     /// <summary>
     /// Holds Color Sensor data
     /// </summary>
-    public class ColorSensorValue
+    public sealed class ColorSensorValue : IEquatable<ColorSensorValue>, IComparable<ColorSensorValue>
     {
+        /// <summary>
+        /// Current Color Sensor Mode
+        /// </summary>
+        public ColorSensorMode Mode { get; }
 
         /// <summary>
         /// The color as detected by the sensor (Only in colormode else set to None)
         /// </summary>
-        public ColorSensorColor Color { get; private set; }
+        public ColorSensorColor Color { get; }
 
         /// <summary>
         /// The int value depending on color mode
         /// </summary>
-        public int Value { get; private set; }
+        public int Value { get; }
 
 
-        internal ColorSensorValue(ColorSensorColor color)
+        internal ColorSensorValue(ColorSensorColor color, ColorSensorMode mode)
         {
+            Mode = mode;
             Color = color;
             Value = (int)color;
         }
 
-        internal ColorSensorValue(int color)
+        internal ColorSensorValue(int value, ColorSensorMode mode)
         {
+            Mode = mode;
             Color = ColorSensorColor.None;
-            Value = color;
+            Value = value;
         }
 
 
@@ -37,46 +43,49 @@ namespace Lego.Ev3.Framework
         /// </summary>
         public override string ToString()
         {
-            return string.Format("{0} - {1}", Color, Value);
+            switch (Mode)
+            {
+                case ColorSensorMode.Color: return Color.ToString();
+                default: return Value.ToString();
+            }
         }
 
 
-        /// <summary>
-        /// Determine if two colorvalues are not equal
-        /// </summary>
-        public static bool operator !=(ColorSensorValue color1, ColorSensorValue color2)
-        {
-            return !(color1.Value == color2.Value);
-        }
+        #region operators
+#pragma warning disable 1591
 
-        /// <summary>
-        /// Determine if two colorvalues are equal
-        /// </summary>
-        public static bool operator ==(ColorSensorValue color1, ColorSensorValue color2)
-        {
-            if (Object.Equals(color1, null) && Object.Equals(color2, null)) return true;
-            if (Object.Equals(color1, null) || Object.Equals(color2, null)) return false;
-            return color1.Value == color2.Value;
-        }
-
-
-        /// <summary>
-        /// Equals override
-        /// </summary>
-        /// <param name="obj"></param>
-        /// <returns></returns>
         public override bool Equals(object obj)
         {
-            return base.Equals(obj);
+            return Equals(obj as ColorSensorValue);
         }
 
-        /// <summary>
-        /// GetHashCode override
-        /// </summary>
-        /// <returns></returns>
         public override int GetHashCode()
         {
             return base.GetHashCode();
         }
+
+        public bool Equals(ColorSensorValue other)
+        {
+            if (other == null) return false;
+            return Value == other.Value;
+        }
+
+        public int CompareTo(ColorSensorValue other)
+        {
+            return Value.CompareTo(other.Value);
+        }
+
+        public static bool operator ==(ColorSensorValue obj, ColorSensorValue other)
+        {
+            return Equals(obj, other);
+        }
+
+        public static bool operator !=(ColorSensorValue obj, ColorSensorValue other)
+        {
+            return !Equals(obj, other);
+        }
+
+#pragma warning restore
+        #endregion
     }
 }

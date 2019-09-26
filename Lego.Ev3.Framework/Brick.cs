@@ -165,11 +165,6 @@ namespace Lego.Ev3.Framework
         /// <returns></returns>
         public async Task<bool> Connect()
         {
-            return await Connect(true);
-        }
-
-        internal async Task<bool> Connect(bool startEventMonitor)
-        {
             if (IsConnected) throw new InvalidOperationException("brick is already connected");
 
             switch (Options.Socket.Type)
@@ -215,7 +210,7 @@ namespace Lego.Ev3.Framework
                 if (Options.PowerUpSelfTest != null && Options.PowerUpSelfTest.Enabled) await PowerUpSelfTest();
                 else await InitializeDevices();
 
-                if(startEventMonitor && IsConnected) Socket.StartEventMonitor(IOPort.Input.Ports, Buttons);
+                if(Options.EventMonitor.Enabled && IsConnected) Socket.StartEventMonitor(IOPort.Input.Ports, Buttons, Battery);
 
             }
             catch (Exception e)
@@ -247,6 +242,7 @@ namespace Lego.Ev3.Framework
             if (IsConnected)
             {
                 await IOPort.Reset();
+                await Led.Reset();
             }
         }
 
@@ -259,6 +255,7 @@ namespace Lego.Ev3.Framework
             if (IsConnected)
             {
                 await Stop();
+                await Led.Reset();
                 await _socket.Disconnect();
                 Logger.LogInformation("Disconnected from brick");
             }

@@ -35,10 +35,10 @@ namespace Lego.Ev3.Framework.Firmware
             await _socket.Connect();
         }
 
-        private const int EVENT_TASK_DELAY = 50;
-
-        public void StartEventMonitor(Dictionary<int, InputPort> inputPorts, Buttons buttons)
+        public void StartEventMonitor(Dictionary<int, InputPort> inputPorts, Buttons buttons, Battery battery)
         {
+            int INTERVAL = Brick.Options.EventMonitor.Interval;
+
             Task task = Task.Factory.StartNew(async () =>
             {
                 while (!_socket.CancellationToken.IsCancellationRequested && IsConnected)
@@ -49,6 +49,7 @@ namespace Lego.Ev3.Framework.Firmware
                         ushort index = 0;
 
                         ushort buttonByteLength = 0;
+                        ushort batteryByteLength = 0;
 
                         Dictionary<InputPort, DataType> triggeredPorts = new Dictionary<InputPort, DataType>();
                         using (PayLoadBuilder cb = new PayLoadBuilder())
@@ -71,6 +72,9 @@ namespace Lego.Ev3.Framework.Firmware
 
                             buttonByteLength = buttons.ClickBatchCommand(cb, index);
                             index += buttonByteLength;
+
+                            batteryByteLength = battery.BatchCommand(cb, index);
+                            index += batteryByteLength;
 
                             batch = cb.ToBytes();
                         }
@@ -140,13 +144,25 @@ namespace Lego.Ev3.Framework.Firmware
                             buttons.ClickBatchCommandReturn(buttonData);
                             index += buttonByteLength;
                         }
+
+                        if (batteryByteLength > 0)
+                        {
+                            byte[] batteryData = new byte[batteryByteLength];
+                            Array.Copy(data, index, batteryData, 0, batteryByteLength);
+                            battery.SetValue(batteryData);
+                            index += batteryByteLength;
+                        }
                     }
                     catch (Exception e)
                     {
                         Brick.Logger.LogError(e, e.Message);
                     }
 
-                    await Task.Delay(EVENT_TASK_DELAY, _socket.CancellationToken);
+                    try
+                    {
+                        await Task.Delay(INTERVAL, _socket.CancellationToken);
+                    }
+                    catch (TaskCanceledException) { }
                 }
 
             }, _socket.CancellationToken, TaskCreationOptions.LongRunning, TaskScheduler.Current);

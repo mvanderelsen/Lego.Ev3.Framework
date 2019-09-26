@@ -1,4 +1,5 @@
 ﻿using Lego.Ev3.Framework.Firmware;
+using System.Threading.Tasks;
 
 namespace Lego.Ev3.Framework
 {
@@ -23,13 +24,20 @@ namespace Lego.Ev3.Framework
         /// Change the current led mode.
         /// </summary>
         /// <param name="mode">the mode to change led to</param>
-        public async void ChangeMode(LedMode mode)
+        public async void SetValue(LedMode mode)
         {
-            await UIWriteMethods.Led(Brick.Socket, (int)mode);
             Mode = mode;
+            await UIWriteMethods.Led(Brick.Socket, (int)mode);
 
         }
 
-
+        public async Task Reset()
+        {
+            if (Mode != LedMode.Green)
+            {
+                Mode = LedMode.Green;
+                await UIWriteMethods.Led(Brick.Socket, (int)Mode);
+            }
+        }
     }
 }

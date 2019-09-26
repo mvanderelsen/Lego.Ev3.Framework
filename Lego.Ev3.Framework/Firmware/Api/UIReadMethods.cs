@@ -22,7 +22,7 @@ namespace Lego.Ev3.Framework.Firmware
         /// <param name="payLoadBuilder"></param>
         /// <param name="index"></param>
         /// <returns>Bytelength of the command</returns>
-        internal static int GetBattery_BatchCommand(PayLoadBuilder payLoadBuilder, int index)
+        internal static ushort GetBatteryValue_BatchCommand(PayLoadBuilder payLoadBuilder, int index)
         {
             int startIndex = index;
             payLoadBuilder.Raw((byte)OP.opUI_READ);
@@ -41,33 +41,33 @@ namespace Lego.Ev3.Framework.Firmware
             payLoadBuilder.Raw((byte)UI_READ_SUBCODE.GET_LBATT);
             payLoadBuilder.GlobalIndex(index);// datatype = data8
             index += DataType.DATA8.ByteLength();
-            return index - startIndex;
+            return (ushort)(index - startIndex);
         }
 
-        internal static async Task<BatteryInfo> GetBattery(Socket socket)
+        internal static async Task<BatteryValue> GetBatteryValue(Socket socket)
         {
 
             Command cmd = null;
             using (CommandBuilder cb = new CommandBuilder(CommandType.DIRECT_COMMAND_REPLY, 13, 0))
             {
-                GetBattery_BatchCommand(cb, 0);
+                GetBatteryValue_BatchCommand(cb, 0);
                 cmd = cb.ToCommand();
             }
             Response response = await socket.Execute(cmd);
 
-            BatteryInfo battery = null;
+            BatteryValue battery = null;
 
             if (response.Type == ResponseType.OK)
             {
                 byte[] data = response.PayLoad;
-                battery = BatteryFromReplyData(data, 0);
+                battery = BatteryValue(data, 0);
             }
             return battery;
         }
 
-        internal static BatteryInfo BatteryFromReplyData(byte[] data, int index)
+        internal static BatteryValue BatteryValue(byte[] data, int index)
         {
-            BatteryInfo battery = new BatteryInfo();
+            BatteryValue battery = new BatteryValue(BatteryMode.All);
             battery.Voltage = BitConverter.ToSingle(data, index);
             index += DataType.DATAF.ByteLength();
             battery.Ampere = BitConverter.ToSingle(data, index);
@@ -78,6 +78,10 @@ namespace Lego.Ev3.Framework.Firmware
             return battery;
         }
 
+        internal static int BatteryValueLevel(byte[] data, int index)
+        {
+            return data[index];
+        }
 
         internal static DataType GetBatteryLevel_BatchCommand(PayLoadBuilder payLoadBuilder, int index)
         {

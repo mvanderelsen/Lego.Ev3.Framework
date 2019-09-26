@@ -40,32 +40,30 @@ namespace Lego.Ev3.Framework
         public ColorSensor() : base(DeviceType.ColorSensor)
         {
             Mode = ColorSensorMode.Color;
-            Value = new ColorSensorValue(ColorSensorColor.None);
+            Value = new ColorSensorValue(ColorSensorColor.None, Mode);
         }
-        ///// <summary>
-        ///// constructs a LEGO® MINDSTORMS® EV3 Color Sensor
-        ///// </summary>
-        //public ColorSensor(ColorSensorMode mode)
-        //    : base(DeviceType.ColorSensor)
-        //{
-        //    Mode = mode;
-        //    Value = new ColorSensorValue(ColorSensorColor.None);
-        //}
+
+        /// <summary>
+        /// constructs a LEGO® MINDSTORMS® EV3 Color Sensor
+        /// </summary>
+        public ColorSensor(ColorSensorMode mode)
+            : base(DeviceType.ColorSensor)
+        {
+            Mode = mode;
+            Value = new ColorSensorValue(ColorSensorColor.None, Mode);
+        }
 
         /// <summary>
         /// Init
         /// </summary>
         protected sealed override Task Initialize()
         {
-
-            return Task.FromResult(true);
+            return Task.CompletedTask;
         }
 
 
         internal override DataType BatchCommand(PayLoadBuilder codeBuilder, int index)
         {
-            //Maybe no need to switch mode after first call to this method
-            //Could perhaps use GetRaw instead??
             return InputMethods.GetReadyRaw_BatchCommand(codeBuilder, Layer, PortNumber, 0, (int)Mode, 1, index);
         }
 
@@ -99,12 +97,12 @@ namespace Lego.Ev3.Framework
             {
                 case ColorSensorMode.Color:
                     {
-                        colorSensorValue = new ColorSensorValue(((ColorSensorColor)(int)value));
+                        colorSensorValue = new ColorSensorValue(((ColorSensorColor)(int)value), Mode);
                         break;
                     }
                 default: //TODO test other colormodes!!
                     {
-                        colorSensorValue = new ColorSensorValue((int)value);
+                        colorSensorValue = new ColorSensorValue((int)value, Mode);
                         break;
                     }
             }
