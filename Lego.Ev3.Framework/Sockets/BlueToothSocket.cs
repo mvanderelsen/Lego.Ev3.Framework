@@ -1,5 +1,6 @@
 ﻿using Lego.Ev3.Framework.Firmware;
 using System;
+using System.IO;
 using System.IO.Ports;
 using System.Threading;
 using System.Threading.Tasks;
@@ -9,6 +10,7 @@ namespace Lego.Ev3.Framework.Sockets
     internal class BlueToothSocket : SocketBase, IDisposable, ISocket
     {
         private SerialPort _serialPort;
+        private BinaryReader _reader;
         private CancellationTokenSource _cancellationTokenSource;
         public bool IsConnected => _serialPort != null && _serialPort.IsOpen;
 
@@ -31,8 +33,10 @@ namespace Lego.Ev3.Framework.Sockets
                 CancellationToken = _cancellationTokenSource.Token;
                 _serialPort = new SerialPort(_comPort, 115200);
                 _serialPort.Open();
+                _reader = new BinaryReader(_serialPort.BaseStream);
                 _serialPort.WriteTimeout = 5000;
                 _serialPort.ReadTimeout = 5000;
+                _reader = new BinaryReader(_serialPort.BaseStream);
                 _serialPort.DataReceived += DataReceived;
                 OpenSocket();
             }
@@ -47,17 +51,21 @@ namespace Lego.Ev3.Framework.Sockets
                 _cancellationTokenSource.Dispose();
                 _serialPort.DataReceived -= DataReceived;
                 _serialPort.Close();
-                _serialPort.Dispose();
+                _reader.Dispose();
+                _reader = null;
                 _serialPort = null;
                 Clear();
             }
             return Task.CompletedTask;
         }
 
+
+
+
         private void DataReceived(object sender, SerialDataReceivedEventArgs e)
         {
-            byte[] payLoad = new byte[_serialPort.BytesToRead];
-            _serialPort.Read(payLoad, 0, payLoad.Length);
+            int size = _reader.ReadInt16();
+            byte[] payLoad = _reader.ReadBytes(size);
             Responses.TryAdd(Response.GetId(payLoad), payLoad);
         }
 
