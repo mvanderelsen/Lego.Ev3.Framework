@@ -10,8 +10,8 @@ namespace Lego.Ev3.Framework
     {
 
 
-        internal TextFile(string id, string fileName, string filePath)
-            : base(id, fileName, filePath)
+        internal TextFile(string fileName, string filePath)
+            : base(fileName, filePath)
         {
         }
 

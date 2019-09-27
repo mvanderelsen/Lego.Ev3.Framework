@@ -10,8 +10,8 @@ namespace Lego.Ev3.Framework
     {
 
 
-        internal SoundFile(string id, string fileName, string filePath)
-            :base(id,fileName,filePath)
+        internal SoundFile(string fileName, string filePath)
+            :base(fileName,filePath)
         {
         }
 

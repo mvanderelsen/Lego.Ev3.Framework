@@ -10,7 +10,7 @@ namespace Lego.Ev3.Framework
     /// </summary>
     public class GraphicFile : FileHandle
     {
-        internal GraphicFile(string id, string fileName, string filePath) :base(id,fileName,filePath){}
+        internal GraphicFile(string fileName, string filePath) :base(fileName,filePath){}
 
 
 

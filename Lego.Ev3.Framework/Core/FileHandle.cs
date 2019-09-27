@@ -17,12 +17,6 @@ namespace Lego.Ev3.Framework.Core
         internal bool IsOnBrickFile { get; set; }
 
         /// <summary>
-        /// Gets or sets an unique Id to identify file
-        /// Default set to filename without extension
-        /// </summary>
-        public string Id { get; set; }
-
-        /// <summary>
         /// Name of the sound file
         /// </summary>
         public string FileName { get; private set; }
@@ -36,12 +30,10 @@ namespace Lego.Ev3.Framework.Core
         /// <summary>
         /// Creates a simple slim filehandle
         /// </summary>
-        /// <param name="id">user defined id</param>
         /// <param name="fileName">name of the file as on brick</param>
         /// <param name="filePath">full relative path to file on brick</param>
-        protected FileHandle(string id, string fileName, string filePath)
+        protected FileHandle(string fileName, string filePath)
         {
-            Id = id;
             FileName = fileName;
             FilePath = filePath;
         }
@@ -85,7 +77,7 @@ namespace Lego.Ev3.Framework.Core
             if (string.IsNullOrWhiteSpace(path)) throw new ArgumentNullException(nameof(path));
             path = I.Path.GetDirectoryName(path);
             if (!I.Directory.Exists(path)) I.Directory.CreateDirectory(path);
-            path = $"{path}{fileName}";
+            path = I.Path.Combine(path, fileName);
             using (I.FileStream fileStream = I.File.Create(path))
             {
                 await fileStream.WriteAsync(data, 0, data.Length);

@@ -447,7 +447,7 @@ FOLDERS
                     }
                 }
             }
-            files.Sort(delegate (File obj1, File obj2) { return obj1.Name.CompareTo(obj2.Name); });
+            files.Sort(delegate (File obj1, File obj2) { return obj1.FileName.CompareTo(obj2.FileName); });
             return files.ToArray();
         }
 
@@ -463,7 +463,7 @@ FOLDERS
             File[] files = await GetFiles(path);
             foreach (File file in files)
             {
-                if (file.Name.Equals(fileName, StringComparison.InvariantCultureIgnoreCase)) return file;
+                if (file.FileName.Equals(fileName, StringComparison.InvariantCultureIgnoreCase)) return file;
             }
             return null;
         }
@@ -529,7 +529,7 @@ FOLDERS
             {
                 XmlElement fe = xd.CreateElement("File");
                 fe.SetAttribute("Path", file.Path);
-                fe.SetAttribute("Name", file.Name);
+                fe.SetAttribute("Name", file.FileName);
                 fe.SetAttribute("Size", file.FileSize());
                 fe.SetAttribute("Type", file.Type.ToString());
                 fe.SetAttribute("MD5SUM", file.MD5SUM);

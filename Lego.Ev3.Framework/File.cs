@@ -9,16 +9,11 @@ namespace Lego.Ev3.Framework
     /// </summary>
     public class File
     {
-        /// <summary>
-        /// Gets or sets an unique Id to identify file
-        /// Default set to fileName without extension
-        /// </summary>
-        public string Id { get; }
 
         /// <summary>
         /// Full name of the file including extension
         /// </summary>
-        public string Name { get; }
+        public string FileName { get; }
 
         /// <summary>
         /// Size of the file in bytes
@@ -42,8 +37,7 @@ namespace Lego.Ev3.Framework
 
         internal File(string directoryPath, string fileName, string md5sum, int size)
         {
-            Id = System.IO.Path.GetFileNameWithoutExtension(fileName);
-            Name = fileName;
+            FileName = fileName;
             Path = $"{directoryPath}{fileName}";
             MD5SUM = md5sum;
             Size = size;
@@ -107,7 +101,7 @@ namespace Lego.Ev3.Framework
         public async Task Download(string localFilePath)
         {
             byte[] data = await Download();
-            await Download(localFilePath, Name, data);
+            await Download(localFilePath, FileName, data);
         }
 
 
@@ -133,7 +127,7 @@ namespace Lego.Ev3.Framework
         public static explicit operator SoundFile(File file)
         {
             if (file == null || file.Type != FileType.SoundFile) throw new InvalidCastException("File is not a soundfile or null");
-            return new SoundFile(file.Id,file.Name,file.Path);
+            return new SoundFile(file.FileName,file.Path);
         }
 
         /// <summary>
@@ -144,7 +138,7 @@ namespace Lego.Ev3.Framework
         public static explicit operator GraphicFile(File file)
         {
             if (file == null || file.Type != FileType.GraphicFile) throw new InvalidCastException("File is not a graphicfile or null");
-            return new GraphicFile(file.Id, file.Name, file.Path);
+            return new GraphicFile(file.FileName, file.Path);
         }
 
         /// <summary>
@@ -155,7 +149,7 @@ namespace Lego.Ev3.Framework
         public static explicit operator TextFile(File file)
         {
             if (file == null || file.Type != FileType.TextFile) throw new InvalidCastException("File is not a textfile or null");
-            return new TextFile(file.Id, file.Name, file.Path);
+            return new TextFile(file.FileName, file.Path);
         }
         #endregion
 
