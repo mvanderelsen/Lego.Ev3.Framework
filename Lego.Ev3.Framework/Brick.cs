@@ -213,13 +213,15 @@ namespace Lego.Ev3.Framework
                 if(Options.EventMonitor.Enabled && IsConnected) Socket.StartEventMonitor(IOPort.Input.Ports, Buttons, Battery);
 
             }
-            catch (Exception e)
+            catch (Exception)
             {
-                Logger.LogError(e.Message); //socket failed to connect so don't output stacktrace here
                 if (IsConnected) await _socket.Disconnect();
             }
             if (IsConnected) Logger.LogInformation("Connected to brick");
-            else Logger.LogWarning("Failed to connect to brick");
+            else
+            {
+                Logger.LogError($"Failed to connect to brick on {_socket.ConnectionInfo}");
+            }
             return IsConnected;
         }
 

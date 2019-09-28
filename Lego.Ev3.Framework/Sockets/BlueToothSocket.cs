@@ -9,6 +9,7 @@ namespace Lego.Ev3.Framework.Sockets
 {
     internal class BlueToothSocket : SocketBase, IDisposable, ISocket
     {
+        
         private SerialPort _serialPort;
         private BinaryReader _reader;
         private CancellationTokenSource _cancellationTokenSource;
@@ -51,6 +52,7 @@ namespace Lego.Ev3.Framework.Sockets
                 _cancellationTokenSource.Dispose();
                 _serialPort.DataReceived -= DataReceived;
                 _serialPort.Close();
+                _serialPort.Dispose();
                 _reader.Dispose();
                 _reader = null;
                 _serialPort = null;
@@ -58,9 +60,6 @@ namespace Lego.Ev3.Framework.Sockets
             }
             return Task.CompletedTask;
         }
-
-
-
 
         private void DataReceived(object sender, SerialDataReceivedEventArgs e)
         {
