@@ -135,16 +135,37 @@ FOLDERS
 #define   vmDIR_DEEPT                   127                           //!< Max directory items allocated including "." and ".." 
 * 
 */
+
+        /// <summary>
+        /// Brick root path
+        /// </summary>
         public const string ROOT_PATH = "../";
 
+
+        /// <summary>
+        /// Brick projects path
+        /// </summary>
         public const string PROJECTS_PATH = "../prjs/";
 
+        /// <summary>
+        /// Brick sd card path
+        /// </summary>
         public const string SDCARD_PATH = "../prjs/SD_Card/";
 
+
+        /// <summary>
+        /// Brick usb path
+        /// </summary>
         public const string USBSTICK_PATH = "../prjs/USB_Stick/";
 
+        /// <summary>
+        /// Brick tools path
+        /// </summary>
         public const string TOOLS_PATH = "../tools/";
 
+        /// <summary>
+        /// Bri9ck application path
+        /// </summary>
         public const string APPLICATION_PATH = "../apps/";
 
         private const string DIRECTORY_SEPERATOR = "/";
@@ -153,17 +174,25 @@ FOLDERS
 
 
         //brick will allow more like # and @ todo
+
+        /// <summary>
+        /// Regular brick fileName (without extension) or directoryname expression
+        /// </summary>
         public const string BRICK_NAME_EXPRESSION = "[a-zA-Z0-9 _~]";
+
+        /// <summary>
+        /// Regular brick fileName expression
+        /// </summary>
         public static string BRICK_FILENAME_EXPRESSION = $@"({BRICK_NAME_EXPRESSION})+(\.(\w)+)?";
-        private static string BRICK_DIRECTORY_PATH_EXPRESSION = $@"^\.\./(({BRICK_NAME_EXPRESSION}+)/)*$";
-        private static string BRICK_FILE_PATH_EXPRESSION = $@"^\.\./(({BRICK_NAME_EXPRESSION}+)/)*{BRICK_FILENAME_EXPRESSION}$";
+        private static readonly string BRICK_DIRECTORY_PATH_EXPRESSION = $@"^\.\./(({BRICK_NAME_EXPRESSION}+)/)*$";
+        private static readonly string BRICK_FILE_PATH_EXPRESSION = $@"^\.\./(({BRICK_NAME_EXPRESSION}+)/)*{BRICK_FILENAME_EXPRESSION}$";
 
         #region  validation checks
         private static string GetValidatedDirectoryPath(this string path)
         {
             if (string.IsNullOrEmpty(path)) throw new ArgumentNullException(nameof(path));
             if (!path.EndsWith(DIRECTORY_SEPERATOR)) path = $"{path}{DIRECTORY_SEPERATOR}";
-            if(!Regex.IsMatch(path,BRICK_DIRECTORY_PATH_EXPRESSION)) throw new ArgumentException(nameof(path), "path is not a valid brick directory path");
+            if (!Regex.IsMatch(path, BRICK_DIRECTORY_PATH_EXPRESSION)) throw new ArgumentException(nameof(path), "path is not a valid brick directory path");
             return path;
         }
 
@@ -174,6 +203,11 @@ FOLDERS
             return path;
         }
 
+        /// <summary>
+        /// Gets a validated directory name
+        /// </summary>
+        /// <param name="name"></param>
+        /// <returns></returns>
         public static string GetValidateDirectoryName(string name)
         {
             if (string.IsNullOrEmpty(name)) throw new ArgumentNullException(nameof(name));
@@ -181,6 +215,12 @@ FOLDERS
             return name;
         }
 
+
+        /// <summary>
+        /// Gets a validated file name
+        /// </summary>
+        /// <param name="fileName"></param>
+        /// <returns></returns>
         public static string GetValidateFileName(string fileName)
         {
             if (string.IsNullOrEmpty(fileName)) throw new ArgumentNullException(nameof(fileName));
@@ -285,6 +325,7 @@ FOLDERS
         /// Deletes a file or directory
         /// </summary>
         /// <param name="path">The relative path, must start with ../</param>
+        /// <param name="recursive">if true deletes the directory and all its contents</param>
         /// <returns><c>true</c> if deleted otherwise <c>false</c></returns>
         public static async Task<bool> DeleteDirectory(string path, bool recursive = false)
         {
@@ -312,7 +353,6 @@ FOLDERS
         /// Method creates new directory. An existing directory will not be overriden.
         /// </summary>
         /// <param name="path">The relative path, must start with ../</param>
-        /// <param name="name">The name of the directory</param>
         /// <returns><c>true</c> if exists otherwise <c>false</c></returns>
         public static async Task<bool> CreateDirectory(string path)
         {
@@ -443,7 +483,7 @@ FOLDERS
                         {
                         }
                         string fileName = string.Join(" ", fileInfo, 2, fileInfo.Length - 2);
-                        if(!string.IsNullOrWhiteSpace(fileName)) files.Add(new File(path, fileName, md5sum, byteSize));
+                        if (!string.IsNullOrWhiteSpace(fileName)) files.Add(new File(path, fileName, md5sum, byteSize));
                     }
                 }
             }
@@ -471,10 +511,15 @@ FOLDERS
         #endregion
 
 
+
+        /// <summary>
+        /// Gets the actual brick name
+        /// </summary>
+        /// <returns></returns>
         public static async Task<string> GetBrickName()
         {
             byte[] data = await DownloadFile(BRICK_NAME_PATH);
-            string name =  Encoding.ASCII.GetString(data);
+            string name = Encoding.ASCII.GetString(data);
             return name.TrimEnd('\0', '\n');
         }
 
@@ -490,6 +535,11 @@ FOLDERS
             return FileSystemMethods.IsRobotFile(filePath);
         }
 
+        /// <summary>
+        /// Gets the file type for given brickpath
+        /// </summary>
+        /// <param name="filePath"></param>
+        /// <returns></returns>
         public static FileType GetFileType(string filePath)
         {
             return FileSystemMethods.GetFileType(filePath);

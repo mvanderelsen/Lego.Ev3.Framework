@@ -11,12 +11,6 @@ namespace Lego.Ev3.Framework.Core
     {
 
         /// <summary>
-        /// Gets or sets if file is default on brick through firmware resource so not deletable
-        /// </summary>
-        /// <see cref="Sound.GetOnBrickSoundFiles"/>
-        internal bool IsOnBrickFile { get; set; }
-
-        /// <summary>
         /// Name of the sound file
         /// </summary>
         public string FileName { get; private set; }
@@ -45,8 +39,6 @@ namespace Lego.Ev3.Framework.Core
         /// <exception cref="InvalidOperationException"></exception>
         public async Task Delete()
         {
-            if (IsOnBrickFile) return; // do not allow deletion of firmware resources
-
             SYSTEM_COMMAND_STATUS status = await FileSystemMethods.DeleteFile(Brick.Socket, FilePath);
             if (status != SYSTEM_COMMAND_STATUS.SUCCESS) throw new InvalidOperationException(status.ToString());
         }
@@ -72,6 +64,13 @@ namespace Lego.Ev3.Framework.Core
         }
 
 
+        /// <summary>
+        /// Downloads a file to local machine
+        /// </summary>
+        /// <param name="path"></param>
+        /// <param name="fileName"></param>
+        /// <param name="data"></param>
+        /// <returns></returns>
         protected async Task Download(string path, string fileName, byte[] data)
         {
             if (string.IsNullOrWhiteSpace(path)) throw new ArgumentNullException(nameof(path));

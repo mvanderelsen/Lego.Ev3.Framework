@@ -27,6 +27,9 @@ namespace Lego.Ev3.Framework
         /// </summary>
         public bool MonitorEvents { get; set; }
 
+        /// <summary>
+        /// Sets or gets the Battery Mode
+        /// </summary>
         public BatteryMode Mode { get; set; }
 
         /// <summary>

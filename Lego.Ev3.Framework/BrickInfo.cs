@@ -30,7 +30,10 @@ namespace Lego.Ev3.Framework
 
         internal BrickInfo() { }
 
-
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <returns></returns>
         public override string ToString()
         {
             return $"{OS} {Firmware} {Hardware} Version:{Version}";
@@ -67,40 +70,81 @@ namespace Lego.Ev3.Framework
 
         }
 
+
+        /// <summary>
+        /// Firmware Information
+        /// </summary>
         public class FirmwareInfo
         {
+            /// <summary>
+            /// Gets the version
+            /// </summary>
             public string Version { get; internal set; }
 
+            /// <summary>
+            /// gets the build
+            /// </summary>
             public string Build { get; internal set; }
 
             internal FirmwareInfo() { }
 
+            /// <summary>
+            /// 
+            /// </summary>
+            /// <returns></returns>
             public override string ToString()
             {
                 return $"Firmware Version:{Version} Build:{Build}";
             }
         }
 
+
+        /// <summary>
+        /// Operating System Information
+        /// </summary>
         public class OSInfo
         {
+
+            /// <summary>
+            /// Gets the version
+            /// </summary>
             public string Version { get; internal set; }
 
+
+            /// <summary>
+            /// Gets the build
+            /// </summary>
             public string Build { get; internal set; }
 
             internal OSInfo() { }
 
+            /// <summary>
+            /// 
+            /// </summary>
+            /// <returns></returns>
             public override string ToString()
             {
                 return $"OS Version:{Version} Build:{Build}";
             }
         }
 
+        /// <summary>
+        /// Hardware information
+        /// </summary>
         public class HardwareInfo
         {
+
+            /// <summary>
+            /// Gets the version
+            /// </summary>
             public string Version { get; internal set; }
 
             internal HardwareInfo() { }
 
+            /// <summary>
+            /// 
+            /// </summary>
+            /// <returns></returns>
             public override string ToString()
             {
                 return $"Hardware Version:{Version}";

@@ -8,6 +8,9 @@ namespace Lego.Ev3.Framework
     /// </summary>
     public sealed class BatteryValue : IEquatable<BatteryValue>, IComparable<BatteryValue>
     {
+        /// <summary>
+        /// Current Battery Mode
+        /// </summary>
         public BatteryMode Mode { get; }
 
         /// <summary>
@@ -38,6 +41,10 @@ namespace Lego.Ev3.Framework
         }
 
 
+        /// <summary>
+        /// String override
+        /// </summary>
+        /// <returns></returns>
         public override string ToString()
         {
             switch (Mode)

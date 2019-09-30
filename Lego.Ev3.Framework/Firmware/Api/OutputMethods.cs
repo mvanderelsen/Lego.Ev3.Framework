@@ -114,7 +114,7 @@ namespace Lego.Ev3.Framework.Firmware
         /// </remarks>
         internal static async Task SetPower(Socket socket, ChainLayer layer, OutputPortNames ports, int power)
         {
-            if (power < -100 || power > 100) throw new ArgumentException("Power must be between -100 and 100", "power");
+            if (power < -100 || power > 100) throw new ArgumentException(nameof(power),"[-100,100]");
 
             Command cmd = null;
             using (CommandBuilder cb = new CommandBuilder(CommandType.DIRECT_COMMAND_NO_REPLY))
@@ -147,7 +147,7 @@ namespace Lego.Ev3.Framework.Firmware
         /// </remarks>
         internal static async Task SetSpeed(Socket socket, ChainLayer layer, OutputPortNames ports, int speed)
         {
-            if (speed < -100 || speed > 100) throw new ArgumentException("Speed must be between -100 and 100", "speed");
+            if (speed < -100 || speed > 100) throw new ArgumentException(nameof(speed), "[-100 and 100]");
 
             Command cmd = null;
             using (CommandBuilder cb = new CommandBuilder(CommandType.DIRECT_COMMAND_NO_REPLY))
@@ -344,7 +344,10 @@ namespace Lego.Ev3.Framework.Firmware
         /// </remarks>
         internal static async Task StepPower(Socket socket, ChainLayer layer, OutputPortNames ports, int power, int tachoPulsesRampUp, int tachoPulsesContinuesRun, int tachoPulsesRampDown, Brake brake = Brake.Float)
         {
-            if (power < -100 || power > 100) throw new ArgumentException("Power must be between -100 and 100", "power");
+            if (power < -100 || power > 100) throw new ArgumentOutOfRangeException(nameof(power), "[-100,100]");
+            if (tachoPulsesContinuesRun < 0) throw new ArgumentOutOfRangeException(nameof(tachoPulsesContinuesRun), ">=0");
+            if (tachoPulsesRampUp < 0) throw new ArgumentOutOfRangeException(nameof(tachoPulsesRampUp), ">=0");
+            if (tachoPulsesRampDown < 0) throw new ArgumentOutOfRangeException(nameof(tachoPulsesRampDown), ">=0");
 
             Command cmd = null;
             using (CommandBuilder cb = new CommandBuilder(CommandType.DIRECT_COMMAND_NO_REPLY))
@@ -391,7 +394,10 @@ namespace Lego.Ev3.Framework.Firmware
         /// </remarks>
         internal static async Task TimePower(Socket socket, ChainLayer layer, OutputPortNames ports, int power, int timeRampUp, int timeContinuesRun, int timeRampDown, Brake brake = Brake.Float)
         {
-            if (power < -100 || power > 100) throw new ArgumentException("Power must be between -100 and 100", "power");
+            if (power < -100 || power > 100) throw new ArgumentOutOfRangeException(nameof(power), "[-100,100]");
+            if (timeContinuesRun < 0) throw new ArgumentOutOfRangeException(nameof(timeContinuesRun), ">=0");
+            if (timeRampUp < 0) throw new ArgumentOutOfRangeException(nameof(timeRampUp), ">=0");
+            if (timeRampDown < 0) throw new ArgumentOutOfRangeException(nameof(timeRampDown), ">=0");
 
             Command cmd = null;
             using (CommandBuilder cb = new CommandBuilder(CommandType.DIRECT_COMMAND_NO_REPLY))
@@ -439,7 +445,10 @@ namespace Lego.Ev3.Framework.Firmware
         /// </remarks>
         internal static async Task StepSpeed(Socket socket, ChainLayer layer, OutputPortNames ports, int speed, int tachoPulsesRampUp, int tachoPulsesContinuesRun, int tachoPulsesRampDown, Brake brake = Brake.Float)
         {
-            if (speed < -100 || speed > 100) throw new ArgumentException("Power must be between -100 and 100", "power");
+            if (speed < -100 || speed > 100) throw new ArgumentOutOfRangeException(nameof(speed), "[-100,100]");
+            if (tachoPulsesContinuesRun < 0) throw new ArgumentOutOfRangeException(nameof(tachoPulsesContinuesRun), ">=0");
+            if (tachoPulsesRampUp < 0) throw new ArgumentOutOfRangeException(nameof(tachoPulsesRampUp), ">=0");
+            if (tachoPulsesRampDown < 0) throw new ArgumentOutOfRangeException(nameof(tachoPulsesRampDown), ">=0");
 
             Command cmd = null;
             using (CommandBuilder cb = new CommandBuilder(CommandType.DIRECT_COMMAND_NO_REPLY))
@@ -487,7 +496,10 @@ namespace Lego.Ev3.Framework.Firmware
         /// </remarks>
         internal static async Task TimeSpeed(Socket socket, ChainLayer layer, OutputPortNames ports, int speed, int timeRampUp, int timeContinuesRun, int timeRampDown, Brake brake = Brake.Float)
         {
-            if (speed < -100 || speed > 100) throw new ArgumentException("Power must be between -100 and 100", "power");
+            if (speed < -100 || speed > 100) throw new ArgumentOutOfRangeException(nameof(speed), "[-100,100]");
+            if (timeContinuesRun < 0) throw new ArgumentOutOfRangeException(nameof(timeContinuesRun), ">=0");
+            if (timeRampUp < 0) throw new ArgumentOutOfRangeException(nameof(timeRampUp), ">=0");
+            if (timeRampDown < 0) throw new ArgumentOutOfRangeException(nameof(timeRampDown), ">=0");
 
             Command cmd = null;
             using (CommandBuilder cb = new CommandBuilder(CommandType.DIRECT_COMMAND_NO_REPLY))
@@ -519,7 +531,7 @@ namespace Lego.Ev3.Framework.Firmware
         /// 100 : One motor will run with specified power while the other will be close to zero
         /// 200: One motor will run with specified power forward while the other will run in the opposite direction at the same power level.
         /// </param>
-        /// <param name="tachoPulses">Tacho pulses, 0 = Infinite</param>
+        /// <param name="tachoCounts">Tacho pulses, 0 = Infinite</param>
         /// <param name="brake">Specify break level, [0: Float, 1: Break]</param>
         /// <remarks>
         /// Instruction opOutput_Step_Sync (LAYER, NOS, SPEED, TURN, STEP, BRAKE)
@@ -533,9 +545,11 @@ namespace Lego.Ev3.Framework.Firmware
         /// Dispatch status Unchanged
         /// Description This function enables synchonizing two motors. Synchonization should be used when motors should run as synchrone as possible, for example to archieve a model driving straight. Duration is specified in tacho counts.
         /// </remarks>
-        internal static async Task StepSync(Socket socket, ChainLayer layer, OutputPortNames ports, int speed, int turnRatio, int tachoPulses, Brake brake = Brake.Float)
+        internal static async Task StepSync(Socket socket, ChainLayer layer, OutputPortNames ports, int speed, int turnRatio, int tachoCounts, Brake brake = Brake.Float)
         {
-            if (turnRatio < -200 || turnRatio > 200) throw new ArgumentException("Turn Ratio must be between -200 and 200", "turnRatio");
+            if (tachoCounts < 0) throw new ArgumentOutOfRangeException(nameof(tachoCounts), ">=0");
+            if (speed < -100 || speed > 100) throw new ArgumentOutOfRangeException(nameof(speed), "[-100,100]");
+            if (turnRatio < -200 || turnRatio > 200) throw new ArgumentOutOfRangeException(nameof(turnRatio), "[-200,200]");
 
             Command cmd = null;
             using (CommandBuilder cb = new CommandBuilder(CommandType.DIRECT_COMMAND_NO_REPLY))
@@ -545,7 +559,7 @@ namespace Lego.Ev3.Framework.Firmware
                 cb.SHORT((int)ports);
                 cb.PAR8(speed);
                 cb.PAR16(turnRatio);
-                cb.PAR32(tachoPulses);
+                cb.PAR32(tachoCounts);
                 cb.PAR8((byte)brake);
                 cmd = cb.ToCommand();
             }
@@ -581,8 +595,9 @@ namespace Lego.Ev3.Framework.Firmware
         /// </remarks>
         internal static async Task TimeSync(Socket socket, ChainLayer layer, OutputPortNames ports, int speed, int turnRatio, int time, Brake brake = Brake.Float)
         {
-            if (turnRatio < -200 || turnRatio > 200) throw new ArgumentOutOfRangeException("Turn Ratio must be between -200 and 200", "turnRatio");
-            if (speed < -100 || speed > 100) throw new ArgumentOutOfRangeException("Speed must be between -100 and 100", "speed");
+            if (time < 0) throw new ArgumentOutOfRangeException(nameof(time), ">=0");
+            if (speed < -100 || speed > 100) throw new ArgumentOutOfRangeException(nameof(speed), "[-100,100]");
+            if (turnRatio < -200 || turnRatio > 200) throw new ArgumentOutOfRangeException(nameof(turnRatio), "[-200,200]");
 
             Command cmd = null;
             using (CommandBuilder cb = new CommandBuilder(CommandType.DIRECT_COMMAND_NO_REPLY))

@@ -2,7 +2,7 @@
 {
 
     /// <summary>
-    /// LEGO® MINDSTORMS® EV3 Ultrasonic Sensor device mode <see cref="Devices.DeviceMode"/>
+    /// LEGO® MINDSTORMS® EV3 Ultrasonic Sensor device mode
     /// </summary>
     public enum UltrasonicSensorMode
     {

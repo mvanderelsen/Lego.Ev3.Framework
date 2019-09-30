@@ -2,7 +2,7 @@
 namespace Lego.Ev3.Framework
 {
     /// <summary>
-    /// LEGO® MINDSTORMS® EV3 Infrared Sensor device mode <see cref="Devices.DeviceMode"/>
+    /// LEGO® MINDSTORMS® EV3 Infrared Sensor device mode
     /// 0 = EV3-IR-Proximity
     /// 1 = EV3-IR-Seeker
     /// 2 = EV3-IR-Remote

@@ -1,5 +1,8 @@
 ﻿namespace Lego.Ev3.Framework.Configuration
 {
+    /// <summary>
+    /// EventMonitor Options
+    /// </summary>
     public class EventMonitorOptions : Options
     {
 

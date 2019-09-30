@@ -105,6 +105,13 @@ namespace Lego.Ev3.Framework
         }
 
 
+        /// <summary>
+        /// Downloads the file to local machine
+        /// </summary>
+        /// <param name="localFilePath"></param>
+        /// <param name="fileName"></param>
+        /// <param name="data"></param>
+        /// <returns></returns>
         protected async Task Download(string localFilePath, string fileName, byte[] data)
         {
             if (string.IsNullOrWhiteSpace(localFilePath)) throw new ArgumentNullException(nameof(localFilePath));

@@ -2,7 +2,7 @@
 {
 
     /// <summary>
-    /// LEGO® MINDSTORMS® EV3 Gyroscope Sensor device mode <see cref="Devices.DeviceMode"/>
+    /// LEGO® MINDSTORMS® EV3 Gyroscope Sensor device mode
     /// </summary>
     public enum GyroscopeSensorMode
     {

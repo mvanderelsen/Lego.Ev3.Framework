@@ -3,6 +3,10 @@ using System.ComponentModel;
 
 namespace Lego.Ev3.Framework.Configuration
 {
+
+    /// <summary>
+    /// Hides System.Object members
+    /// </summary>
     public abstract class Options
     {
         #region Hidden System.Object members

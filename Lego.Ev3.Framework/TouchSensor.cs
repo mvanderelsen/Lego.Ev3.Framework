@@ -80,11 +80,7 @@ namespace Lego.Ev3.Framework
             if (hasChanged) 
             {
                 Value = newValue;
-                if (InputChanged != null && MonitorEvents)
-                {
-                    if (Brick.Socket.SynchronizationContext == SynchronizationContext.Current) InputChanged(this, Value);
-                    else Brick.Socket.SynchronizationContext.Post(delegate { InputChanged(this, Value); }, null);
-                }
+                if (MonitorEvents) InputChanged?.Invoke(this, newValue);
             }
             return hasChanged;
         }

@@ -8,27 +8,63 @@ using System.Threading.Tasks;
 
 namespace Lego.Ev3.Framework.Core
 {
+
+    /// <summary>
+    /// Convert from and to Robot File formats
+    /// </summary>
     public static class FileConverter
     {
+        /// <summary>
+        /// Robot Sound File rate
+        /// </summary>
         public const int RSF_RATE = 8000;
 
+        /// <summary>
+        /// Robot Sound File bits
+        /// </summary>
         public const int RSF_BITS = 8;
 
+        /// <summary>
+        /// Robot Sound File channels
+        /// </summary>
         public const int RSF_CHANNELS = 1;
 
+        /// <summary>
+        /// Robot Graphic File width
+        /// </summary>
         public const int RGF_WIDTH = 178;
 
+        /// <summary>
+        /// Robot Graphic File height
+        /// </summary>
         public const int RGF_HEIGHT = 128;
 
-        public const string LINE_BREAK = "\r";
+
+        /// <summary>
+        /// Robot Text File line break
+        /// </summary>
+        public const string RTF_LINE_BREAK = "\r";
 
 
         #region RGF
+
+        /// <summary>
+        /// Converts a rgf byte[] to a bitmap
+        /// </summary>
+        /// <param name="rgfFileData"></param>
+        /// <returns></returns>
         public static Bitmap RGFtoBitmap(byte[] rgfFileData)
         {
             return RGFtoBitmap(rgfFileData, Color.Black);
         }
 
+
+        /// <summary>
+        /// Converts a rgf byte[] to a bitmap
+        /// </summary>
+        /// <param name="rgfFileData"></param>
+        /// <param name="color"></param>
+        /// <returns></returns>
         public static Bitmap RGFtoBitmap(byte[] rgfFileData, Color color)
         {
             Color white = Color.White;
@@ -60,6 +96,12 @@ namespace Lego.Ev3.Framework.Core
             return bitmap;
         }
 
+
+        /// <summary>
+        /// Converts a bitmap to a rgf byte[]
+        /// </summary>
+        /// <param name="bitmap"></param>
+        /// <returns></returns>
         public static byte[] BitmapToRGF(Bitmap bitmap)
         {
             int width = bitmap.Width;
@@ -213,6 +255,12 @@ namespace Lego.Ev3.Framework.Core
 
         #region RSF
 
+
+        /// <summary>
+        /// Converts a rsf byte[] to a wav byte[]
+        /// </summary>
+        /// <param name="data"></param>
+        /// <returns></returns>
         public static async Task<byte[]> RSFtoWAV(byte[] data)
         {
             byte[] wav = null;
@@ -280,18 +328,30 @@ namespace Lego.Ev3.Framework.Core
         #endregion
 
         #region RTF
+
+        /// <summary>
+        /// Converts a rtf byte[] to string
+        /// </summary>
+        /// <param name="data"></param>
+        /// <returns></returns>
         public static string RTFtoText(byte[] data)
         {
             if (data == null) return string.Empty;
             string value = Encoding.ASCII.GetString(data);
-            value = value.Replace(LINE_BREAK, Environment.NewLine);
+            value = value.Replace(RTF_LINE_BREAK, Environment.NewLine);
             return value;
         }
 
+
+        /// <summary>
+        /// Converts a string to a rtf byte[]
+        /// </summary>
+        /// <param name="text"></param>
+        /// <returns></returns>
         public static byte[] TexttoRTF(string text)
         {
-            text = text.Replace(Environment.NewLine, LINE_BREAK);
-            text = text.Replace("\n", LINE_BREAK);
+            text = text.Replace(Environment.NewLine, RTF_LINE_BREAK);
+            text = text.Replace("\n", RTF_LINE_BREAK);
             byte[] bytes = Encoding.ASCII.GetBytes(text);
             return bytes;
         }

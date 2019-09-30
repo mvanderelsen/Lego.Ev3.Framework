@@ -41,7 +41,7 @@ namespace Lego.Ev3.Framework.Firmware
 
             Task task = Task.Factory.StartNew(async () =>
             {
-                while (!_socket.CancellationToken.IsCancellationRequested && IsConnected)
+                while (!_socket.CancellationToken.IsCancellationRequested)
                 {
                     try
                     {
@@ -80,7 +80,15 @@ namespace Lego.Ev3.Framework.Firmware
                         }
 
                         //no need to send batch, it has no content.
-                        if (triggeredPorts.Count == 0 && buttonByteLength == 0) return;
+                        if (triggeredPorts.Count == 0 && buttonByteLength == 0)
+                        {
+                            try
+                            {
+                                await Task.Delay(INTERVAL, _socket.CancellationToken);
+                            }
+                            catch (TaskCanceledException) { }
+                            continue;
+                        }
 
                         Command cmd = null;
                         using (CommandBuilder cb = new CommandBuilder(CommandType.DIRECT_COMMAND_REPLY, index, 0, useEventId:true))
@@ -91,10 +99,26 @@ namespace Lego.Ev3.Framework.Firmware
 
                         Response response = await Brick.Socket.Execute(cmd, true);
 
-                        if (response.Type == ResponseType.ERROR) return;
+                        if (response.Type == ResponseType.ERROR)
+                        {
+                            try
+                            {
+                                await Task.Delay(INTERVAL, _socket.CancellationToken);
+                            }
+                            catch (TaskCanceledException) { }
+                            continue;
+                        }
 
                         byte[] data = response.PayLoad;
-                        if (data.Length != index) return;
+                        if (data.Length != index)
+                        {
+                            try
+                            {
+                                await Task.Delay(INTERVAL, _socket.CancellationToken);
+                            }
+                            catch (TaskCanceledException) { }
+                            continue;
+                        }
 
                         index = 0;
                         foreach (InputPort port in triggeredPorts.Keys)

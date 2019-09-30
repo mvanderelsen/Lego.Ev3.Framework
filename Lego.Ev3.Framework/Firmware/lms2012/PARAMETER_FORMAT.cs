@@ -1,20 +1,8 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Lego.Ev3.Framework.Firmware
 {
 
-
-
-
-    /// <summary>
-    /// Parameter Format
-    /// </summary>
-    /// <remarks>
-    ///<code>
     /** LEGO® MINDSTORMS® EV3 Firmware Developer Kit
     * 
     * Parameter encoding
@@ -63,8 +51,7 @@ namespace Lego.Ev3.Framework.Firmware
     * 
     * 
     */
-    ///</code>
-    /// </remarks>
+
     [Flags]
     internal enum PARAMETER_FORMAT : byte
     {

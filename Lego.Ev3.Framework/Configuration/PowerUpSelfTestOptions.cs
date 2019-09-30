@@ -1,5 +1,8 @@
 ﻿namespace Lego.Ev3.Framework.Configuration
 {
+    /// <summary>
+    /// PowerUpSelfTest Options
+    /// </summary>
     public class PowerUpSelfTestOptions : Options
     {
         /// <summary>

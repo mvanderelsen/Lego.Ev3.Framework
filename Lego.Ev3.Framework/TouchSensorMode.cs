@@ -2,7 +2,7 @@
 namespace Lego.Ev3.Framework
 {
     /// <summary>
-    /// LEGO® MINDSTORMS® EV3 Touch Sensor device mode <see cref="Devices.DeviceMode"/>
+    /// LEGO® MINDSTORMS® EV3 Touch Sensor device mode
     /// </summary>
     public enum TouchSensorMode
     {

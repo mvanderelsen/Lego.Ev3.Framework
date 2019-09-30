@@ -31,6 +31,10 @@ namespace Lego.Ev3.Framework
 
         }
 
+        /// <summary>
+        /// Resets the led back to color green
+        /// </summary>
+        /// <returns></returns>
         public async Task Reset()
         {
             if (Mode != LedMode.Green)

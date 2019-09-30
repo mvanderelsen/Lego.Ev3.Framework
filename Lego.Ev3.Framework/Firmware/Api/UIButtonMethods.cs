@@ -29,7 +29,6 @@ namespace Lego.Ev3.Framework.Firmware
         /// <param name="button">
         /// 0x00 : No button, 0x01 : Up button, 0x02 : Enter button, 0x03 : Down button, 0x04 : Right button, 0x05 : Left button, 0x06 : Back button, 0x07 : Any button
         /// </param>
-        /// <param name="index">index after which to append command</param>
         /// <remarks>
         /// Instruction opUI_BUTTON (CMD, …)
         /// Opcode 0x83

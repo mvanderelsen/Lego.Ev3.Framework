@@ -8,8 +8,15 @@ namespace Lego.Ev3.Framework.Devices
     /// </summary>
     public abstract class Motor : OutputDevice
     {
+
+        /// <summary>
+        /// Initial motor speed at startup
+        /// </summary>
         public const int INITIAL_SPEED = 50;
 
+        /// <summary>
+        /// Gets the current speed
+        /// </summary>
         public int Speed { get; private set; }
 
         /// <summary>
@@ -40,7 +47,7 @@ namespace Lego.Ev3.Framework.Devices
             await base.SetSpeed(INITIAL_SPEED);
         }
 
-        #region Firmware Methods
+        #region firmware methods
 
         /// <summary>
         /// This function enables resetting the tacho count
@@ -77,24 +84,6 @@ namespace Lego.Ev3.Framework.Devices
         {
             Speed = speed;
             await base.SetSpeed(speed);
-        }
-
-        /// <summary>
-        /// This function enables running the motor
-        /// </summary>
-        public async Task Run()
-        {
-            await Start();
-        }
-
-        /// <summary>
-        /// This function enables reverse running the motor
-        /// </summary>
-        public async Task Reverse()
-        {
-            Polarity polarity = (Polarity == Polarity.Backward) ? Polarity.Forward : Polarity.Backward;
-            await SetPolarity(polarity);
-            await Start();
         }
 
         /// <summary>
@@ -147,23 +136,6 @@ namespace Lego.Ev3.Framework.Devices
             await base.TimePower(power, timeContinuesRun, timeRampUp, timeRampDown, brake);
         }
 
-
-        /// <summary>
-        /// This function enables specifying a full power cycle in tacho counts. 
-        /// The system will automatically adjust the power level to the motor to keep the specified output speed. 
-        /// RampDown specifies the power ramp up periode in tacho count, 
-        /// ContinuesRun specifies the constant power period in tacho counts, 
-        /// RampUp specifies the power down period in tacho counts.
-        /// </summary>
-        /// <param name="tachoPulsesRampUp">Tacho pulses during ramp up</param>
-        /// <param name="tachoPulsesContinuesRun">Tacho pulses during continues run</param>
-        /// <param name="tachoPulsesRampDown">Tacho pulses during ramp down</param>
-        /// <param name="brake">Specify break level, [0: Float, 1: Break]</param>
-        public async Task StepSpeed(int tachoPulsesContinuesRun, int tachoPulsesRampUp = 0, int tachoPulsesRampDown = 0, Brake brake = Brake.Float)
-        {
-            await base.StepSpeed(Speed, tachoPulsesContinuesRun, tachoPulsesRampUp, tachoPulsesRampDown, brake);
-        }
-
         /// <summary>
         /// This function enables specifying a full power cycle in tacho counts. 
         /// The system will automatically adjust the power level to the motor to keep the specified output speed. 
@@ -180,23 +152,6 @@ namespace Lego.Ev3.Framework.Devices
         {
             Speed = speed;
             await base.StepSpeed(speed, tachoPulsesContinuesRun, tachoPulsesRampUp, tachoPulsesRampDown, brake);
-        }
-
-
-        /// <summary>
-        /// This function enables specifying a full motor power cycle in time. 
-        /// The system will automatically adjust the power level to the motor to keep the specified output speed. 
-        /// RampUp specifies the power ramp up periode in milliseconds, 
-        /// ContinuesRun specifies the constant speed period in milliseconds, 
-        /// RampDown specifies the power down period in milliseconds.
-        /// </summary>
-        /// <param name="timeRampUp">Time in milliseconds for ramp up</param>
-        /// <param name="timeContinuesRun">Time in milliseconds for continues run</param>
-        /// <param name="timeRampDown">Time in milliseconds for ramp down</param>
-        /// <param name="brake">Specify break level, [0: Float, 1: Break]</param>
-        public async Task TimeSpeed(int timeContinuesRun, int timeRampUp = 0, int timeRampDown = 0, Brake brake = Brake.Float)
-        {
-            await base.TimeSpeed(Speed, timeContinuesRun, timeRampUp, timeRampDown, brake);
         }
 
         /// <summary>
@@ -217,7 +172,6 @@ namespace Lego.Ev3.Framework.Devices
             await base.TimeSpeed(speed, timeContinuesRun, timeRampUp, timeRampDown, brake);
         }
 
-
         /// <summary>
         /// This function enables reading current speed 
         /// </summary>
@@ -236,7 +190,24 @@ namespace Lego.Ev3.Framework.Devices
             return await base.GetTachoCount();
         }
 
+        #region overloads
+        /// <summary>
+        /// This function enables running the motor
+        /// </summary>
+        public async Task Run()
+        {
+            await Start();
+        }
 
+        /// <summary>
+        /// This function enables reverse running the motor
+        /// </summary>
+        public async Task Reverse()
+        {
+            await TimeSpeed(-Speed, 0);
+        }
+
+        #endregion
 
 
         //TODO

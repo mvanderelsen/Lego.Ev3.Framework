@@ -62,7 +62,14 @@ namespace Lego.Ev3.Framework.Sockets
             {
                 while (!CancellationToken.IsCancellationRequested)
                 {
-                    await _stream.ReadAsync(_input, 0, _input.Length, CancellationToken);
+                    try
+                    {
+                        await _stream.ReadAsync(_input, 0, _input.Length, CancellationToken);
+                    }
+                    catch (TaskCanceledException)
+                    {
+                        break;
+                    }
 
                     short size = (short)(_input[1] | _input[2] << 8);
                     if (size > 0)

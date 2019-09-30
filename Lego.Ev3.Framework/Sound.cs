@@ -71,7 +71,6 @@ namespace Lego.Ev3.Framework
         /// </param>
         /// <param name="volume">Specify volume for playback, [0 - 100]</param>
         /// <exception cref="ArgumentOutOfRangeException">volume out of range</exception>
-        /// <see cref="Devices.FileSystem"/>
         public async void Play(SoundFile soundFile, int volume)
         {
             await SoundMethods.Play(Brick.Socket, volume, soundFile.FilePath);
@@ -88,7 +87,6 @@ namespace Lego.Ev3.Framework
         /// <param name="numberOfLoops">Specify number of loops [1-n], 1 will play soundfile once</param>
         /// <param name="timeOut">Time in milliseconds between plays [0-n]</param>
         /// <exception cref="ArgumentOutOfRangeException">volume, numberOfLoops or timeOut out of range</exception>
-        /// <see cref="Devices.FileSystem"/>
         public async void PlayLoop(SoundFile soundFile, int volume, int numberOfLoops, int timeOut)
         {
             if (timeOut < 0) throw new ArgumentException("Time out must >= 0 ms", "timeOut");
@@ -125,7 +123,6 @@ namespace Lego.Ev3.Framework
         /// </param>
         /// <param name="volume">Specify volume for playback, [0 - 100]</param>
         /// <exception cref="ArgumentOutOfRangeException">volume out of range</exception>
-        /// <see cref="Devices.FileSystem"/>
         public async void Repeat(SoundFile soundFile, int volume)
         {
             await SoundMethods.Repeat(Brick.Socket, volume, soundFile.FilePath);

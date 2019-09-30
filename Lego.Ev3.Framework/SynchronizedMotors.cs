@@ -1,6 +1,7 @@
 ﻿using Lego.Ev3.Framework.Devices;
 using Lego.Ev3.Framework.Firmware;
 using System;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace Lego.Ev3.Framework
@@ -14,11 +15,16 @@ namespace Lego.Ev3.Framework
     {
         private int PortNumber { get; set; }
         private ChainLayer Layer { get; set; }
-        private  OutputPortNames PortNames { get; set; }
+        private OutputPortNames PortNames { get; set; }
 
-
+        /// <summary>
+        /// Initial speed at start up
+        /// </summary>
         public const int INITIAL_SPEED = Motor.INITIAL_SPEED;
 
+        /// <summary>
+        /// Gets the current speed
+        /// </summary>
         public int Speed { get; private set; }
 
         /// <summary>
@@ -31,7 +37,7 @@ namespace Lego.Ev3.Framework
         {
             if (motor1 == null || motor2 == null) throw new InvalidOperationException("Must combine two valid motors. Can not be null.");
             if (motor1.Equals(motor2)) throw new InvalidOperationException("Can not sync motor with it self");
-            if (motor1.Type != motor2.Type) throw new InvalidOperationException("Must combine two motors with the same device type");
+            if (motor1.Type != motor2.Type) throw new InvalidOperationException("Must combine two motors of the same device type");
             if (motor1.Layer != motor2.Layer) throw new InvalidOperationException("Must combine two motors on the same layer");
             Layer = motor1.Layer;
             PortNames = motor1.PortNames | motor2.PortNames;
@@ -40,9 +46,8 @@ namespace Lego.Ev3.Framework
             PortNumber = motor1.PortNumber;
         }
 
-        #region Firmware Methods
-
-
+        #region firmware methods
+        //copy from Outputdevice
         /// <summary>
         /// This function enables setting the output percentage power
         /// </summary>
@@ -64,263 +69,11 @@ namespace Lego.Ev3.Framework
         }
 
         /// <summary>
-        /// This function enables to run both motors in turn ratio
-        /// (depending on Polarity)
-        /// for a specified duration specified in tacho counts at default speed.
-        /// </summary>
-        /// <param name="tachoCounts">Tacho counts [1 - n]</param>
-        /// <param name="ratio">The turn ratio</param>
-        public async Task Turn(int tachoCounts, TurnRatio ratio)
-        {
-            await Turn(tachoCounts, Speed, ratio);
-        }
-
-        /// <summary>
-        /// This function enables to run both motors in turn ratio
-        /// (depending on Polarity)
-        /// for a specified duration specified in tacho counts.
-        /// </summary>
-        /// <param name="tachoCounts">Tacho counts [1 - n]</param>
-        /// <param name="speed">Specify output speed [1 – 100 %]</param>
-        /// <param name="ratio">The turn ratio</param>
-        public async Task Turn(int tachoCounts, int speed, TurnRatio ratio)
-        {
-            if (tachoCounts < 1) throw new ArgumentException("Tacho counts must greater than 1", "tachoCounts");
-            if (speed < 1 || speed > 100) throw new ArgumentOutOfRangeException("Speed is out of range 1-100", "speed");
-            Speed = speed;
-            await OutputMethods.StepSync(Brick.Socket, Layer, PortNames, -speed, (int)ratio, tachoCounts);
-        }
-
-        /// <summary>
-        /// This function enables to run both motors in turn ratio : Right (Device A will run. B will run in opposite direction) 
-        /// for a specified duration specified in tacho counts at default speed.
-        /// </summary>
-        /// <param name="tachoCounts">Tacho counts [1 - n]</param>
-        public async Task TurnRight(int tachoCounts)
-        {
-            await TurnRight(tachoCounts, Speed);
-        }
-
-        /// <summary>
-        /// This function enables to run both motors in turn ratio : Right (Device A will run. B will run in opposite direction) 
-        /// for a specified duration specified in tacho counts.
-        /// </summary>
-        /// <param name="tachoCounts">Tacho counts [1 - n]</param>
-        /// <param name="speed">Specify output speed [1 – 100 %]</param>
-        public async Task TurnRight(int tachoCounts, int speed)
-        {
-            if (tachoCounts < 1) throw new ArgumentException("Tacho counts must greater than 1", "tachoCounts");
-            if (speed < 1 || speed > 100) throw new ArgumentOutOfRangeException("Speed is out of range 1-100", "speed");
-            Speed = speed;
-            TurnRatio ratio = (Polarity == Polarity.Backward) ? TurnRatio.Left : TurnRatio.Right;
-            await OutputMethods.StepSync(Brick.Socket, Layer, PortNames, -speed, (int)ratio, tachoCounts);
-        }
-
-        /// <summary>
-        /// This function enables to run both motors in turn ratio : Left (Device B will run. A will run in opposite direction) 
-        /// for a specified duration specified in tacho counts at default speed.
-        /// </summary>
-        /// <param name="tachoCounts">Tacho counts [1 - n]</param>
-        public async Task TurnLeft(int tachoCounts)
-        {
-            await TurnLeft(tachoCounts, Speed);
-        }
-
-        /// <summary>
-        /// This function enables to run both motors in turn ratio : Left (Device B will run. A will run in opposite direction) 
-        /// for a specified duration specified in tacho counts.
-        /// </summary>
-        /// <param name="tachoCounts">Tacho counts [1 - n]</param>
-        /// <param name="speed">Specify output speed [1 – 100 %]</param>
-        public async Task TurnLeft(int tachoCounts, int speed)
-        {
-            if (tachoCounts < 1) throw new ArgumentException("Tacho counts must greater than 1", "tachoCounts");
-            if (speed < 1 || speed > 100) throw new ArgumentOutOfRangeException("Speed is out of range 1-100", "speed");
-            Speed = speed;
-            TurnRatio ratio = (Polarity == Polarity.Backward) ? TurnRatio.Right : TurnRatio.Left;
-            await OutputMethods.StepSync(Brick.Socket, Layer, PortNames, -speed, (int)ratio, tachoCounts);
-        }
-
-        /// <summary>
-        /// This function enables to run both motors for a specified duration specified in tacho counts at default running speed
-        /// </summary>
-        /// <param name="tachoCounts">Tacho counts [1 - n]</param>
-        public async Task ReverseForTachoCounts(int tachoCounts)
-        {
-            await ReverseForTachoCounts(tachoCounts, Speed);
-        }
-
-        /// <summary>
-        /// This function enables to run both motors for a specified duration specified in tacho counts.
-        /// </summary>
-        /// <param name="tachoCounts">Tacho counts [1 - n]</param>
-        /// <param name="speed">Specify output speed [1 – 100 %]</param>
-        public async Task ReverseForTachoCounts(int tachoCounts, int speed)
-        {
-            if (tachoCounts < 1) throw new ArgumentException("Tacho counts must greater than 1", "tachoCounts");
-            if (speed < 1 || speed > 100) throw new ArgumentOutOfRangeException("Speed is out of range 1-100", "speed");
-            Speed = speed;
-            await OutputMethods.StepSync(Brick.Socket, Layer, PortNames, -speed, 0, tachoCounts);
-        }
-
-        /// <summary>
-        /// This function enables to run both motors for a specified duration specified in tacho counts at default running speed
-        /// </summary>
-        /// <param name="tachoCounts">Tacho counts [1 - n]</param>
-        public async Task RunForTachoCounts(int tachoCounts)
-        {
-            await RunForTachoCounts(tachoCounts, Speed);
-        }
-
-        /// <summary>
-        /// This function enables to run both motors for a specified duration specified in tacho counts.
-        /// </summary>
-        /// <param name="tachoCounts">Tacho counts [1 - n]</param>
-        /// <param name="speed">Specify output speed [1 – 100 %]</param>
-        public async Task RunForTachoCounts(int tachoCounts, int speed)
-        {
-            if (tachoCounts < 1) throw new ArgumentException("Tacho counts must greater than 1", "tachoCounts");
-            if (speed < 1 || speed > 100) throw new ArgumentOutOfRangeException("Speed is out of range 1-100", "speed");
-            Speed = speed;
-            await OutputMethods.StepSync(Brick.Socket, Layer, PortNames, speed, 0, tachoCounts);
-        }
-
-        /// <summary>
-        /// This function enables synchonizing two motors. 
-        /// Synchonization should be used when motors should run as synchrone as possible, for example to achieve a model driving straight. 
-        /// Duration is specified in tacho counts.
-        /// </summary>
-        /// <param name="tachoCounts">Tacho pulses, 0 = Infinite</param>
-        /// <param name="turnRatio">Turn ratio, [-200 - 200]
-        /// 0 : Motor will run with same power
-        /// 100 : One motor will run with specified power while the other will be close to zero
-        /// 200: One motor will run with specified power forward while the other will run in the opposite direction at the same power level.
-        /// </param>
-        /// <param name="brake">Specify break level, [0: Float, 1: Break]</param>
-        public async Task StepSync(int tachoCounts, int turnRatio = 0, Brake brake = Brake.Float)
-        {
-            await OutputMethods.StepSync(Brick.Socket, Layer, PortNames, Speed, turnRatio, tachoCounts, brake);
-        }
-
-        /// <summary>
-        /// This function enables synchonizing two motors. 
-        /// Synchonization should be used when motors should run as synchrone as possible, for example to achieve a model driving straight. 
-        /// Duration is specified in tacho counts.
-        /// </summary>
-        /// <param name="tachoCounts">Tacho pulses, 0 = Infinite</param>
-        /// <param name="speed">Speed level, [-100 – 100]</param>
-        /// <param name="turnRatio">Turn ratio, [-200 - 200]
-        /// 0 : Motor will run with same power
-        /// 100 : One motor will run with specified power while the other will be close to zero
-        /// 200: One motor will run with specified power forward while the other will run in the opposite direction at the same power level.
-        /// </param>
-        /// <param name="brake">Specify break level, [0: Float, 1: Break]</param>
-        public async Task StepSync(int tachoCounts, int speed, int turnRatio = 0, Brake brake = Brake.Float)
-        {
-            Speed = speed;
-            await OutputMethods.StepSync(Brick.Socket, Layer, PortNames, speed, turnRatio, tachoCounts, brake);
-        }
-
-        /// <summary>
-        /// This function enables to run both motors for a specified time at default running speed
-        /// </summary>
-        /// <param name="time">Time in milliseconds, [1 - n]</param>
-        public async Task RunForTime(int time)
-        {
-            await RunForTime(time, Speed);
-        }
-
-        /// <summary>
-        /// This function enables to run both motors for a specified time.
-        /// </summary>
-        /// <param name="time">Time in milliseconds, [1 - n]</param>
-        /// <param name="speed">Specify output speed [1 – 100 %]</param>
-        public async Task RunForTime(int time, int speed)
-        {
-            if (time < 1) throw new ArgumentException("Time must greater than 1", "time");
-            if (speed < 1 || speed > 100) throw new ArgumentOutOfRangeException("Speed is out of range 1-100", "speed");
-            Speed = speed;
-            await OutputMethods.TimeSync(Brick.Socket, Layer, PortNames, speed, 0, time);
-        }
-
-        /// <summary>
-        /// This function enables to run both motors reversed for a specified time at default running speed
-        /// </summary>
-        /// <param name="time">Time in milliseconds, [1 - n]</param>
-        public async Task ReverseForTime(int time)
-        {
-            await TimeSync(time, -Speed,0, Brake.Float);
-        }
-
-        /// <summary>
-        /// This function enables to run both motors reversed for a specified time.
-        /// </summary>
-        /// <param name="time">Time in milliseconds, [1 - n]</param>
-        /// <param name="speed">Specify output speed [1 – 100 %]</param>
-        public async Task ReverseForTime(int time, int speed)
-        {
-            await TimeSync(time, -speed, 0, Brake.Float);
-        }
-
-        /// <summary>
-        /// This function enables synchonizing two motors. 
-        /// Synchonization should be used when motors should run as synchrone as possible,
-        /// </summary>
-        /// <param name="time">Time in milliseconds, 0 = Infinite</param>
-        /// <param name="speed">Speed level, [-100 – 100]</param>
-        /// <param name="turnRatio">Turn ratio, [-200 - 200]
-        /// 0 : Motors will run with same power
-        /// 100 : One motor will run with specified power while the other will be close to zero
-        /// 200: One motor will run with specified power forward while the other will run in the opposite direction at the same power level.
-        /// </param>
-        /// <param name="brake">Specify break level, [0: Float, 1: Break]</param>
-        public async Task TimeSync(int time, int turnRatio = 0, Brake brake = Brake.Float)
-        {
-            await TimeSync(time, Speed, turnRatio, brake);
-        }
-
-        /// <summary>
-        /// This function enables synchonizing two motors. 
-        /// Synchonization should be used when motors should run as synchrone as possible,
-        /// </summary>
-        /// <param name="time">Time in milliseconds, 0 = Infinite</param>
-        /// <param name="speed">Speed level, [-100 – 100]</param>
-        /// <param name="turnRatio">Turn ratio, [-200 - 200]
-        /// 0 : Motors will run with same power
-        /// 100 : One motor will run with specified power while the other will be close to zero
-        /// 200: One motor will run with specified power forward while the other will run in the opposite direction at the same power level.
-        /// </param>
-        /// <param name="brake">Specify break level, [0: Float, 1: Break]</param>
-        public async Task TimeSync(int time, int speed, int turnRatio = 0, Brake brake = Brake.Float)
-        {
-            if (time < 1) throw new ArgumentOutOfRangeException("Time must be greater than 1", "time");
-            if (speed < 1 || speed > 100) throw new ArgumentOutOfRangeException("Speed is out of range 1-100", "speed");
-            Speed = speed;
-            await OutputMethods.TimeSync(Brick.Socket, Layer, PortNames, speed, turnRatio, time, brake);
-        }
-
-        /// <summary>
         /// This function sends stop to motors
         /// </summary>
         public async Task Stop(Brake brake = Brake.Float)
         {
             await OutputMethods.Stop(Brick.Socket, Layer, PortNames, brake);
-        }
-
-        /// <summary>
-        /// This function runs the motors in sync indefinitely at default running speed
-        /// </summary>
-        public async Task Run()
-        {
-            await OutputMethods.TimeSync(Brick.Socket, Layer, PortNames, Speed, 0, 0);
-        }
-
-        /// <summary>
-        /// This function runs the motors reversed in sync indefinitely at default running speed
-        /// </summary>
-        public async Task Reverse()
-        {
-            await OutputMethods.TimeSync(Brick.Socket, Layer, PortNames, -Speed, 0, 0);
         }
 
         /// <summary>
@@ -359,30 +112,311 @@ namespace Lego.Ev3.Framework
             return Convert.ToInt32(value);
         }
 
-        ///// <summary>
-        ///// Waits for motors to become ready eg. after run for time
-        ///// If run is indefinite waits for Stop() to be called from eventhandler to complete.
-        ///// Blocks the current thread
-        ///// </summary>
-        ///// <returns></returns>
-        //public async Task RunComplete()
-        //{
-        //    CancellationToken token = Brick.Socket.CancellationToken;
-        //    await Task.Factory.StartNew
-        //        (
-        //         async() =>
-        //         {
-        //             bool isBusy = true;
-        //             while (isBusy)
-        //             {
-        //                 isBusy = await IsBusy();
-        //                 if (!isBusy) break;
-        //                 await Task.Delay(200, token);
-        //             }
-        //         }, token, TaskCreationOptions.LongRunning, TaskScheduler.Current
-        //        );
-        //}
+        /// <summary>
+        /// This function enables specifying a full power cycle in tacho counts. 
+        /// RampUp specifies the power ramp up periode in tacho count, 
+        /// ContinuesRun specifies the constant power period in tacho counts, 
+        /// RampDown specifies the power down period in tacho counts.
+        /// </summary>
+        /// <param name="power">Specify output power [-100 – 100]</param>
+        /// <param name="tachoPulsesContinuesRun">Tacho pulses during continues run</param>
+        /// <param name="tachoPulsesRampUp">Tacho pulses during ramp up</param>
+        /// <param name="tachoPulsesRampDown">Tacho pulses during ramp down</param>
+        /// <param name="brake">Specify break level, [0: Float, 1: Break]</param>
+        public async Task StepPower(int power, int tachoPulsesContinuesRun, int tachoPulsesRampUp = 0, int tachoPulsesRampDown = 0, Brake brake = Brake.Float)
+        {
+            await OutputMethods.StepPower(Brick.Socket, Layer, PortNames, power, tachoPulsesRampUp, tachoPulsesContinuesRun, tachoPulsesRampDown, brake);
+        }
 
+        /// <summary>
+        /// This function enables specifying a full power cycle in time. 
+        /// RampUp specifies the power ramp up periode in milliseconds, 
+        /// ContinuesRun specifies the constant power period in milliseconds, 
+        /// RampDown specifies the power down period in milliseconds.
+        /// </summary>
+        /// <param name="power">Specify output power [-100 – 100]</param>
+        /// <param name="timeRampUp">Time in milliseconds for ramp up</param>
+        /// <param name="timeContinuesRun">Time in milliseconds for continues run</param>
+        /// <param name="timeRampDown">Time in milliseconds for ramp down</param>
+        /// <param name="brake">Specify break level, [0: Float, 1: Break]</param>
+        public async Task TimePower(int power, int timeContinuesRun, int timeRampUp = 0, int timeRampDown = 0, Brake brake = Brake.Float)
+        {
+            await OutputMethods.TimePower(Brick.Socket, Layer, PortNames, power, timeRampUp, timeContinuesRun, timeRampDown, brake);
+        }
+
+        /// <summary>
+        /// This function enables specifying a full power cycle in tacho counts. 
+        /// The system will automatically adjust the power level to the motor to keep the specified output speed. 
+        /// RampDown specifies the power ramp up periode in tacho count, 
+        /// ContinuesRun specifies the constant power period in tacho counts, 
+        /// RampUp specifies the power down period in tacho counts.
+        /// </summary>
+        /// <param name="speed">Specify output speed [-100 – 100]</param>
+        /// <param name="tachoPulsesRampUp">Tacho pulses during ramp up</param>
+        /// <param name="tachoPulsesContinuesRun">Tacho pulses during continues run</param>
+        /// <param name="tachoPulsesRampDown">Tacho pulses during ramp down</param>
+        /// <param name="brake">Specify break level, [0: Float, 1: Break]</param>
+        public async Task StepSpeed(int speed, int tachoPulsesContinuesRun, int tachoPulsesRampUp = 0, int tachoPulsesRampDown = 0, Brake brake = Brake.Float)
+        {
+            Speed = speed;
+            await OutputMethods.StepPower(Brick.Socket, Layer, PortNames, speed, tachoPulsesRampUp, tachoPulsesContinuesRun, tachoPulsesRampDown, brake);
+        }
+
+        /// <summary>
+        /// This function enables specifying a full motor power cycle in time. 
+        /// The system will automatically adjust the power level to the motor to keep the specified output speed. 
+        /// RampUp specifies the power ramp up periode in milliseconds, 
+        /// ContinuesRun specifies the constant speed period in milliseconds, 
+        /// RampDown specifies the power down period in milliseconds.
+        /// </summary>
+        /// <param name="speed">Specify output speed [-100 – 100]</param>
+        /// <param name="timeRampUp">Time in milliseconds for ramp up</param>
+        /// <param name="timeContinuesRun">Time in milliseconds for continues run</param>
+        /// <param name="timeRampDown">Time in milliseconds for ramp down</param>
+        /// <param name="brake">Specify break level, [0: Float, 1: Break]</param>
+        public async Task TimeSpeed(int speed, int timeContinuesRun, int timeRampUp = 0, int timeRampDown = 0, Brake brake = Brake.Float)
+        {
+            Speed = speed;
+            await OutputMethods.TimeSpeed(Brick.Socket, Layer, PortNames, speed, timeRampUp, timeContinuesRun, timeRampDown, brake);
+        }
+        #endregion
+
+        #region firmware methods synchronized motors only
+        /// <summary>
+        /// This function enables synchonizing two motors. 
+        /// Synchonization should be used when motors should run as synchrone as possible, for example to achieve a model driving straight. 
+        /// Duration is specified in tacho counts.
+        /// </summary>
+        /// <param name="tachoCounts">Tacho pulses, 0 = Infinite</param>
+        /// <param name="speed">Speed level, [-100 – 100]</param>
+        /// <param name="turnRatio">Turn ratio, [-200 - 200]
+        /// 0 : Motor will run with same power
+        /// 100 : One motor will run with specified power while the other will be close to zero
+        /// 200: One motor will run with specified power forward while the other will run in the opposite direction at the same power level.
+        /// </param>
+        /// <param name="brake">Specify break level, [0: Float, 1: Break]</param>
+        public async Task StepSync(int tachoCounts, int speed, int turnRatio = 0, Brake brake = Brake.Float)
+        {
+            Speed = speed;
+            await OutputMethods.StepSync(Brick.Socket, Layer, PortNames, speed, turnRatio, tachoCounts, brake);
+        }
+
+        /// <summary>
+        /// This function enables synchonizing two motors. 
+        /// Synchonization should be used when motors should run as synchrone as possible, for example to achieve a model driving straight. 
+        /// Duration is specified in tacho counts.
+        /// Method awaits for tacho counts and method to complete.
+        /// </summary>
+        /// <param name="tachoCounts">Tacho pulses, 0 = Infinite</param>
+        /// <param name="speed">Speed level, [-100 – 100]</param>
+        /// <param name="turnRatio">Turn ratio, [-200 - 200]
+        /// 0 : Motor will run with same power
+        /// 100 : One motor will run with specified power while the other will be close to zero
+        /// 200: One motor will run with specified power forward while the other will run in the opposite direction at the same power level.
+        /// </param>
+        /// <param name="brake">Specify break level, [0: Float, 1: Break]</param>
+        /// <param name="cancellationToken"></param>
+        public async Task StepSyncComplete(int tachoCounts, int speed, int turnRatio = 0, Brake brake = Brake.Float, CancellationToken cancellationToken = default)
+        {
+            await OutputMethods.StepSync(Brick.Socket, Layer, PortNames, speed, turnRatio, tachoCounts, brake);
+
+            if (tachoCounts > 0) // can not wait for indefinite to complete
+            {
+
+                int startTachoCount = await GetTachoCount();
+                DateTime start = DateTime.Now;
+
+                await Task.Factory.StartNew(async () =>
+                {
+                    if (await IsBusy())
+                    {
+                        int currentTachoCount = await GetTachoCount();
+                        double elapsedTime = (DateTime.Now - start).TotalMilliseconds;
+                        int elapsedTachoCount = (speed >= 0) ? currentTachoCount - startTachoCount : startTachoCount - currentTachoCount;
+                        if (elapsedTachoCount < tachoCounts)
+                        {
+                            double tachoCountPerMillisecond = elapsedTachoCount / elapsedTime;
+                            int delay = (int)Math.Ceiling(tachoCounts * tachoCountPerMillisecond);
+                            if (delay > 0)
+                            {
+                                try
+                                {
+                                    await Task.Delay(delay, cancellationToken);
+                                }
+                                catch (TaskCanceledException) { }
+                            }
+                        }
+                    }
+
+                }, cancellationToken, TaskCreationOptions.LongRunning, TaskScheduler.Current);
+            }
+
+        }
+
+        /// <summary>
+        /// This function enables synchonizing two motors. 
+        /// Synchonization should be used when motors should run as synchrone as possible,
+        /// </summary>
+        /// <param name="time">Time in milliseconds, 0 = Infinite</param>
+        /// <param name="speed">Speed level, [-100 – 100]</param>
+        /// <param name="turnRatio">Turn ratio, [-200 - 200]
+        /// 0 : Motors will run with same power
+        /// 100 : One motor will run with specified power while the other will be close to zero
+        /// 200: One motor will run with specified power forward while the other will run in the opposite direction at the same power level.
+        /// </param>
+        /// <param name="brake">Specify break level, [0: Float, 1: Break]</param>
+        public async Task TimeSync(int time, int speed, int turnRatio = 0, Brake brake = Brake.Float)
+        {
+            Speed = speed;
+            await OutputMethods.TimeSync(Brick.Socket, Layer, PortNames, speed, turnRatio, time, brake);
+        }
+
+        /// <summary>
+        /// This function enables synchonizing two motors. 
+        /// Synchonization should be used when motors should run as synchrone as possible,
+        /// Method awaits for time to elapse and method to complete.
+        /// </summary>
+        /// <param name="time">Time in milliseconds, 0 = Infinite</param>
+        /// <param name="speed">Speed level, [-100 – 100]</param>
+        /// <param name="turnRatio">Turn ratio, [-200 - 200]
+        /// 0 : Motors will run with same power
+        /// 100 : One motor will run with specified power while the other will be close to zero
+        /// 200: One motor will run with specified power forward while the other will run in the opposite direction at the same power level.
+        /// </param>
+        /// <param name="brake">Specify break level, [0: Float, 1: Break]</param>
+        /// <param name="cancellationToken"></param>
+        public async Task TimeSyncComplete(int time, int speed, int turnRatio = 0, Brake brake = Brake.Float, CancellationToken cancellationToken = default)
+        {
+            DateTime start = DateTime.Now;
+            await TimeSync(time, speed, turnRatio, brake); // could be busy on brick so substract milliseconds from delay
+            if (time > 0) // can not wait for indefinite to complete
+            {
+                int offset = (int)Math.Floor((DateTime.Now - start).TotalMilliseconds);
+                int delay = time - offset;
+                if (delay > 0)
+                {
+
+                    try
+                    {
+                        await Task.Delay(delay, cancellationToken);
+
+                    }
+                    catch (TaskCanceledException) { }
+
+                }
+            }
+        }
+        #endregion
+
+        #region overloads
+
+        /// <summary>
+        /// This function runs the motors in sync indefinitely at current running speed
+        /// </summary>
+        public async Task Run()
+        {
+            await TimeSync(0, Speed);
+        }
+
+        /// <summary>
+        /// This function enables to run both motors for a specified time at current running speed
+        /// </summary>
+        public async Task Run(TimeSpan time)
+        {
+            await TimeSync((int)time.TotalMilliseconds, Speed);
+        }
+
+        /// <summary>
+        /// This function enables to run both motors for a specified tacho count at current running speed
+        /// </summary>
+        public async Task Run(int tachoCount)
+        {
+            await StepSync(tachoCount, Speed);
+        }
+
+        /// <summary>
+        /// This function enables to run both motors for a specified time at current running speed and waits for operation to complete
+        /// </summary>
+        public async Task RunComplete(TimeSpan time, CancellationToken cancellationToken = default)
+        {
+            await TimeSyncComplete((int)time.TotalMilliseconds, Speed, cancellationToken: cancellationToken);
+        }
+
+        /// <summary>
+        /// This function enables to run both motors for a specified tacho count at current running speed and waits for operation to complete
+        /// </summary>
+        public async Task RunComplete(int tachoCount)
+        {
+            await StepSyncComplete(tachoCount, Speed);
+        }
+
+
+        /// <summary>
+        /// This function runs the motors reversed in sync indefinitely at current running speed
+        /// </summary>
+        public async Task Reverse()
+        {
+            await TimeSync(0, -Speed);
+        }
+
+        /// <summary>
+        /// This function runs the motors reversed in sync indefinitely at current running speed
+        /// </summary>
+        public async Task Reverse(TimeSpan time)
+        {
+            await TimeSync((int)time.TotalMilliseconds, -Speed);
+        }
+
+        /// <summary>
+        /// This function enables to run both motors reversed for a specified tacho count at current running speed
+        /// </summary>
+        public async Task Reverse(int tachoCount)
+        {
+            await StepSync(tachoCount, -Speed);
+        }
+
+        /// <summary>
+        /// This function runs the motors reversed in sync for specified time at current running speed and waits for operation to complete
+        /// </summary>
+        public async Task ReverseComplete(TimeSpan time, CancellationToken cancellationToken = default)
+        {
+            await TimeSyncComplete((int)time.TotalMilliseconds, -Speed, cancellationToken: cancellationToken);
+        }
+
+
+        /// <summary>
+        /// This function runs the motors reversed for a specified tacho count at current running speed and waits for operation to complete
+        /// </summary>
+        public async Task ReverseComplete(int tachoCount, CancellationToken cancellationToken = default)
+        {
+            await StepSyncComplete(tachoCount, -Speed, cancellationToken: cancellationToken);
+        }
+
+
+        /// <summary>
+        /// This function enables to run both motors in turn ratio
+        /// (depending on Polarity)
+        /// for a specified duration specified in tacho counts at current speed.
+        /// </summary>
+        /// <param name="tachoCounts">Tacho counts [1 - n]</param>
+        /// <param name="ratio">The turn ratio</param>
+        public async Task Turn(int tachoCounts, TurnRatio ratio)
+        {
+            await StepSync(tachoCounts, Speed, (int)ratio);
+        }
+
+        /// <summary>
+        /// This function enables to run both motors in turn ratio
+        /// (depending on Polarity)
+        /// for a specified duration specified in tacho counts at current speed and waits for operation to complete
+        /// </summary>
+        /// <param name="tachoCounts">Tacho counts [1 - n]</param>
+        /// <param name="ratio">The turn ratio</param>
+        /// <param name="cancellationToken"></param>
+        public async Task TurnComplete(int tachoCounts, TurnRatio ratio, CancellationToken cancellationToken = default)
+        {
+            await StepSyncComplete(tachoCounts, Speed, (int)ratio, cancellationToken: cancellationToken);
+        }
 
         #endregion
     }

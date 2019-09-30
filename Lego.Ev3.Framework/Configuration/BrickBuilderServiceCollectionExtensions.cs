@@ -5,6 +5,9 @@ using Microsoft.Extensions.Options;
 using System;
 namespace Microsoft.Extensions.DependencyInjection
 {
+    /// <summary>
+    /// Extension Methods
+    /// </summary>
     public static class BrickBuilderServiceCollectionExtensions
     {
         /// <summary>

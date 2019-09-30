@@ -82,6 +82,12 @@ namespace Lego.Ev3.Framework.Core
         }
 
 
+
+        /// <summary>
+        /// checks if name is a reserved directory name
+        /// </summary>
+        /// <param name="name"></param>
+        /// <returns></returns>
         public static bool IsReservedDirectoryName(string name)
         {
             switch (name.ToLowerInvariant())
