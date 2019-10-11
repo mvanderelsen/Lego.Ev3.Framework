@@ -51,7 +51,7 @@ namespace Lego.Ev3.Framework.Firmware
         /// Arguments (Data8) LAYER – Specify chain layer number [0 - 3]
         /// (Data8) NOS – Output bit field [0x00 – 0x0F]
         /// Dispatch status Unchanged
-        /// Description This function enables restting the tacho count for the individual output ports
+        /// Description This function enables resetting the tacho count for the individual output ports
         /// </remarks>
         internal static async Task Reset(Socket socket, ChainLayer layer, OutputPortNames ports)
         {
@@ -628,10 +628,10 @@ namespace Lego.Ev3.Framework.Firmware
         /// Dispatch status Unchanged
         /// Description This function enables the program to clear the tacho count used as sensor input.
         /// </remarks>
-        internal static async Task ClearCount(Socket socket, ChainLayer layer, OutputPortNames ports)
+        internal static async Task ResetTachoCount(Socket socket, ChainLayer layer, OutputPortNames ports)
         {
             Command cmd = null;
-            using (CommandBuilder cb = new CommandBuilder(CommandType.DIRECT_COMMAND_NO_REPLY))
+            using (CommandBuilder cb = new CommandBuilder(CommandType.DIRECT_COMMAND_REPLY))
             {
                 cb.OpCode(OP.opOUTPUT_CLR_COUNT);
                 cb.SHORT((int)layer);
@@ -642,33 +642,48 @@ namespace Lego.Ev3.Framework.Firmware
         }
 
 
-        ///// <summary>
-        ///// This function enables the program to read the tacho count as sensor input.
-        ///// </summary>
-        ///// <param name="socket">Socket for executing command to brick</param>
-        ///// <param name="layer">Specify chain layer number [0 - 3]</param>
-        ///// <param name="ports">Output bit field [0x00 – 0x0F]</param>
-        ///// <remarks>
-        ///// Instruction opOutput_Get_Count (LAYER, NOS, *TACHO)
-        ///// Opcode 0xB3
-        ///// Arguments (Data8) LAYER – Specify chain layer number [0 - 3]
-        ///// (Data8) NOS – Output bit field [0x00 – 0x0F]
-        ///// (Data32) *TACHO – Tacho count as sensor value
-        ///// Dispatch status Unchanged
-        ///// Description This function enables the program to read the tacho count as sensor input.
-        ///// </remarks>
-        //internal static async Task GetCount(Socket socket, ChainLayer layer, OutputPortNames ports)
-        //{
-        //    Command cmd = null;
-        //    using (CommandBuilder cb = new CommandBuilder(DIRECT_COMMAND_TYPE.DIRECT_COMMAND_NO_REPLY))
-        //    {
-        //        cb.OpCode(OpCode.opOutput_Get_Count);
-        //        cb.Argument((byte)layer);
-        //        cb.Argument((byte)ports);
-        //        cmd = cb.ToCommand();
-        //    }
-        //    await socket.Execute(cmd);
-        //}
+        /// <summary>
+        /// This function enables the program to read the tacho count as sensor input.
+        /// </summary>
+        /// <param name="socket">Socket for executing command to brick</param>
+        /// <param name="layer">Specify chain layer number [0 - 3]</param>
+        /// <param name="ports">Output bit field [0x00 – 0x0F]</param>
+        /// <remarks>
+        /// Instruction opOutput_Get_Count (LAYER, NOS, *TACHO)
+        /// Opcode 0xB3
+        /// Arguments (Data8) LAYER – Specify chain layer number [0 - 3]
+        /// (Data8) NOS – Output bit field [0x00 – 0x0F]
+        /// (Data32) *TACHO – Tacho count as sensor value
+        /// Dispatch status Unchanged
+        /// Description This function enables the program to read the tacho count as sensor input.
+        /// </remarks>
+        internal static async Task<int> GetTachoCount(Socket socket, ChainLayer layer, OutputPortName port)
+        {
+            OP opCode = OP.opOUTPUT_GET_COUNT;
+            int value = -1;
+            Command cmd = null;
+            using (CommandBuilder cb = new CommandBuilder(CommandType.DIRECT_COMMAND_REPLY, 4, 0))
+            {
+                cb.OpCode(opCode);
+                cb.PAR8((byte)layer);
+                cb.PAR8((byte)port);
+                cb.VARIABLE_PAR32(0, PARAMETER_VARIABLE_SCOPE.GLOBAL);
+                cmd = cb.ToCommand();
+            }
+
+            Response response = await socket.Execute(cmd);
+
+            if (response.Type == ResponseType.OK)
+            {
+                byte[] data = response.PayLoad;
+                if (data.Length > 0)
+                {
+                    value = BitConverter.ToInt32(data, 0);
+                }
+            }
+            return value;
+        }
+
 
 
         /// <summary>

@@ -17,6 +17,9 @@ namespace Lego.Ev3.Framework
         private ChainLayer Layer { get; set; }
         private OutputPortNames PortNames { get; set; }
 
+        private OutputPortName PortName { get; set; }
+
+
         /// <summary>
         /// Initial speed at start up
         /// </summary>
@@ -44,6 +47,7 @@ namespace Lego.Ev3.Framework
             Speed = INITIAL_SPEED;
             Polarity = motor1.Polarity;
             PortNumber = motor1.PortNumber;
+            PortName = motor1.PortName;
         }
 
         #region firmware methods
@@ -92,6 +96,11 @@ namespace Lego.Ev3.Framework
             await OutputMethods.Reset(Brick.Socket, Layer, PortNames);
         }
 
+        public async Task ResetTachoCount() 
+        {
+            await OutputMethods.ResetTachoCount(Brick.Socket, Layer, PortNames);
+        }
+
         /// <summary>
         /// This function enables reading current speed of Motor 1
         /// </summary>
@@ -99,6 +108,7 @@ namespace Lego.Ev3.Framework
         public async Task<int> GetSpeed()
         {
             float value = await InputMethods.GetReadySIValue(Brick.Socket, PortNumber, 0, 2);
+            //return (int) Math.Floor(value);
             return Convert.ToInt32(value);
         }
 
@@ -108,8 +118,7 @@ namespace Lego.Ev3.Framework
         /// <returns>tacho count</returns>
         public async Task<int> GetTachoCount()
         {
-            float value = await InputMethods.GetReadySIValue(Brick.Socket, PortNumber, 0, 0);
-            return Convert.ToInt32(value);
+            return await OutputMethods.GetTachoCount(Brick.Socket, Layer, PortName);
         }
 
         /// <summary>
@@ -216,41 +225,43 @@ namespace Lego.Ev3.Framework
         /// </param>
         /// <param name="brake">Specify break level, [0: Float, 1: Break]</param>
         /// <param name="cancellationToken"></param>
-        public async Task StepSyncComplete(int tachoCounts, int speed, int turnRatio = 0, Brake brake = Brake.Float, CancellationToken cancellationToken = default)
+        public async Task StepSyncComplete(int tachoCounts, int speed, int turnRatio = 0, Brake brake = Brake.Break, CancellationToken cancellationToken = default)
         {
+            int initialTachoCount = await GetTachoCount();
+
             await OutputMethods.StepSync(Brick.Socket, Layer, PortNames, speed, turnRatio, tachoCounts, brake);
 
-            if (tachoCounts > 0) // can not wait for indefinite to complete
+            if (tachoCounts > 0 && await IsBusy()) // can not wait for indefinite to complete
             {
 
-                int startTachoCount = await GetTachoCount();
+                int tachoCount = 0;
+
                 DateTime start = DateTime.Now;
 
-                await Task.Factory.StartNew(async () =>
+                while (tachoCount < tachoCounts)
                 {
-                    if (await IsBusy())
+                    int currentTachoCount = await GetTachoCount();
+
+                    tachoCount = Math.Abs(currentTachoCount - initialTachoCount);
+
+                    int todoTachoCount = tachoCounts - tachoCount;
+
+                    if (todoTachoCount > 0)
                     {
-                        int currentTachoCount = await GetTachoCount();
                         double elapsedTime = (DateTime.Now - start).TotalMilliseconds;
-                        int elapsedTachoCount = (speed >= 0) ? currentTachoCount - startTachoCount : startTachoCount - currentTachoCount;
-                        if (elapsedTachoCount < tachoCounts)
+                        double tachoCountPerMillisecond = tachoCount / elapsedTime;
+                        int delay = (int)Math.Ceiling(todoTachoCount * tachoCountPerMillisecond);
+                        if (delay > 0)
                         {
-                            double tachoCountPerMillisecond = elapsedTachoCount / elapsedTime;
-                            int delay = (int)Math.Ceiling(tachoCounts * tachoCountPerMillisecond);
-                            if (delay > 0)
+                            try
                             {
-                                try
-                                {
-                                    await Task.Delay(delay, cancellationToken);
-                                }
-                                catch (TaskCanceledException) { }
+                                await Task.Delay(delay, cancellationToken);
                             }
+                            catch (TaskCanceledException) { }
                         }
                     }
-
-                }, cancellationToken, TaskCreationOptions.LongRunning, TaskScheduler.Current);
+                }
             }
-
         }
 
         /// <summary>

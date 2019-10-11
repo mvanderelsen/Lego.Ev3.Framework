@@ -426,7 +426,7 @@ namespace Lego.Ev3.Framework.Firmware
         /// Returns
         /// (Data32) Value – 32 bit raw value on the given sensor port
         /// </remarks>
-        internal static async Task<Int32> GetRawValue(Socket socket, int port)
+        internal static async Task<int> GetRawValue(Socket socket, int port)
         {
             if (port < 0 || port > 31) throw new ArgumentException("Number of port must be between 0 and 31", "port");
             ChainLayer layer = GetLayer(port);
@@ -600,7 +600,7 @@ namespace Lego.Ev3.Framework.Firmware
             if (response.Type == ResponseType.OK)
             {
                 byte[] data = response.PayLoad;
-                if (data.Length > 0)
+                if (data.Length > 1)
                 {
                     value = BitConverter.ToSingle(data, 0);
                 }
@@ -687,7 +687,7 @@ namespace Lego.Ev3.Framework.Firmware
             if (response.Type == ResponseType.OK)
             {
                 byte[] data = response.PayLoad;
-                if (data.Length > 0)
+                if (data.Length > 1)
                 {
                     value = BitConverter.ToSingle(data, 0);
                 }
@@ -837,7 +837,7 @@ namespace Lego.Ev3.Framework.Firmware
         }
 
         /// <summary>
-        /// This function enables reading specific device and mode in SI units
+        /// This function enables reading specific device and mode
         /// </summary>
         /// <param name="socket">Socket for executing command to brick</param>
         /// <param name="port">Port</param>

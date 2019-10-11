@@ -53,6 +53,7 @@ namespace Lego.Ev3.Framework.Firmware
      */
     internal class PayLoadBuilder : IDisposable
     {
+        private const byte TERMINATOR = 0x1f;
         private readonly BinaryWriter _binaryWriter;
         private readonly MemoryStream _memoryStream;
 
@@ -109,9 +110,9 @@ namespace Lego.Ev3.Framework.Firmware
             if (value < -31 || value > 31) throw new ArgumentOutOfRangeException(nameof(value), "a short value must be between -31 and 31");
             if (value < 0)
             {
-                _binaryWriter.Write((byte)((byte)PAR.NEG | (byte)(value & ((byte)0x1f))));
+                _binaryWriter.Write((byte)((byte)PAR.NEG | (byte)(value & TERMINATOR)));
             }
-            else _binaryWriter.Write((byte)((byte)PAR.POS | (byte)(value & ((byte)0x1f))));
+            else _binaryWriter.Write((byte)((byte)PAR.POS | (byte)(value & TERMINATOR)));
         }
 
         /// <summary>
@@ -168,7 +169,7 @@ namespace Lego.Ev3.Framework.Firmware
         /// 32 bit value
         /// </summary>
         /// <param name="value"></param>
-        public void PAR32(Int32 value)
+        public void PAR32(int value)
         {
             _binaryWriter.Write((byte)PAR.PAR32);
             _binaryWriter.Write(value);
@@ -200,6 +201,27 @@ namespace Lego.Ev3.Framework.Firmware
             if (index > 1024) throw new ArgumentException("Index cannot be greater than 1024", nameof(index));
             _binaryWriter.Write((byte)0xE1);
             _binaryWriter.Write((byte)index);
+        }
+
+        public void VARIABLE_SHORT(byte value, PARAMETER_VARIABLE_SCOPE scope)
+        {
+            byte b = (byte)((byte)PARAMETER_FORMAT.SHORT | (byte)PARAMETER_TYPE.VARIABLE | (byte)scope | (byte)(value & TERMINATOR));
+            _binaryWriter.Write(b);
+            //_binaryWriter.Write(value);
+        }
+
+        public void VARIABLE_PAR8(byte value, PARAMETER_VARIABLE_SCOPE scope)
+        {
+            byte b = (byte)((byte)PARAMETER_FORMAT.LONG | (byte)PARAMETER_TYPE.VARIABLE | (byte)scope | (byte)PARAMETER_LONG_VARIABLE_TYPE.VALUE | (byte)PARAMETER_LONG_FOLLOW.ONE_BYTE);
+            _binaryWriter.Write(b);
+            _binaryWriter.Write(value);
+        }
+
+        public void VARIABLE_PAR32(int value, PARAMETER_VARIABLE_SCOPE scope)
+        {
+            byte b = (byte)((byte)PARAMETER_FORMAT.LONG | (byte)PARAMETER_TYPE.VARIABLE | (byte)scope | (byte)PARAMETER_LONG_VARIABLE_TYPE.VALUE | (byte)PARAMETER_LONG_FOLLOW.FOUR_BYTES);
+            _binaryWriter.Write(b);
+            _binaryWriter.Write(value);
         }
 
         public byte[] ToBytes()

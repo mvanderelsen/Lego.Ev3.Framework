@@ -118,7 +118,7 @@ namespace Lego.Ev3.Framework
         {
             for (int i = 0; i < 4; i++)
             {
-                await OutputMethods.ClearCount(Brick.Socket, (ChainLayer)i, portFlag);
+                await OutputMethods.ResetTachoCount(Brick.Socket, (ChainLayer)i, portFlag);
             }
         }
 

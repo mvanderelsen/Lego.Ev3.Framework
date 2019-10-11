@@ -63,7 +63,7 @@ namespace Lego.Ev3.Framework.Firmware
     internal enum PARAMETER_TYPE : byte
     {
         CONSTANT = 0x00,
-        VARIABLE = 0x80,
+        VARIABLE = 0x40, //0x80
     }
 
     [Flags]

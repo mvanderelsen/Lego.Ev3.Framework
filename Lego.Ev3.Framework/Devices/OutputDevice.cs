@@ -200,9 +200,9 @@ namespace Lego.Ev3.Framework.Devices
         /// <summary>
         /// This function enables the program to clear the tacho count used as sensor input.
         /// </summary>
-        protected async Task ClearCount()
+        protected async Task ResetTachoCount()
         {
-            await OutputMethods.ClearCount(Socket, Layer, PortNames);
+            await OutputMethods.ResetTachoCount(Socket, Layer, PortNames);
         }
 
 
@@ -222,8 +222,7 @@ namespace Lego.Ev3.Framework.Devices
         /// <returns>tacho count</returns>
         protected async Task<int> GetTachoCount()
         {
-            float value = await InputMethods.GetReadySIValue(Socket, PortNumber, 0, 0);
-            return Convert.ToInt32(value);
+            return await OutputMethods.GetTachoCount(Socket, Layer, PortName);
         }
 
 

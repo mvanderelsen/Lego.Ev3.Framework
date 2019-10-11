@@ -28,7 +28,7 @@ namespace Lego.Ev3.Framework.Firmware
             Id = useEventId ? CommandHandle.EVENT_ID : CommandHandle.NewId();
             Type = type;
 
-            LittleEndian(0); // Command size, Little Endian. Command size not including these 2 bytes. Blank for setting at ToCommand
+            LittleEndian(0); // Command size, Little Endian. Command size not including these 2 bytes. Blank for setting at ToCommand() method
 
             // write message counter or unique message Id little-endian
             LittleEndian(Id);
