@@ -1,4 +1,5 @@
 ﻿using Lego.Ev3.Framework.Devices;
+using Lego.Ev3.Framework.Internals;
 using System.Threading.Tasks;
 
 namespace Lego.Ev3.Framework
@@ -45,7 +46,7 @@ namespace Lego.Ev3.Framework
             Layer = layer;
             Name = port;
             Status = PortStatus.Empty;
-            Number = (((int)layer * 4) + 16) + (int) port;
+            Number = port.AbsolutePortNumber(layer); 
         }
 
         /// <summary>
@@ -57,7 +58,7 @@ namespace Lego.Ev3.Framework
             OutputDevice idevice = (OutputDevice)device;
             idevice.Layer = Layer;
             idevice.PortName = Name;
-            idevice.PortNames = (OutputPortNames)(1 << (int)Name); //convert to bitfield e.g. 0010 equals port 2
+            idevice.PortFlag = Name.ToFlag();
             idevice.PortNumber = Number;
             idevice.IsConnected = true;
             Device = device;

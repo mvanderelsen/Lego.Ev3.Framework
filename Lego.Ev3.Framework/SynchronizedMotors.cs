@@ -15,7 +15,7 @@ namespace Lego.Ev3.Framework
     {
         private int PortNumber { get; set; }
         private ChainLayer Layer { get; set; }
-        private OutputPortNames PortNames { get; set; }
+        private OutputPortFlag PortFlag { get; set; }
 
         private OutputPortName PortName { get; set; }
 
@@ -43,7 +43,7 @@ namespace Lego.Ev3.Framework
             if (motor1.Type != motor2.Type) throw new InvalidOperationException("Must combine two motors of the same device type");
             if (motor1.Layer != motor2.Layer) throw new InvalidOperationException("Must combine two motors on the same layer");
             Layer = motor1.Layer;
-            PortNames = motor1.PortNames | motor2.PortNames;
+            PortFlag = motor1.PortFlag | motor2.PortFlag;
             Speed = INITIAL_SPEED;
             Polarity = motor1.Polarity;
             PortNumber = motor1.PortNumber;
@@ -58,7 +58,7 @@ namespace Lego.Ev3.Framework
         /// <param name="power">Specify output power [-100 – 100 %]</param>
         public async Task SetPower(int power)
         {
-            await OutputMethods.SetPower(Brick.Socket, Layer, PortNames, power);
+            await OutputMethods.SetPower(Brick.Socket, Layer, PortFlag, power);
         }
 
         /// <summary>
@@ -69,7 +69,7 @@ namespace Lego.Ev3.Framework
         public async Task SetSpeed(int speed)
         {
             Speed = speed;
-            await OutputMethods.SetPower(Brick.Socket, Layer, PortNames, speed);
+            await OutputMethods.SetPower(Brick.Socket, Layer, PortFlag, speed);
         }
 
         /// <summary>
@@ -77,7 +77,7 @@ namespace Lego.Ev3.Framework
         /// </summary>
         public async Task Stop(Brake brake = Brake.Float)
         {
-            await OutputMethods.Stop(Brick.Socket, Layer, PortNames, brake);
+            await OutputMethods.Stop(Brick.Socket, Layer, PortFlag, brake);
         }
 
         /// <summary>
@@ -85,7 +85,7 @@ namespace Lego.Ev3.Framework
         /// </summary>
         public async Task<bool> IsBusy()
         {
-            return await OutputMethods.IsBusy(Brick.Socket, Layer, PortNames);
+            return await OutputMethods.IsBusy(Brick.Socket, Layer, PortFlag);
         }
 
         /// <summary>
@@ -93,12 +93,12 @@ namespace Lego.Ev3.Framework
         /// </summary>
         public async Task Reset()
         {
-            await OutputMethods.Reset(Brick.Socket, Layer, PortNames);
+            await OutputMethods.Reset(Brick.Socket, Layer, PortFlag);
         }
 
         public async Task ResetTachoCount() 
         {
-            await OutputMethods.ResetTachoCount(Brick.Socket, Layer, PortNames);
+            await OutputMethods.ResetTachoCount(Brick.Socket, Layer, PortFlag);
         }
 
         /// <summary>
@@ -134,7 +134,7 @@ namespace Lego.Ev3.Framework
         /// <param name="brake">Specify break level, [0: Float, 1: Break]</param>
         public async Task StepPower(int power, int tachoPulsesContinuesRun, int tachoPulsesRampUp = 0, int tachoPulsesRampDown = 0, Brake brake = Brake.Float)
         {
-            await OutputMethods.StepPower(Brick.Socket, Layer, PortNames, power, tachoPulsesRampUp, tachoPulsesContinuesRun, tachoPulsesRampDown, brake);
+            await OutputMethods.StepPower(Brick.Socket, Layer, PortFlag, power, tachoPulsesRampUp, tachoPulsesContinuesRun, tachoPulsesRampDown, brake);
         }
 
         /// <summary>
@@ -150,7 +150,7 @@ namespace Lego.Ev3.Framework
         /// <param name="brake">Specify break level, [0: Float, 1: Break]</param>
         public async Task TimePower(int power, int timeContinuesRun, int timeRampUp = 0, int timeRampDown = 0, Brake brake = Brake.Float)
         {
-            await OutputMethods.TimePower(Brick.Socket, Layer, PortNames, power, timeRampUp, timeContinuesRun, timeRampDown, brake);
+            await OutputMethods.TimePower(Brick.Socket, Layer, PortFlag, power, timeRampUp, timeContinuesRun, timeRampDown, brake);
         }
 
         /// <summary>
@@ -168,7 +168,7 @@ namespace Lego.Ev3.Framework
         public async Task StepSpeed(int speed, int tachoPulsesContinuesRun, int tachoPulsesRampUp = 0, int tachoPulsesRampDown = 0, Brake brake = Brake.Float)
         {
             Speed = speed;
-            await OutputMethods.StepPower(Brick.Socket, Layer, PortNames, speed, tachoPulsesRampUp, tachoPulsesContinuesRun, tachoPulsesRampDown, brake);
+            await OutputMethods.StepPower(Brick.Socket, Layer, PortFlag, speed, tachoPulsesRampUp, tachoPulsesContinuesRun, tachoPulsesRampDown, brake);
         }
 
         /// <summary>
@@ -186,7 +186,7 @@ namespace Lego.Ev3.Framework
         public async Task TimeSpeed(int speed, int timeContinuesRun, int timeRampUp = 0, int timeRampDown = 0, Brake brake = Brake.Float)
         {
             Speed = speed;
-            await OutputMethods.TimeSpeed(Brick.Socket, Layer, PortNames, speed, timeRampUp, timeContinuesRun, timeRampDown, brake);
+            await OutputMethods.TimeSpeed(Brick.Socket, Layer, PortFlag, speed, timeRampUp, timeContinuesRun, timeRampDown, brake);
         }
         #endregion
 
@@ -207,7 +207,7 @@ namespace Lego.Ev3.Framework
         public async Task StepSync(int tachoCounts, int speed, int turnRatio = 0, Brake brake = Brake.Float)
         {
             Speed = speed;
-            await OutputMethods.StepSync(Brick.Socket, Layer, PortNames, speed, turnRatio, tachoCounts, brake);
+            await OutputMethods.StepSync(Brick.Socket, Layer, PortFlag, speed, turnRatio, tachoCounts, brake);
         }
 
         /// <summary>
@@ -225,11 +225,11 @@ namespace Lego.Ev3.Framework
         /// </param>
         /// <param name="brake">Specify break level, [0: Float, 1: Break]</param>
         /// <param name="cancellationToken"></param>
-        public async Task StepSyncComplete(int tachoCounts, int speed, int turnRatio = 0, Brake brake = Brake.Break, CancellationToken cancellationToken = default)
+        public async Task StepSyncComplete(int tachoCounts, int speed, int turnRatio = 0, Brake brake = Brake.Float, CancellationToken cancellationToken = default)
         {
             int initialTachoCount = await GetTachoCount();
 
-            await OutputMethods.StepSync(Brick.Socket, Layer, PortNames, speed, turnRatio, tachoCounts, brake);
+            await OutputMethods.StepSync(Brick.Socket, Layer, PortFlag, speed, turnRatio, tachoCounts, brake);
 
             if (tachoCounts > 0 && await IsBusy()) // can not wait for indefinite to complete
             {
@@ -279,7 +279,7 @@ namespace Lego.Ev3.Framework
         public async Task TimeSync(int time, int speed, int turnRatio = 0, Brake brake = Brake.Float)
         {
             Speed = speed;
-            await OutputMethods.TimeSync(Brick.Socket, Layer, PortNames, speed, turnRatio, time, brake);
+            await OutputMethods.TimeSync(Brick.Socket, Layer, PortFlag, speed, turnRatio, time, brake);
         }
 
         /// <summary>
@@ -298,23 +298,15 @@ namespace Lego.Ev3.Framework
         /// <param name="cancellationToken"></param>
         public async Task TimeSyncComplete(int time, int speed, int turnRatio = 0, Brake brake = Brake.Float, CancellationToken cancellationToken = default)
         {
-            DateTime start = DateTime.Now;
-            await TimeSync(time, speed, turnRatio, brake); // could be busy on brick so substract milliseconds from delay
+            await TimeSync(time, speed, turnRatio, brake);
             if (time > 0) // can not wait for indefinite to complete
             {
-                int offset = (int)Math.Floor((DateTime.Now - start).TotalMilliseconds);
-                int delay = time - offset;
-                if (delay > 0)
+                try
                 {
-
-                    try
-                    {
-                        await Task.Delay(delay, cancellationToken);
-
-                    }
-                    catch (TaskCanceledException) { }
+                    await Task.Delay(time, cancellationToken);
 
                 }
+                catch (TaskCanceledException) { }
             }
         }
         #endregion
@@ -356,9 +348,9 @@ namespace Lego.Ev3.Framework
         /// <summary>
         /// This function enables to run both motors for a specified tacho count at current running speed and waits for operation to complete
         /// </summary>
-        public async Task RunComplete(int tachoCount)
+        public async Task RunComplete(int tachoCount, CancellationToken cancellationToken = default)
         {
-            await StepSyncComplete(tachoCount, Speed);
+            await StepSyncComplete(tachoCount, Speed, cancellationToken: cancellationToken);
         }
 
 

@@ -83,32 +83,47 @@ namespace Lego.Ev3.Framework.Sockets
 
             Task.Factory.StartNew(async () =>
             {
+
                 while (!CancellationToken.IsCancellationRequested)
                 {
-                    if (NoReplyCommands.TryDequeue(out Command command))
+                    try
                     {
-                        command.PayLoad.CopyTo(_output, 1);
-                        await _stream.WriteAsync(_output, 0, _output.Length);
-                        _stream.Flush();
-                        Responses.TryAdd(command.Id, null);
-                    }
+                        Command command;
+                        if (NoReplyCommands.TryDequeue(out command))
+                        {
+                            command.PayLoad.CopyTo(_output, 1);
+                            await _stream.WriteAsync(_output, 0, _output.Length);
+                            _stream.Flush();
+                            Responses.TryAdd(command.Id, null);
+                        }
 
-                    byte[] payLoad;
 
-                    if (Commands.TryDequeue(out payLoad))
-                    {
-                        payLoad.CopyTo(_output, 1);
-                        await _stream.WriteAsync(_output, 0, _output.Length);
-                        _stream.Flush();
-                    }
 
-                    if (Events.TryDequeue(out payLoad))
-                    {
-                        payLoad.CopyTo(_output, 1);
-                        await _stream.WriteAsync(_output, 0, _output.Length);
-                        _stream.Flush();
+                        if (Commands.TryDequeue(out command))
+                        {
+                            command.PayLoad.CopyTo(_output, 1);
+                            await _stream.WriteAsync(_output, 0, _output.Length);
+                            _stream.Flush();
+
+                            int retry = 0;
+                            while (!Responses.ContainsKey(command.Id) && retry < 20)
+                            {
+                                await Task.Delay(50, CancellationToken);
+                                retry++;
+                            }
+                        }
+
+                        if (Events.TryDequeue(out command))
+                        {
+                            command.PayLoad.CopyTo(_output, 1);
+                            await _stream.WriteAsync(_output, 0, _output.Length);
+                            _stream.Flush();
+                        }
                     }
+                    catch (TaskCanceledException) { }
                 }
+
+
             }, CancellationToken, TaskCreationOptions.LongRunning, TaskScheduler.Current);
         }
 

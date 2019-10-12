@@ -16,6 +16,7 @@ namespace Lego.Ev3.Framework.Firmware
         /// <param name="layer">Specify chain layer number [0 - 3]</param>
         /// <param name="port">Port number [0 - 3]</param>
         /// <param name="type">Output device type, (0x07: Large motor, Medium motor = 0x08)</param>
+        /// <param name="requireReply">indicate if the brick should respond OK on method call</param>
         /// <remarks>
         /// Instruction opOutput_Set_Type (LAYER, NO, TYPE)
         /// Opcode 0xA1
@@ -25,10 +26,10 @@ namespace Lego.Ev3.Framework.Firmware
         /// Dispatch status Unchanged
         /// Description This function enables specifying the output device type
         /// </remarks>
-        internal static async Task SetType(Socket socket, ChainLayer layer, OutputPortName port, DeviceType type)
+        internal static async Task SetType(Socket socket, ChainLayer layer, OutputPortName port, DeviceType type, bool requireReply = true)
         {
             Command cmd = null;
-            using (CommandBuilder cb = new CommandBuilder(CommandType.DIRECT_COMMAND_NO_REPLY))
+            using (CommandBuilder cb = new CommandBuilder(requireReply ? CommandType.DIRECT_COMMAND_REPLY : CommandType.DIRECT_COMMAND_NO_REPLY))
             {
                 cb.OpCode(OP.opOUTPUT_SET_TYPE);
                 cb.SHORT((int)layer);
@@ -36,7 +37,7 @@ namespace Lego.Ev3.Framework.Firmware
                 cb.PAR8((byte)type);
                 cmd = cb.ToCommand();
             }
-             await socket.Execute(cmd);
+            await socket.Execute(cmd);
         }
 
         /// <summary>
@@ -53,10 +54,10 @@ namespace Lego.Ev3.Framework.Firmware
         /// Dispatch status Unchanged
         /// Description This function enables resetting the tacho count for the individual output ports
         /// </remarks>
-        internal static async Task Reset(Socket socket, ChainLayer layer, OutputPortNames ports)
+        internal static async Task Reset(Socket socket, ChainLayer layer, OutputPortFlag ports, bool requireReply = true)
         {
             Command cmd = null;
-            using (CommandBuilder cb = new CommandBuilder(CommandType.DIRECT_COMMAND_NO_REPLY))
+            using (CommandBuilder cb = new CommandBuilder(requireReply ? CommandType.DIRECT_COMMAND_REPLY : CommandType.DIRECT_COMMAND_NO_REPLY))
             {
                 cb.OpCode(OP.opOUTPUT_RESET);
                 cb.SHORT((int)layer);
@@ -82,10 +83,10 @@ namespace Lego.Ev3.Framework.Firmware
         /// Dispatch status Unchanged
         /// Description This function enables restting the tacho count for the individual output ports
         /// </remarks>
-        internal static async Task Stop(Socket socket, ChainLayer layer, OutputPortNames ports, Brake brake = Brake.Float)
+        internal static async Task Stop(Socket socket, ChainLayer layer, OutputPortFlag ports, Brake brake = Brake.Float, bool requireReply = true)
         {
             Command cmd = null;
-            using (CommandBuilder cb = new CommandBuilder(CommandType.DIRECT_COMMAND_NO_REPLY))
+            using (CommandBuilder cb = new CommandBuilder(requireReply ? CommandType.DIRECT_COMMAND_REPLY : CommandType.DIRECT_COMMAND_NO_REPLY))
             {
                 cb.OpCode(OP.opOUTPUT_STOP);
                 cb.SHORT((int)layer);
@@ -112,12 +113,12 @@ namespace Lego.Ev3.Framework.Firmware
         /// Dispatch status Unchanged
         /// Description This function enables setting the output percentage power on the output ports
         /// </remarks>
-        internal static async Task SetPower(Socket socket, ChainLayer layer, OutputPortNames ports, int power)
+        internal static async Task SetPower(Socket socket, ChainLayer layer, OutputPortFlag ports, int power, bool requireReply = true)
         {
-            if (power < -100 || power > 100) throw new ArgumentException(nameof(power),"[-100,100]");
+            if (power < -100 || power > 100) throw new ArgumentException(nameof(power), "[-100,100]");
 
             Command cmd = null;
-            using (CommandBuilder cb = new CommandBuilder(CommandType.DIRECT_COMMAND_NO_REPLY))
+            using (CommandBuilder cb = new CommandBuilder(requireReply ? CommandType.DIRECT_COMMAND_REPLY : CommandType.DIRECT_COMMAND_NO_REPLY))
             {
                 cb.OpCode(OP.opOUTPUT_POWER);
                 cb.SHORT((int)layer);
@@ -145,12 +146,12 @@ namespace Lego.Ev3.Framework.Firmware
         /// Dispatch status Unchanged
         /// Description This function enables setting the output percentage speed on the output ports. This modes automatically enables speed control, which means the system will automa-tically adjust the power to keep the specified speed.
         /// </remarks>
-        internal static async Task SetSpeed(Socket socket, ChainLayer layer, OutputPortNames ports, int speed)
+        internal static async Task SetSpeed(Socket socket, ChainLayer layer, OutputPortFlag ports, int speed, bool requireReply = true)
         {
             if (speed < -100 || speed > 100) throw new ArgumentException(nameof(speed), "[-100 and 100]");
 
             Command cmd = null;
-            using (CommandBuilder cb = new CommandBuilder(CommandType.DIRECT_COMMAND_NO_REPLY))
+            using (CommandBuilder cb = new CommandBuilder(requireReply ? CommandType.DIRECT_COMMAND_REPLY : CommandType.DIRECT_COMMAND_NO_REPLY))
             {
                 cb.OpCode(OP.opOUTPUT_SPEED);
                 cb.SHORT((int)layer);
@@ -175,10 +176,10 @@ namespace Lego.Ev3.Framework.Firmware
         /// Dispatch status Unchanged
         /// Description This function enables starting the specified output port.
         /// </remarks>
-        internal static async Task Start(Socket socket, ChainLayer layer, OutputPortNames ports)
+        internal static async Task Start(Socket socket, ChainLayer layer, OutputPortFlag ports, bool requireReply = true)
         {
             Command cmd = null;
-            using (CommandBuilder cb = new CommandBuilder(CommandType.DIRECT_COMMAND_NO_REPLY))
+            using (CommandBuilder cb = new CommandBuilder(requireReply ? CommandType.DIRECT_COMMAND_REPLY : CommandType.DIRECT_COMMAND_NO_REPLY))
             {
                 cb.OpCode(OP.opOUTPUT_START);
                 cb.SHORT((int)layer);
@@ -204,10 +205,10 @@ namespace Lego.Ev3.Framework.Firmware
         /// Dispatch status Unchanged
         /// Description This function enables starting the specified output port.
         /// </remarks>
-        internal static async Task SetPolarity(Socket socket, ChainLayer layer, OutputPortNames ports, Polarity polarity)
+        internal static async Task SetPolarity(Socket socket, ChainLayer layer, OutputPortFlag ports, Polarity polarity, bool requireReply = true)
         {
             Command cmd = null;
-            using (CommandBuilder cb = new CommandBuilder(CommandType.DIRECT_COMMAND_NO_REPLY))
+            using (CommandBuilder cb = new CommandBuilder(requireReply ? CommandType.DIRECT_COMMAND_REPLY : CommandType.DIRECT_COMMAND_NO_REPLY))
             {
                 cb.OpCode(OP.opOUTPUT_POLARITY);
                 cb.PAR8((int)layer);
@@ -266,7 +267,7 @@ namespace Lego.Ev3.Framework.Firmware
         /// Dispatch status Unchanged
         /// Description This function enables the program to test if a output port is busy.
         /// </remarks>
-        internal static async Task<bool> IsBusy(Socket socket, ChainLayer layer, OutputPortNames ports)
+        internal static async Task<bool> IsBusy(Socket socket, ChainLayer layer, OutputPortFlag ports)
         {
             Command cmd = null;
             using (CommandBuilder cb = new CommandBuilder(CommandType.DIRECT_COMMAND_REPLY, 1, 0))
@@ -279,41 +280,36 @@ namespace Lego.Ev3.Framework.Firmware
             }
             Response response = await socket.Execute(cmd);
 
-            bool isBusy = false;
-            if (response.Type == ResponseType.OK)
-            {
-                byte[] data = response.PayLoad;
-                isBusy = BitConverter.ToBoolean(data, 0);
-            }
-            return isBusy;
+            byte[] data = response.PayLoad;
+            return BitConverter.ToBoolean(data, 0);
         }
 
-        /// <summary>
-        /// Enables program execution to wait for output ready. (Wait for completion)
-        /// </summary>
-        /// <param name="socket">Socket for executing command to brick</param>
-        /// <param name="layer">Specify chain layer number [0 - 3]</param>
-        /// <param name="ports">Output bit field [0x00 – 0x0F]</param>
-        /// <remarks>
-        /// Instruction opOutput_Ready (LAYER, NOS)
-        /// Opcode 0xAA
-        /// Arguments (Data8) LAYER – Specify chain layer number [0 - 3]
-        /// (Data8) NOS – Output bit field [0x00 – 0x0F]
-        /// Dispatch status Can changed to BUSYBREAK
-        /// Description Enables program execution to wait for output ready. (Wait for completion)
-        /// </remarks>
-        internal static async Task Ready(Socket socket, ChainLayer layer, OutputPortNames ports)
-        {
-            Command cmd = null;
-            using (CommandBuilder cb = new CommandBuilder(CommandType.DIRECT_COMMAND_NO_REPLY))
-            {
-                cb.OpCode(OP.opOUTPUT_READY);
-                cb.SHORT((int)layer);
-                cb.SHORT((int)ports);
-                cmd = cb.ToCommand();
-            }
-            await socket.Execute(cmd);
-        }
+        ///// <summary>
+        ///// Enables program execution to wait for output ready. (Wait for completion)
+        ///// </summary>
+        ///// <param name="socket">Socket for executing command to brick</param>
+        ///// <param name="layer">Specify chain layer number [0 - 3]</param>
+        ///// <param name="ports">Output bit field [0x00 – 0x0F]</param>
+        ///// <remarks>
+        ///// Instruction opOutput_Ready (LAYER, NOS)
+        ///// Opcode 0xAA
+        ///// Arguments (Data8) LAYER – Specify chain layer number [0 - 3]
+        ///// (Data8) NOS – Output bit field [0x00 – 0x0F]
+        ///// Dispatch status Can changed to BUSYBREAK
+        ///// Description Enables program execution to wait for output ready. (Wait for completion)
+        ///// </remarks>
+        //internal static async Task Ready(Socket socket, ChainLayer layer, OutputPortFlag ports)
+        //{
+        //    Command cmd = null;
+        //    using (CommandBuilder cb = new CommandBuilder(CommandType.DIRECT_COMMAND_NO_REPLY))
+        //    {
+        //        cb.OpCode(OP.opOUTPUT_READY);
+        //        cb.SHORT((int)layer);
+        //        cb.SHORT((int)ports);
+        //        cmd = cb.ToCommand();
+        //    }
+        //    await socket.Execute(cmd);
+        //}
 
         /// <summary>
         /// This function enables specifying a full motor power cycle in tacho counts. 
@@ -342,7 +338,7 @@ namespace Lego.Ev3.Framework.Firmware
         /// Dispatch status Unchanged
         /// Description This function enables specifying a full motor power cycle in tacho counts. Step1 specifies the power ramp up periode in tacho count, Step2 specifies the constant power period in tacho counts, Step 3 specifies the power down period in tacho counts.
         /// </remarks>
-        internal static async Task StepPower(Socket socket, ChainLayer layer, OutputPortNames ports, int power, int tachoPulsesRampUp, int tachoPulsesContinuesRun, int tachoPulsesRampDown, Brake brake = Brake.Float)
+        internal static async Task StepPower(Socket socket, ChainLayer layer, OutputPortFlag ports, int power, int tachoPulsesRampUp, int tachoPulsesContinuesRun, int tachoPulsesRampDown, Brake brake = Brake.Float, bool requireReply = true)
         {
             if (power < -100 || power > 100) throw new ArgumentOutOfRangeException(nameof(power), "[-100,100]");
             if (tachoPulsesContinuesRun < 0) throw new ArgumentOutOfRangeException(nameof(tachoPulsesContinuesRun), ">=0");
@@ -350,7 +346,7 @@ namespace Lego.Ev3.Framework.Firmware
             if (tachoPulsesRampDown < 0) throw new ArgumentOutOfRangeException(nameof(tachoPulsesRampDown), ">=0");
 
             Command cmd = null;
-            using (CommandBuilder cb = new CommandBuilder(CommandType.DIRECT_COMMAND_NO_REPLY))
+            using (CommandBuilder cb = new CommandBuilder(requireReply ? CommandType.DIRECT_COMMAND_REPLY : CommandType.DIRECT_COMMAND_NO_REPLY))
             {
                 cb.OpCode(OP.opOUTPUT_STEP_POWER);
                 cb.SHORT((int)layer);
@@ -392,7 +388,7 @@ namespace Lego.Ev3.Framework.Firmware
         /// Dispatch status Unchanged
         /// Description This function enables specifying a full motor power cycle in time. Step1 specifies the power ramp up periode in milliseconds, Step2 specifies the constant power period in milliseconds, Step 3 specifies the power down period in milliseconds.
         /// </remarks>
-        internal static async Task TimePower(Socket socket, ChainLayer layer, OutputPortNames ports, int power, int timeRampUp, int timeContinuesRun, int timeRampDown, Brake brake = Brake.Float)
+        internal static async Task TimePower(Socket socket, ChainLayer layer, OutputPortFlag ports, int power, int timeRampUp, int timeContinuesRun, int timeRampDown, Brake brake = Brake.Float, bool requireReply = true)
         {
             if (power < -100 || power > 100) throw new ArgumentOutOfRangeException(nameof(power), "[-100,100]");
             if (timeContinuesRun < 0) throw new ArgumentOutOfRangeException(nameof(timeContinuesRun), ">=0");
@@ -400,7 +396,7 @@ namespace Lego.Ev3.Framework.Firmware
             if (timeRampDown < 0) throw new ArgumentOutOfRangeException(nameof(timeRampDown), ">=0");
 
             Command cmd = null;
-            using (CommandBuilder cb = new CommandBuilder(CommandType.DIRECT_COMMAND_NO_REPLY))
+            using (CommandBuilder cb = new CommandBuilder(requireReply ? CommandType.DIRECT_COMMAND_REPLY : CommandType.DIRECT_COMMAND_NO_REPLY))
             {
                 cb.OpCode(OP.opOUTPUT_TIME_POWER);
                 cb.SHORT((int)layer);
@@ -443,7 +439,7 @@ namespace Lego.Ev3.Framework.Firmware
         /// Dispatch status Unchanged
         /// Description This function enables specifying a full motor power cycle in tacho counts. The system will automatically adjust the power level to the motor to keep the specified output speed. Step1 specifies the power ramp up periode in tacho count, Step2 specifies the constant power period in tacho counts, Step 3 specifies the power down period in tacho counts.
         /// </remarks>
-        internal static async Task StepSpeed(Socket socket, ChainLayer layer, OutputPortNames ports, int speed, int tachoPulsesRampUp, int tachoPulsesContinuesRun, int tachoPulsesRampDown, Brake brake = Brake.Float)
+        internal static async Task StepSpeed(Socket socket, ChainLayer layer, OutputPortFlag ports, int speed, int tachoPulsesRampUp, int tachoPulsesContinuesRun, int tachoPulsesRampDown, Brake brake = Brake.Float, bool requireReply = true)
         {
             if (speed < -100 || speed > 100) throw new ArgumentOutOfRangeException(nameof(speed), "[-100,100]");
             if (tachoPulsesContinuesRun < 0) throw new ArgumentOutOfRangeException(nameof(tachoPulsesContinuesRun), ">=0");
@@ -451,7 +447,7 @@ namespace Lego.Ev3.Framework.Firmware
             if (tachoPulsesRampDown < 0) throw new ArgumentOutOfRangeException(nameof(tachoPulsesRampDown), ">=0");
 
             Command cmd = null;
-            using (CommandBuilder cb = new CommandBuilder(CommandType.DIRECT_COMMAND_NO_REPLY))
+            using (CommandBuilder cb = new CommandBuilder(requireReply ? CommandType.DIRECT_COMMAND_REPLY : CommandType.DIRECT_COMMAND_NO_REPLY))
             {
                 cb.OpCode(OP.opOUTPUT_STEP_SPEED);
                 cb.PAR8((int)layer);
@@ -494,7 +490,7 @@ namespace Lego.Ev3.Framework.Firmware
         /// Dispatch status Unchanged
         /// Description This function enables specifying a full motor power cycle in time. The system will automatically adjust the power level to the motor to keep the specified output speed. Step1 specifies the power ramp up periode in milliseconds, Step2 specifies the constant power period in milliseconds, Step 3 specifies the power down period in milliseconds.
         /// </remarks>
-        internal static async Task TimeSpeed(Socket socket, ChainLayer layer, OutputPortNames ports, int speed, int timeRampUp, int timeContinuesRun, int timeRampDown, Brake brake = Brake.Float)
+        internal static async Task TimeSpeed(Socket socket, ChainLayer layer, OutputPortFlag ports, int speed, int timeRampUp, int timeContinuesRun, int timeRampDown, Brake brake = Brake.Float, bool requireReply = true)
         {
             if (speed < -100 || speed > 100) throw new ArgumentOutOfRangeException(nameof(speed), "[-100,100]");
             if (timeContinuesRun < 0) throw new ArgumentOutOfRangeException(nameof(timeContinuesRun), ">=0");
@@ -502,7 +498,7 @@ namespace Lego.Ev3.Framework.Firmware
             if (timeRampDown < 0) throw new ArgumentOutOfRangeException(nameof(timeRampDown), ">=0");
 
             Command cmd = null;
-            using (CommandBuilder cb = new CommandBuilder(CommandType.DIRECT_COMMAND_NO_REPLY))
+            using (CommandBuilder cb = new CommandBuilder(requireReply ? CommandType.DIRECT_COMMAND_REPLY : CommandType.DIRECT_COMMAND_NO_REPLY))
             {
                 cb.OpCode(OP.opOUTPUT_TIME_SPEED);
                 cb.SHORT((int)layer);
@@ -545,14 +541,14 @@ namespace Lego.Ev3.Framework.Firmware
         /// Dispatch status Unchanged
         /// Description This function enables synchonizing two motors. Synchonization should be used when motors should run as synchrone as possible, for example to archieve a model driving straight. Duration is specified in tacho counts.
         /// </remarks>
-        internal static async Task StepSync(Socket socket, ChainLayer layer, OutputPortNames ports, int speed, int turnRatio, int tachoCounts, Brake brake = Brake.Float)
+        internal static async Task StepSync(Socket socket, ChainLayer layer, OutputPortFlag ports, int speed, int turnRatio, int tachoCounts, Brake brake = Brake.Float, bool requireReply = true)
         {
             if (tachoCounts < 0) throw new ArgumentOutOfRangeException(nameof(tachoCounts), ">=0");
             if (speed < -100 || speed > 100) throw new ArgumentOutOfRangeException(nameof(speed), "[-100,100]");
             if (turnRatio < -200 || turnRatio > 200) throw new ArgumentOutOfRangeException(nameof(turnRatio), "[-200,200]");
 
             Command cmd = null;
-            using (CommandBuilder cb = new CommandBuilder(CommandType.DIRECT_COMMAND_NO_REPLY))
+            using (CommandBuilder cb = new CommandBuilder(requireReply ? CommandType.DIRECT_COMMAND_REPLY : CommandType.DIRECT_COMMAND_NO_REPLY))
             {
                 cb.OpCode(OP.opOUTPUT_STEP_SYNC);
                 cb.SHORT((int)layer);
@@ -593,14 +589,14 @@ namespace Lego.Ev3.Framework.Firmware
         /// Dispatch status Unchanged
         /// Description This function enables synchonizing two motors. Synchonization should be used when motors should run as synchrone as possible,
         /// </remarks>
-        internal static async Task TimeSync(Socket socket, ChainLayer layer, OutputPortNames ports, int speed, int turnRatio, int time, Brake brake = Brake.Float)
+        internal static async Task TimeSync(Socket socket, ChainLayer layer, OutputPortFlag ports, int speed, int turnRatio, int time, Brake brake = Brake.Float, bool requireReply = true)
         {
             if (time < 0) throw new ArgumentOutOfRangeException(nameof(time), ">=0");
             if (speed < -100 || speed > 100) throw new ArgumentOutOfRangeException(nameof(speed), "[-100,100]");
             if (turnRatio < -200 || turnRatio > 200) throw new ArgumentOutOfRangeException(nameof(turnRatio), "[-200,200]");
 
             Command cmd = null;
-            using (CommandBuilder cb = new CommandBuilder(CommandType.DIRECT_COMMAND_NO_REPLY))
+            using (CommandBuilder cb = new CommandBuilder(requireReply ? CommandType.DIRECT_COMMAND_REPLY : CommandType.DIRECT_COMMAND_NO_REPLY))
             {
                 cb.OpCode(OP.opOUTPUT_TIME_SYNC);
                 cb.SHORT((int)layer);
@@ -628,10 +624,10 @@ namespace Lego.Ev3.Framework.Firmware
         /// Dispatch status Unchanged
         /// Description This function enables the program to clear the tacho count used as sensor input.
         /// </remarks>
-        internal static async Task ResetTachoCount(Socket socket, ChainLayer layer, OutputPortNames ports)
+        internal static async Task ResetTachoCount(Socket socket, ChainLayer layer, OutputPortFlag ports, bool requireReply = true)
         {
             Command cmd = null;
-            using (CommandBuilder cb = new CommandBuilder(CommandType.DIRECT_COMMAND_REPLY))
+            using (CommandBuilder cb = new CommandBuilder(requireReply ? CommandType.DIRECT_COMMAND_REPLY : CommandType.DIRECT_COMMAND_NO_REPLY))
             {
                 cb.OpCode(OP.opOUTPUT_CLR_COUNT);
                 cb.SHORT((int)layer);
@@ -659,12 +655,10 @@ namespace Lego.Ev3.Framework.Firmware
         /// </remarks>
         internal static async Task<int> GetTachoCount(Socket socket, ChainLayer layer, OutputPortName port)
         {
-            OP opCode = OP.opOUTPUT_GET_COUNT;
-            int value = -1;
             Command cmd = null;
             using (CommandBuilder cb = new CommandBuilder(CommandType.DIRECT_COMMAND_REPLY, 4, 0))
             {
-                cb.OpCode(opCode);
+                cb.OpCode(OP.opOUTPUT_GET_COUNT);
                 cb.PAR8((byte)layer);
                 cb.PAR8((byte)port);
                 cb.VARIABLE_PAR32(0, PARAMETER_VARIABLE_SCOPE.GLOBAL);
@@ -673,15 +667,8 @@ namespace Lego.Ev3.Framework.Firmware
 
             Response response = await socket.Execute(cmd);
 
-            if (response.Type == ResponseType.OK)
-            {
-                byte[] data = response.PayLoad;
-                if (data.Length > 0)
-                {
-                    value = BitConverter.ToInt32(data, 0);
-                }
-            }
-            return value;
+            byte[] data = response.PayLoad;
+            return BitConverter.ToInt32(data, 0);
         }
 
 
@@ -697,10 +684,10 @@ namespace Lego.Ev3.Framework.Firmware
         /// Dispatch status Unchanged
         /// Description This function should be called a program end. It enables breaking the motor for a short period and right after floating the motors. The function relates to the layer on which it is executed.
         /// </remarks>
-        internal static async Task ProgramStop(Socket socket)
+        internal static async Task ProgramStop(Socket socket, bool requireReply = true)
         {
             Command cmd = null;
-            using (CommandBuilder cb = new CommandBuilder(CommandType.DIRECT_COMMAND_NO_REPLY))
+            using (CommandBuilder cb = new CommandBuilder(requireReply ? CommandType.DIRECT_COMMAND_REPLY : CommandType.DIRECT_COMMAND_NO_REPLY))
             {
                 cb.OpCode(OP.opOUTPUT_PRG_STOP);
                 cmd = cb.ToCommand();

@@ -9,7 +9,7 @@ namespace Lego.Ev3.Framework.Sockets
 {
     internal class BlueToothSocket : SocketBase, IDisposable, ISocket
     {
-        
+
         private SerialPort _serialPort;
         private BinaryReader _reader;
         private CancellationTokenSource _cancellationTokenSource;
@@ -70,27 +70,38 @@ namespace Lego.Ev3.Framework.Sockets
 
         private void OpenSocket()
         {
-            Task.Factory.StartNew(() =>
+            Task.Factory.StartNew(async () =>
             {
                 while (!CancellationToken.IsCancellationRequested)
                 {
-                    if (NoReplyCommands.TryDequeue(out Command command))
+                    try
                     {
-                        lock (_serialPort) _serialPort.Write(command.PayLoad, 0, command.PayLoad.Length);
-                        Responses.TryAdd(command.Id, null);
-                    }
+                        Command command;
 
-                    byte[] payLoad;
+                        if (NoReplyCommands.TryDequeue(out command))
+                        {
+                            lock (_serialPort) _serialPort.Write(command.PayLoad, 0, command.PayLoad.Length);
+                            Responses.TryAdd(command.Id, null);
+                        }
 
-                    if (Commands.TryDequeue(out payLoad))
-                    {
-                        lock (_serialPort) _serialPort.Write(payLoad, 0, payLoad.Length);
-                    }
 
-                    if (Events.TryDequeue(out payLoad))
-                    {
-                        lock (_serialPort) _serialPort.Write(payLoad, 0, payLoad.Length);
+                        if (Commands.TryDequeue(out command))
+                        {
+                            lock (_serialPort) _serialPort.Write(command.PayLoad, 0, command.PayLoad.Length);
+                            int retry = 0;
+                            while (!Responses.ContainsKey(command.Id) && retry < 20)
+                            {
+                                await Task.Delay(50, CancellationToken);
+                                retry++;
+                            }
+                        }
+
+                        if (Events.TryDequeue(out command))
+                        {
+                            lock (_serialPort) _serialPort.Write(command.PayLoad, 0, command.PayLoad.Length);
+                        }
                     }
+                    catch (TaskCanceledException) { }
                 }
             }, CancellationToken, TaskCreationOptions.LongRunning, TaskScheduler.Current);
         }

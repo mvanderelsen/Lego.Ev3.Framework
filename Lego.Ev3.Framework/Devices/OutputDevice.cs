@@ -17,7 +17,7 @@ namespace Lego.Ev3.Framework.Devices
         internal ChainLayer Layer { get; set; }
         internal OutputPortName PortName { get; set; }
         internal int PortNumber { get; set; }
-        internal OutputPortNames PortNames { get; set; }
+        internal OutputPortFlag PortFlag { get; set; }
         #endregion
 
         /// <summary>
@@ -75,7 +75,7 @@ namespace Lego.Ev3.Framework.Devices
         /// </summary>
         protected async Task Reset()
         {
-            await OutputMethods.Reset(Socket, Layer, PortNames);
+            await OutputMethods.Reset(Socket, Layer, PortFlag);
         }
 
         /// <summary>
@@ -84,7 +84,7 @@ namespace Lego.Ev3.Framework.Devices
         /// <param name="brake">Specify break level, [0: Float, 1: Break]</param>
         protected async Task Stop(Brake brake = Brake.Float)
         {
-            await OutputMethods.Stop(Socket, Layer, PortNames, brake);
+            await OutputMethods.Stop(Socket, Layer, PortFlag, brake);
         }
 
         /// <summary>
@@ -93,7 +93,7 @@ namespace Lego.Ev3.Framework.Devices
         /// <param name="power">Specify output power [-100 – 100 %]</param>
         protected async Task SetPower(int power)
         {
-            await OutputMethods.SetPower(Socket, Layer, PortNames, power);
+            await OutputMethods.SetPower(Socket, Layer, PortFlag, power);
         }
 
         /// <summary>
@@ -103,7 +103,7 @@ namespace Lego.Ev3.Framework.Devices
         /// <param name="speed">Specify output speed [-100 – 100 %]</param>
         protected async Task SetSpeed(int speed)
         {
-            await OutputMethods.SetSpeed(Socket, Layer, PortNames, speed);
+            await OutputMethods.SetSpeed(Socket, Layer, PortFlag, speed);
         }
 
         /// <summary>
@@ -111,7 +111,7 @@ namespace Lego.Ev3.Framework.Devices
         /// </summary>
         protected async Task Start()
         {
-            await OutputMethods.Start(Socket, Layer, PortNames);
+            await OutputMethods.Start(Socket, Layer, PortFlag);
         }
 
         /// <summary>
@@ -120,7 +120,7 @@ namespace Lego.Ev3.Framework.Devices
         /// <param name="polarity">Polarity -1 : backward 0 : opposite direction 1 : forward</param>
         protected async Task SetPolarity(Polarity polarity)
         {
-            await OutputMethods.SetPolarity(Socket, Layer, PortNames, polarity);
+            await OutputMethods.SetPolarity(Socket, Layer, PortFlag, polarity);
         }
 
         /// <summary>
@@ -128,7 +128,7 @@ namespace Lego.Ev3.Framework.Devices
         /// </summary>
         protected async Task<bool> IsBusy()
         {
-            return await OutputMethods.IsBusy(Socket, Layer, PortNames);
+            return await OutputMethods.IsBusy(Socket, Layer, PortFlag);
         }
 
         /// <summary>
@@ -144,7 +144,7 @@ namespace Lego.Ev3.Framework.Devices
         /// <param name="brake">Specify break level, [0: Float, 1: Break]</param>
         protected async Task StepPower(int power, int tachoPulsesContinuesRun, int tachoPulsesRampUp = 0, int tachoPulsesRampDown = 0, Brake brake = Brake.Float)
         {
-            await OutputMethods.StepPower(Socket, Layer, PortNames, power, tachoPulsesRampUp, tachoPulsesContinuesRun, tachoPulsesRampDown, brake);
+            await OutputMethods.StepPower(Socket, Layer, PortFlag, power, tachoPulsesRampUp, tachoPulsesContinuesRun, tachoPulsesRampDown, brake);
         }
 
         /// <summary>
@@ -160,7 +160,7 @@ namespace Lego.Ev3.Framework.Devices
         /// <param name="brake">Specify break level, [0: Float, 1: Break]</param>
         protected async Task TimePower(int power, int timeContinuesRun, int timeRampUp = 0, int timeRampDown = 0, Brake brake = Brake.Float)
         {
-            await OutputMethods.TimePower(Socket, Layer, PortNames, power, timeRampUp, timeContinuesRun, timeRampDown, brake);
+            await OutputMethods.TimePower(Socket, Layer, PortFlag, power, timeRampUp, timeContinuesRun, timeRampDown, brake);
         }
 
         /// <summary>
@@ -177,7 +177,7 @@ namespace Lego.Ev3.Framework.Devices
         /// <param name="brake">Specify break level, [0: Float, 1: Break]</param>
         protected async Task StepSpeed(int speed, int tachoPulsesContinuesRun, int tachoPulsesRampUp = 0, int tachoPulsesRampDown = 0, Brake brake = Brake.Float)
         {
-            await OutputMethods.StepPower(Socket, Layer, PortNames, speed, tachoPulsesRampUp, tachoPulsesContinuesRun, tachoPulsesRampDown, brake);
+            await OutputMethods.StepPower(Socket, Layer, PortFlag, speed, tachoPulsesRampUp, tachoPulsesContinuesRun, tachoPulsesRampDown, brake);
         }
 
         /// <summary>
@@ -194,7 +194,7 @@ namespace Lego.Ev3.Framework.Devices
         /// <param name="brake">Specify break level, [0: Float, 1: Break]</param>
         protected async Task TimeSpeed(int speed, int timeContinuesRun, int timeRampUp = 0, int timeRampDown = 0, Brake brake = Brake.Float)
         {
-            await OutputMethods.TimeSpeed(Socket, Layer, PortNames, speed, timeRampUp, timeContinuesRun, timeRampDown, brake);
+            await OutputMethods.TimeSpeed(Socket, Layer, PortFlag, speed, timeRampUp, timeContinuesRun, timeRampDown, brake);
         }
         
         /// <summary>
@@ -202,7 +202,7 @@ namespace Lego.Ev3.Framework.Devices
         /// </summary>
         protected async Task ResetTachoCount()
         {
-            await OutputMethods.ResetTachoCount(Socket, Layer, PortNames);
+            await OutputMethods.ResetTachoCount(Socket, Layer, PortFlag);
         }
 
 

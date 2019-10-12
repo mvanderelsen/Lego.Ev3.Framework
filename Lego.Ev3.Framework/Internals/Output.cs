@@ -35,7 +35,7 @@ namespace Lego.Ev3.Framework
         /// This function enables resetting the tacho count on all ports on all bricks
         /// </summary>
         /// <param name="portFlag">A flag indicating the ports to target. Eg PortNames.A|PortNames.C</param>
-        public async Task Reset(OutputPortNames portFlag = OutputPortNames.All)
+        public async Task Reset(OutputPortFlag portFlag = OutputPortFlag.All)
         {
             for (int i = 0; i < 4; i++)
             {
@@ -48,7 +48,7 @@ namespace Lego.Ev3.Framework
         /// </summary>
         /// <param name="portFlag">A flag indicating the ports to target. Eg PortNames.A|PortNames.C</param>
         /// <param name="brake">Specify break level, [0: Float, 1: Break]</param>
-        public async Task Stop(OutputPortNames portFlag = OutputPortNames.All, Brake brake = Brake.Float)
+        public async Task Stop(OutputPortFlag portFlag = OutputPortFlag.All, Brake brake = Brake.Float)
         {
             for (int i = 0; i < 4; i++)
             {
@@ -61,7 +61,7 @@ namespace Lego.Ev3.Framework
         /// </summary>
         /// <param name="portFlag">A flag indicating the ports to target. Eg PortNames.A|PortNames.C</param>
         /// <param name="power">Specify output power [-100 – 100 %]</param>
-        public async Task SetPower(int power, OutputPortNames portFlag = OutputPortNames.All)
+        public async Task SetPower(int power, OutputPortFlag portFlag = OutputPortFlag.All)
         {
             for (int i = 0; i < 4; i++)
             {
@@ -75,7 +75,7 @@ namespace Lego.Ev3.Framework
         /// </summary>
         /// <param name="portFlag">A flag indicating the ports to target. Eg PortNames.A|PortNames.C</param>
         /// <param name="speed">Specify output speed [-100 – 100 %]</param>
-        public async Task SetSpeed(int speed, OutputPortNames portFlag = OutputPortNames.All)
+        public async Task SetSpeed(int speed, OutputPortFlag portFlag = OutputPortFlag.All)
         {
             for (int i = 0; i < 4; i++)
             {
@@ -87,7 +87,7 @@ namespace Lego.Ev3.Framework
         /// This function enables starting the device on all ports on all bricks
         /// </summary>
         /// <param name="portFlag">A flag indicating the ports to target. Eg PortNames.A|PortNames.C</param>
-        public async Task Start(OutputPortNames portFlag = OutputPortNames.All)
+        public async Task Start(OutputPortFlag portFlag = OutputPortFlag.All)
         {
             for (int i = 0; i < 4; i++)
             {
@@ -99,7 +99,7 @@ namespace Lego.Ev3.Framework
         /// <summary>
         /// This function enables the program to test if a output device is busy on all ports on all bricks
         /// </summary>
-        public async Task<bool> IsBusy(OutputPortNames portFlag = OutputPortNames.All)
+        public async Task<bool> IsBusy(OutputPortFlag portFlag = OutputPortFlag.All)
         {
             for (int i = 0; i < 4; i++)
             {
@@ -114,7 +114,7 @@ namespace Lego.Ev3.Framework
         /// This function enables the program to clear the tacho count used as sensor input on all ports on all bricks
         /// </summary>
         /// <param name="portFlag">A flag indicating the ports to target. Eg PortNames.A|PortNames.C</param>
-        public async Task ClearCount(OutputPortNames portFlag = OutputPortNames.All)
+        public async Task ClearCount(OutputPortFlag portFlag = OutputPortFlag.All)
         {
             for (int i = 0; i < 4; i++)
             {

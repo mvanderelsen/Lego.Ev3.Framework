@@ -11,9 +11,9 @@ namespace Lego.Ev3.Framework.Sockets
 
         public ConcurrentQueue<Command> NoReplyCommands { get; } = new ConcurrentQueue<Command>();
 
-        public ConcurrentQueue<byte[]> Commands { get; } = new ConcurrentQueue<byte[]>();
+        public ConcurrentQueue<Command> Commands { get; } = new ConcurrentQueue<Command>();
 
-        public ConcurrentQueue<byte[]> Events { get; } = new ConcurrentQueue<byte[]>();
+        public ConcurrentQueue<Command> Events { get; } = new ConcurrentQueue<Command>();
 
         protected void Clear()
         {

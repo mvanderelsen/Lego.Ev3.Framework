@@ -45,138 +45,129 @@ namespace Lego.Ev3.Framework.Firmware
                 {
                     try
                     {
-                        byte[] batch = null;
-                        ushort index = 0;
-
-                        ushort buttonByteLength = 0;
-                        ushort batteryByteLength = 0;
-
-                        Dictionary<InputPort, DataType> triggeredPorts = new Dictionary<InputPort, DataType>();
-                        using (PayLoadBuilder cb = new PayLoadBuilder())
+                        //do not overload event message pump
+                        if (_socket.Events.Count < 2)
                         {
-                            foreach (int key in inputPorts.Keys)
+                            byte[] batch = null;
+                            ushort index = 0;
+
+                            ushort buttonByteLength = 0;
+                            ushort batteryByteLength = 0;
+
+                            Dictionary<InputPort, DataType> triggeredPorts = new Dictionary<InputPort, DataType>();
+                            using (PayLoadBuilder cb = new PayLoadBuilder())
                             {
-                                InputPort port = inputPorts[key];
-                                if (port.Status != PortStatus.OK) continue; // no device connected so continue
+                                foreach (int key in inputPorts.Keys)
+                                {
+                                    InputPort port = inputPorts[key];
+                                    if (port.Status != PortStatus.OK) continue; // no device connected so continue
+                                    InputDevice device = (InputDevice)port.Device;
+
+                                    if (!device.MonitorEvents) continue; // device will get value on manual poll
+
+                                    DataType type = device.BatchCommand(cb, index); // get batchcommand
+                                    if (type == DataType.NONE) continue;
+
+                                    index += type.ByteLength();
+                                    triggeredPorts.Add(port, type);
+                                }
+
+
+                                buttonByteLength = buttons.ClickBatchCommand(cb, index);
+                                index += buttonByteLength;
+
+                                batteryByteLength = battery.BatchCommand(cb, index);
+                                index += batteryByteLength;
+
+                                batch = cb.ToBytes();
+                            }
+
+                            //no need to send batch, it has no content.
+                            if (triggeredPorts.Count == 0 && buttonByteLength == 0)
+                            {
+                                try
+                                {
+                                    await Task.Delay(INTERVAL, _socket.CancellationToken);
+                                }
+                                catch (TaskCanceledException) { }
+                                continue;
+                            }
+
+                            Command cmd = null;
+                            using (CommandBuilder cb = new CommandBuilder(CommandType.DIRECT_COMMAND_REPLY, index, 0, useEventId: true))
+                            {
+                                cb.Raw(batch);
+                                cmd = cb.ToCommand();
+                            }
+
+                            Response response = await Brick.Socket.Execute(cmd, true);
+
+                            if (response.Type == ResponseType.ERROR && IsConnected) throw new FirmwareException(response);
+
+                            byte[] data = response.PayLoad;
+                            if (data.Length != index && IsConnected) throw new FirmwareException(response);
+
+
+                            index = 0;
+                            foreach (InputPort port in triggeredPorts.Keys)
+                            {
                                 InputDevice device = (InputDevice)port.Device;
 
-                                if (!device.MonitorEvents) continue; // device will get value on manual poll
-
-                                DataType type = device.BatchCommand(cb, index); // get batchcommand
-                                if (type == DataType.NONE) continue;
+                                bool hasChanged = false;
+                                DataType type = triggeredPorts[port];
+                                switch (type)
+                                {
+                                    case DataType.DATA8:
+                                        {
+                                            hasChanged = device.SetDeviceValue(data[index]);
+                                            break;
+                                        }
+                                    case DataType.DATAF:
+                                        {
+                                            hasChanged = device.SetDeviceValue(BitConverter.ToSingle(data, index));
+                                            break;
+                                        }
+                                    case DataType.DATA32:
+                                        {
+                                            hasChanged = device.SetDeviceValue(BitConverter.ToInt32(data, index));
+                                            break;
+                                        }
+                                    case DataType.DATA16:
+                                        {
+                                            hasChanged = device.SetDeviceValue(BitConverter.ToInt16(data, index));
+                                            break;
+                                        }
+                                    case DataType.DATA_A4:
+                                        {
+                                            byte[] values = new byte[4];
+                                            Array.Copy(data, index, values, 0, 4);
+                                            hasChanged = device.SetDeviceValue(values);
+                                            break;
+                                        }
+                                }
 
                                 index += type.ByteLength();
-                                triggeredPorts.Add(port, type);
                             }
 
-
-                            buttonByteLength = buttons.ClickBatchCommand(cb, index);
-                            index += buttonByteLength;
-
-                            batteryByteLength = battery.BatchCommand(cb, index);
-                            index += batteryByteLength;
-
-                            batch = cb.ToBytes();
-                        }
-
-                        //no need to send batch, it has no content.
-                        if (triggeredPorts.Count == 0 && buttonByteLength == 0)
-                        {
-                            try
+                            if (buttonByteLength > 0)
                             {
-                                await Task.Delay(INTERVAL, _socket.CancellationToken);
+                                byte[] buttonData = new byte[buttonByteLength];
+                                Array.Copy(data, index, buttonData, 0, buttonByteLength);
+                                buttons.ClickBatchCommandReturn(buttonData);
+                                index += buttonByteLength;
                             }
-                            catch (TaskCanceledException) { }
-                            continue;
-                        }
 
-                        Command cmd = null;
-                        using (CommandBuilder cb = new CommandBuilder(CommandType.DIRECT_COMMAND_REPLY, index, 0, useEventId:true))
-                        {
-                            cb.Raw(batch);
-                            cmd = cb.ToCommand();
-                        }
-
-                        Response response = await Brick.Socket.Execute(cmd, true);
-
-                        if (response.Type == ResponseType.ERROR)
-                        {
-                            try
+                            if (batteryByteLength > 0)
                             {
-                                await Task.Delay(INTERVAL, _socket.CancellationToken);
+                                byte[] batteryData = new byte[batteryByteLength];
+                                Array.Copy(data, index, batteryData, 0, batteryByteLength);
+                                battery.SetValue(batteryData);
+                                index += batteryByteLength;
                             }
-                            catch (TaskCanceledException) { }
-                            continue;
                         }
-
-                        byte[] data = response.PayLoad;
-                        if (data.Length != index)
-                        {
-                            try
-                            {
-                                await Task.Delay(INTERVAL, _socket.CancellationToken);
-                            }
-                            catch (TaskCanceledException) { }
-                            continue;
-                        }
-
-                        index = 0;
-                        foreach (InputPort port in triggeredPorts.Keys)
-                        {
-                            InputDevice device = (InputDevice)port.Device;
-
-                            bool hasChanged = false;
-                            DataType type = triggeredPorts[port];
-                            switch (type)
-                            {
-                                case DataType.DATA8:
-                                    {
-                                        hasChanged = device.SetDeviceValue(data[index]);
-                                        break;
-                                    }
-                                case DataType.DATAF:
-                                    {
-                                        hasChanged = device.SetDeviceValue(BitConverter.ToSingle(data, index));
-                                        break;
-                                    }
-                                case DataType.DATA32:
-                                    {
-                                        hasChanged = device.SetDeviceValue(BitConverter.ToInt32(data, index));
-                                        break;
-                                    }
-                                case DataType.DATA16:
-                                    {
-                                        hasChanged = device.SetDeviceValue(BitConverter.ToInt16(data, index));
-                                        break;
-                                    }
-                                case DataType.DATA_A4:
-                                    {
-                                        byte[] values = new byte[4];
-                                        Array.Copy(data, index, values, 0, 4);
-                                        hasChanged = device.SetDeviceValue(values);
-                                        break;
-                                    }
-                            }
-
-                            index += type.ByteLength();
-                        }
-
-                        if (buttonByteLength > 0)
-                        {
-                            byte[] buttonData = new byte[buttonByteLength];
-                            Array.Copy(data, index, buttonData, 0, buttonByteLength);
-                            buttons.ClickBatchCommandReturn(buttonData);
-                            index += buttonByteLength;
-                        }
-
-                        if (batteryByteLength > 0)
-                        {
-                            byte[] batteryData = new byte[batteryByteLength];
-                            Array.Copy(data, index, batteryData, 0, batteryByteLength);
-                            battery.SetValue(batteryData);
-                            index += batteryByteLength;
-                        }
+                        
                     }
+                    catch (FirmwareException) { }
                     catch (Exception e)
                     {
                         Brick.Logger.LogError(e, e.Message);
@@ -204,7 +195,9 @@ namespace Lego.Ev3.Framework.Firmware
 
         public async Task<Response> Execute(Command command)
         {
-            return await Execute(command, false);
+            Response response =  await Execute(command, false);
+            if(response.Type == ResponseType.ERROR) throw new FirmwareException(response);
+            return response;
         }
 
         private async Task<Response> Execute(Command command, bool isEvent = false)
@@ -218,7 +211,7 @@ namespace Lego.Ev3.Framework.Firmware
                         return await Task.Run(async () =>
                         {
                             int retry = 0;
-                            while (!_socket.CancellationToken.IsCancellationRequested && retry < 20)
+                            while (!_socket.CancellationToken.IsCancellationRequested && retry < 100)
                             {
 
                                 foreach (ushort id in _socket.Responses.Keys)
@@ -231,7 +224,7 @@ namespace Lego.Ev3.Framework.Firmware
                                 }
                                 try
                                 {
-                                    await Task.Delay(10, _socket.CancellationToken);
+                                    await Task.Delay(100, _socket.CancellationToken);
                                 }
                                 catch (TaskCanceledException) { }
                                 retry++;
@@ -245,14 +238,14 @@ namespace Lego.Ev3.Framework.Firmware
                     {
                         Handles.TryAdd(command.Id, command);
 
-                        if (isEvent) _socket.Events.Enqueue(command.PayLoad);
-                        else _socket.Commands.Enqueue(command.PayLoad);
+                        if (isEvent) _socket.Events.Enqueue(command);
+                        else _socket.Commands.Enqueue(command);
 
 
                         return await Task.Run(async() => 
                         {
                             int retry = 0;
-                            while (!_socket.CancellationToken.IsCancellationRequested && retry < 20)
+                            while (!_socket.CancellationToken.IsCancellationRequested && retry < 100)
                             {
                                 
                                 foreach (ushort id in _socket.Responses.Keys)
@@ -269,7 +262,7 @@ namespace Lego.Ev3.Framework.Firmware
 
                                 try
                                 {
-                                    await Task.Delay(10, _socket.CancellationToken);
+                                    await Task.Delay(100, _socket.CancellationToken);
                                 }
                                 catch (TaskCanceledException) { }
                                 retry++;

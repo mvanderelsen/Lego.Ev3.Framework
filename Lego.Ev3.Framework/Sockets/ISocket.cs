@@ -22,9 +22,9 @@ namespace Lego.Ev3.Framework.Sockets
 
         ConcurrentQueue<Command> NoReplyCommands { get; }
 
-        ConcurrentQueue<byte[]> Commands { get; }
+        ConcurrentQueue<Command> Commands { get; }
 
-        ConcurrentQueue<byte[]> Events { get; }
+        ConcurrentQueue<Command> Events { get; }
 
         void Dispose();
     }
