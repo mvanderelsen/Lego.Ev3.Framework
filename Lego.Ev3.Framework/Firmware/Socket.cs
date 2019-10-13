@@ -35,8 +35,13 @@ namespace Lego.Ev3.Framework.Firmware
             await _socket.Connect();
         }
 
-        public void StartEventMonitor(Dictionary<int, InputPort> inputPorts, Buttons buttons, Battery battery)
+        public void StartEventMonitor(Brick brick)
         {
+            Dictionary<int, InputPort> inputPorts = brick.IOPort.Input.Ports;
+            Buttons buttons = brick.Buttons;
+            Battery battery = brick.Battery;
+            BrickConsole console = brick.Console;
+
             int INTERVAL = Brick.Options.EventMonitor.Interval;
 
             Task task = Task.Factory.StartNew(async () =>
@@ -46,13 +51,14 @@ namespace Lego.Ev3.Framework.Firmware
                     try
                     {
                         //do not overload event message pump
-                        if (_socket.Events.Count < 2)
+                        if (_socket.EventBuffer.Count == 0)
                         {
                             byte[] batch = null;
                             ushort index = 0;
 
                             ushort buttonByteLength = 0;
                             ushort batteryByteLength = 0;
+                            ushort warningByteLength = 0;
 
                             Dictionary<InputPort, DataType> triggeredPorts = new Dictionary<InputPort, DataType>();
                             using (PayLoadBuilder cb = new PayLoadBuilder())
@@ -79,11 +85,14 @@ namespace Lego.Ev3.Framework.Firmware
                                 batteryByteLength = battery.BatchCommand(cb, index);
                                 index += batteryByteLength;
 
+                                warningByteLength = console.BatchCommand(cb, index);
+                                index += warningByteLength;
+
                                 batch = cb.ToBytes();
                             }
 
                             //no need to send batch, it has no content.
-                            if (triggeredPorts.Count == 0 && buttonByteLength == 0)
+                            if (batch.Length == 0)
                             {
                                 try
                                 {
@@ -102,10 +111,18 @@ namespace Lego.Ev3.Framework.Firmware
 
                             Response response = await Brick.Socket.Execute(cmd, true);
 
-                            if (response.Type == ResponseType.ERROR && IsConnected) throw new FirmwareException(response);
+                            if (response.Type == ResponseType.ERROR)
+                            {
+                                if (!_socket.CancellationToken.IsCancellationRequested) throw new FirmwareException(response);
+                                else continue;
+                            }
 
                             byte[] data = response.PayLoad;
-                            if (data.Length != index && IsConnected) throw new FirmwareException(response);
+                            if (data.Length != index)
+                            {
+                                if (!_socket.CancellationToken.IsCancellationRequested) throw new FirmwareException(response);
+                                else continue;
+                            }
 
 
                             index = 0;
@@ -164,10 +181,15 @@ namespace Lego.Ev3.Framework.Firmware
                                 battery.SetValue(batteryData);
                                 index += batteryByteLength;
                             }
+
+                            if (warningByteLength > 0) 
+                            {
+                                console.SetValue(data[index]);
+                                index += warningByteLength;
+                            }
                         }
-                        
+
                     }
-                    catch (FirmwareException) { }
                     catch (Exception e)
                     {
                         Brick.Logger.LogError(e, e.Message);
@@ -195,8 +217,8 @@ namespace Lego.Ev3.Framework.Firmware
 
         public async Task<Response> Execute(Command command)
         {
-            Response response =  await Execute(command, false);
-            if(response.Type == ResponseType.ERROR) throw new FirmwareException(response);
+            Response response = await Execute(command, false);
+            if (response.Type == ResponseType.ERROR && _socket.IsConnected) throw new FirmwareException(response);
             return response;
         }
 
@@ -207,24 +229,22 @@ namespace Lego.Ev3.Framework.Firmware
                 case CommandType.DIRECT_COMMAND_NO_REPLY:
                 case CommandType.SYSTEM_COMMAND_NO_REPLY:
                     {
-                        _socket.NoReplyCommands.Enqueue(command);
+                        _socket.NoReplyCommandBuffer.Enqueue(command);
                         return await Task.Run(async () =>
                         {
                             int retry = 0;
-                            while (!_socket.CancellationToken.IsCancellationRequested && retry < 100)
+                            ushort id = command.Id;
+                            while (!_socket.CancellationToken.IsCancellationRequested && retry < 20)
                             {
 
-                                foreach (ushort id in _socket.Responses.Keys)
+                                if (_socket.ResponseBuffer.ContainsKey(id))
                                 {
-                                    if (id == command.Id)
-                                    {
-                                        _socket.Responses.TryRemove(id, out _);
-                                        return Response.Ok(command);
-                                    }
+                                    _socket.ResponseBuffer.TryRemove(id, out _);
+                                    return Response.Ok(command);
                                 }
                                 try
                                 {
-                                    await Task.Delay(100, _socket.CancellationToken);
+                                    await Task.Delay(50, _socket.CancellationToken);
                                 }
                                 catch (TaskCanceledException) { }
                                 retry++;
@@ -238,26 +258,23 @@ namespace Lego.Ev3.Framework.Firmware
                     {
                         Handles.TryAdd(command.Id, command);
 
-                        if (isEvent) _socket.Events.Enqueue(command);
-                        else _socket.Commands.Enqueue(command);
+                        if (isEvent) _socket.EventBuffer.Enqueue(command);
+                        else _socket.CommandBuffer.Enqueue(command);
 
-
-                        return await Task.Run(async() => 
+                        return await Task.Run(async () =>
                         {
                             int retry = 0;
-                            while (!_socket.CancellationToken.IsCancellationRequested && retry < 100)
+                            ushort id = command.Id;
+                            while (!_socket.CancellationToken.IsCancellationRequested && retry < 50)
                             {
-                                
-                                foreach (ushort id in _socket.Responses.Keys)
+
+                                if (_socket.ResponseBuffer.ContainsKey(id))
                                 {
-                                    if (id == command.Id)
-                                    {
-                                        _socket.Responses.TryGetValue(id, out byte[] payLoad);
-                                        Response response = Response.FromPayLoad(Handles[id], payLoad);
-                                        Handles.TryRemove(id, out _);
-                                        _socket.Responses.TryRemove(id, out _);
-                                        return response;
-                                    }
+                                    _socket.ResponseBuffer.TryGetValue(id, out byte[] payLoad);
+                                    Response response = Response.FromPayLoad(Handles[id], payLoad);
+                                    Handles.TryRemove(id, out _);
+                                    _socket.ResponseBuffer.TryRemove(id, out _);
+                                    return response;
                                 }
 
                                 try

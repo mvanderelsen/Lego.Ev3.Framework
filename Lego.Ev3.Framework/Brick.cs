@@ -210,7 +210,7 @@ namespace Lego.Ev3.Framework
                 if (Options.PowerUpSelfTest != null && Options.PowerUpSelfTest.Enabled) await PowerUpSelfTest();
                 else await InitializeDevices();
 
-                if(Options.EventMonitor.Enabled && IsConnected) Socket.StartEventMonitor(IOPort.Input.Ports, Buttons, Battery);
+                if(Options.EventMonitor.Enabled && IsConnected) Socket.StartEventMonitor(this);
 
             }
             catch (Exception)

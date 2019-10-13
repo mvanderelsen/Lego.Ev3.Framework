@@ -18,13 +18,13 @@ namespace Lego.Ev3.Framework.Sockets
 
         CancellationToken CancellationToken { get; }
 
-        ConcurrentDictionary<ushort, byte[]> Responses { get; }
+        ConcurrentDictionary<ushort, byte[]> ResponseBuffer { get; }
 
-        ConcurrentQueue<Command> NoReplyCommands { get; }
+        ConcurrentQueue<Command> NoReplyCommandBuffer { get; }
 
-        ConcurrentQueue<Command> Commands { get; }
+        ConcurrentQueue<Command> CommandBuffer { get; }
 
-        ConcurrentQueue<Command> Events { get; }
+        ConcurrentQueue<Command> EventBuffer { get; }
 
         void Dispose();
     }

@@ -1,5 +1,6 @@
 ﻿using Lego.Ev3.Framework.Core;
 using System;
+using System.Collections.Generic;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -55,14 +56,7 @@ namespace Lego.Ev3.Framework.Firmware
             }
             Response response = await socket.Execute(cmd);
 
-            BatteryValue battery = null;
-
-            if (response.Type == ResponseType.OK)
-            {
-                byte[] data = response.PayLoad;
-                battery = BatteryValue(data, 0);
-            }
-            return battery;
+            return BatteryValue(response.PayLoad, 0);
         }
 
         internal static BatteryValue BatteryValue(byte[] data, int index)
@@ -257,7 +251,6 @@ namespace Lego.Ev3.Framework.Firmware
         //(Data32) FREE – Amount of free memory[KB]
         #endregion
 
-
         #region SystemInfo
         //CMD: GET_FW_VERS = 0x0A
         //Arguments
@@ -281,16 +274,9 @@ namespace Lego.Ev3.Framework.Firmware
             }
             Response response = await socket.Execute(cmd);
 
-
-            string value = "";
-
-            if (response.Type == ResponseType.OK)
-            {
-                byte[] data = response.PayLoad;
-                int index = Array.IndexOf(data, (byte)0);
-                value = Encoding.UTF8.GetString(data, 0, index);
-            }
-            return value;
+            byte[] data = response.PayLoad;
+            int index = Array.IndexOf(data, (byte)0);
+            return Encoding.UTF8.GetString(data, 0, index);
         }
 
 
@@ -316,16 +302,9 @@ namespace Lego.Ev3.Framework.Firmware
             }
             Response response = await socket.Execute(cmd);
 
-
-            string value = "";
-
-            if (response.Type == ResponseType.OK)
-            {
-                byte[] data = response.PayLoad;
-                int index = Array.IndexOf(data, (byte)0);
-                value = Encoding.UTF8.GetString(data, 0, index);
-            }
-            return value;
+            byte[] data = response.PayLoad;
+            int index = Array.IndexOf(data, (byte)0);
+            return Encoding.UTF8.GetString(data, 0, index);
         }
 
         //CMD: GET_OS_VERS = 0x03
@@ -350,16 +329,9 @@ namespace Lego.Ev3.Framework.Firmware
             }
             Response response = await socket.Execute(cmd);
 
-
-            string value = "";
-
-            if (response.Type == ResponseType.OK)
-            {
-                byte[] data = response.PayLoad;
-                int index = Array.IndexOf(data, (byte)0);
-                value = Encoding.UTF8.GetString(data, 0, index);
-            }
-            return value;
+            byte[] data = response.PayLoad;
+            int index = Array.IndexOf(data, (byte)0);
+            return Encoding.UTF8.GetString(data, 0, index);
         }
 
         //CMD: GET_OS_BUILD = 0x0C
@@ -384,16 +356,9 @@ namespace Lego.Ev3.Framework.Firmware
             }
             Response response = await socket.Execute(cmd);
 
-
-            string value = "";
-
-            if (response.Type == ResponseType.OK)
-            {
-                byte[] data = response.PayLoad;
-                int index = Array.IndexOf(data, (byte)0);
-                value = Encoding.UTF8.GetString(data, 0, index);
-            }
-            return value;
+            byte[] data = response.PayLoad;
+            int index = Array.IndexOf(data, (byte)0);
+            return Encoding.UTF8.GetString(data, 0, index);
         }
 
         //CMD: GET_HW_VERS = 0x09
@@ -418,19 +383,60 @@ namespace Lego.Ev3.Framework.Firmware
             }
             Response response = await socket.Execute(cmd);
 
+            byte[] data = response.PayLoad;
+            int index = Array.IndexOf(data, (byte)0);
+            return Encoding.UTF8.GetString(data, 0, index);
 
-            string value = "";
-
-            if (response.Type == ResponseType.OK)
-            {
-                byte[] data = response.PayLoad;
-                int index = Array.IndexOf(data, (byte)0);
-                value = Encoding.UTF8.GetString(data, 0, index);
-            }
-            return value;
         }
         #endregion
 
+        //CMD: GET_WARNING = 0x11
+        //Return 
+        //(Data8) WARNING – Bit field containing various warnings
+        //Description
+        //Read warning bit field.
+        //Warnings:
+        //0x01 : Warning temperature
+        //0x02 : Warning current
+        //0x04 : Warning voltage
+        //0x08 : Warning memory
+        //0x10 : Warning DSPSTAT
+        //0x20 : Warning RAM
+        //0x40 : Warning battery low
+        //0x80 : Warning busy
+        //0x3F : Warnings
+        internal static async Task<IEnumerable<Warning>> GetWarnings(Socket socket)
+        {
+            Command cmd = null;
+            using (CommandBuilder cb = new CommandBuilder(CommandType.DIRECT_COMMAND_REPLY, 1, 0))
+            {
+                GetWarning_BatchCommand(cb, 0);
+                cmd = cb.ToCommand();
+            }
+            Response response = await socket.Execute(cmd);
+
+            byte bitField = response.PayLoad[0];
+            if (bitField == 0) return new List<Warning> { Warning.None };
+            Warning warning = (Warning)bitField;
+            return warning.GetFlags();
+        }
+
+        internal static ushort GetWarning_BatchCommand(PayLoadBuilder payLoadBuilder, int index)
+        {
+            payLoadBuilder.Raw((byte)OP.opUI_READ);
+            payLoadBuilder.Raw((byte)UI_READ_SUBCODE.GET_WARNING);
+            payLoadBuilder.GlobalIndex(0);
+            return DataType.DATA8.ByteLength();
+        }
+
+        internal static IEnumerable<Warning> GetFlags(this Warning input)
+        {
+            foreach (Warning value in Enum.GetValues(input.GetType()))
+            {
+                if (value == Warning.None || value == Warning.All) continue;
+                if (input.HasFlag(value)) yield return value;
+            }
+        }
 
         //CMD: GET_VERSION = 0x1A
         //Arguments
@@ -455,16 +461,9 @@ namespace Lego.Ev3.Framework.Firmware
             }
             Response response = await socket.Execute(cmd);
 
-
-            string value = "";
-
-            if (response.Type == ResponseType.OK)
-            {
-                byte[] data = response.PayLoad;
-                int index = Array.IndexOf(data, (byte)0);
-                value = Encoding.UTF8.GetString(data, 0, index);
-            }
-            return value;
+            byte[] data = response.PayLoad;
+            int index = Array.IndexOf(data, (byte)0);
+            return Encoding.UTF8.GetString(data, 0, index);
         }
 
         //CMD: GET_IP = 0x1B
@@ -489,16 +488,9 @@ namespace Lego.Ev3.Framework.Firmware
             }
             Response response = await socket.Execute(cmd);
 
-
-            string value = "";
-
-            if (response.Type == ResponseType.OK)
-            {
-                byte[] data = response.PayLoad;
-                int index = Array.IndexOf(data, (byte)0);
-                value = Encoding.UTF8.GetString(data, 0, index);
-            }
-            return value;
+            byte[] data = response.PayLoad;
+            int index = Array.IndexOf(data, (byte)0);
+            return Encoding.UTF8.GetString(data, 0, index);
         }
 
 
@@ -576,21 +568,7 @@ namespace Lego.Ev3.Framework.Firmware
         //Description
         //Read warning bit Get and clear shutdown flag(Internal use).
 
-        //CMD: GET_WARNING = 0x11
-        //Return 
-        //(Data8) WARNING – Bit field containing various warnings
-        //Description
-        //Read warning bit field.
-        //Warnings:
-        //0x01 : Warning temperature
-        //0x02 : Warning current
-        //0x04 : Warning voltage
-        //0x08 : Warning memory
-        //0x10 : Warning DSPSTAT
-        //0x20 : Warning RAM
-        //0x40 : Warning battery low
-        //0x80 : Warning busy
-        //0x3F : Warnings
+
 
 
 

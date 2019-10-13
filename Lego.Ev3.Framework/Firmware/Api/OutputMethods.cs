@@ -280,8 +280,7 @@ namespace Lego.Ev3.Framework.Firmware
             }
             Response response = await socket.Execute(cmd);
 
-            byte[] data = response.PayLoad;
-            return BitConverter.ToBoolean(data, 0);
+            return BitConverter.ToBoolean(response.PayLoad, 0);
         }
 
         ///// <summary>
@@ -667,8 +666,7 @@ namespace Lego.Ev3.Framework.Firmware
 
             Response response = await socket.Execute(cmd);
 
-            byte[] data = response.PayLoad;
-            return BitConverter.ToInt32(data, 0);
+            return BitConverter.ToInt32(response.PayLoad, 0);
         }
 
 

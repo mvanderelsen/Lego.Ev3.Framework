@@ -3,6 +3,7 @@ using Lego.Ev3.Framework.Firmware;
 using Lego.Ev3.Framework.Internals;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Logging;
 
 namespace Lego.Ev3.Framework
 {
@@ -11,7 +12,58 @@ namespace Lego.Ev3.Framework
     /// </summary>
     public sealed class BrickConsole
     {
-        internal BrickConsole() {}
+        /// <summary>
+        /// Delegate for warnings received from brick
+        /// </summary>
+        /// <param name="value">list of warnings</param>
+        public delegate void OnWarningsReceived(IEnumerable<Warning> warnings);
+        /// <summary>
+        /// Warnings received event
+        /// </summary>
+        public event OnWarningsReceived WarningsReceived;
+
+        public bool MonitorEvents { get; set; }
+
+        private Warning Value { get; set; }
+
+        internal BrickConsole() 
+        {
+            MonitorEvents = true;
+        }
+
+        internal ushort BatchCommand(PayLoadBuilder payLoadBuilder, int index)
+        {
+            if (!MonitorEvents || WarningsReceived == null) return 0; // no need to poll data
+            return UIReadMethods.GetWarning_BatchCommand(payLoadBuilder, index);
+        }
+
+        internal bool SetValue(byte data) 
+        {
+            Warning newValue = (Warning)data;
+
+            bool hasChanged = (Value != newValue);
+            if (hasChanged)
+            {
+                Value = newValue;
+                if (Value != Warning.None)
+                {
+                    IEnumerable<Warning> warnings = Value.GetFlags();
+                    if (MonitorEvents) WarningsReceived?.Invoke(warnings);
+                    foreach (Warning warning in warnings) 
+                    {
+                        Brick.Logger.LogWarning($"Brick warning: {warning}");
+                    }
+                }
+            }
+            return hasChanged;
+        }
+
+
+        public async Task<IEnumerable<Warning>> GetWarnings() 
+        {
+            return await UIReadMethods.GetWarnings(Brick.Socket);
+        }
+
 
 
         /// <summary>

@@ -54,7 +54,6 @@ namespace Lego.Ev3.Framework
             return value;
         }
 
-
         internal bool SetValue(byte[] data)
         {
             BatteryValue newValue = null;
@@ -76,11 +75,7 @@ namespace Lego.Ev3.Framework
             if (hasChanged)
             {
                 Value = newValue;
-                if (ValueChanged != null && MonitorEvents)
-                {
-                    if (Brick.Socket.SynchronizationContext == SynchronizationContext.Current) ValueChanged(Value);
-                    else Brick.Socket.SynchronizationContext.Post(delegate { ValueChanged(Value); }, null);
-                }
+                if (MonitorEvents) ValueChanged?.Invoke(newValue);
 
             }
             return hasChanged;

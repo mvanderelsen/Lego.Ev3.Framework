@@ -65,7 +65,7 @@ namespace Lego.Ev3.Framework.Sockets
         {
             int size = _reader.ReadInt16();
             byte[] payLoad = _reader.ReadBytes(size);
-            Responses.TryAdd(Response.GetId(payLoad), payLoad);
+            ResponseBuffer.TryAdd(Response.GetId(payLoad), payLoad);
         }
 
         private void OpenSocket()
@@ -78,25 +78,25 @@ namespace Lego.Ev3.Framework.Sockets
                     {
                         Command command;
 
-                        if (NoReplyCommands.TryDequeue(out command))
+                        if (NoReplyCommandBuffer.TryDequeue(out command))
                         {
                             lock (_serialPort) _serialPort.Write(command.PayLoad, 0, command.PayLoad.Length);
-                            Responses.TryAdd(command.Id, null);
+                            ResponseBuffer.TryAdd(command.Id, null);
                         }
 
 
-                        if (Commands.TryDequeue(out command))
+                        if (CommandBuffer.TryDequeue(out command))
                         {
                             lock (_serialPort) _serialPort.Write(command.PayLoad, 0, command.PayLoad.Length);
                             int retry = 0;
-                            while (!Responses.ContainsKey(command.Id) && retry < 20)
+                            while (!ResponseBuffer.ContainsKey(command.Id) && retry < 20)
                             {
                                 await Task.Delay(50, CancellationToken);
                                 retry++;
                             }
                         }
 
-                        if (Events.TryDequeue(out command))
+                        if (EventBuffer.TryDequeue(out command))
                         {
                             lock (_serialPort) _serialPort.Write(command.PayLoad, 0, command.PayLoad.Length);
                         }

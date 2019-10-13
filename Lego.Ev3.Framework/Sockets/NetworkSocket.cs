@@ -66,7 +66,7 @@ namespace Lego.Ev3.Framework.Sockets
                     {
                         byte[] payLoad = new byte[size];
                         await _stream.ReadAsync(payLoad, 0, payLoad.Length);
-                        Responses.TryAdd(Response.GetId(payLoad), payLoad);
+                        ResponseBuffer.TryAdd(Response.GetId(payLoad), payLoad);
                     }
                 }
             }, CancellationToken, TaskCreationOptions.LongRunning, TaskScheduler.Current);
@@ -79,28 +79,28 @@ namespace Lego.Ev3.Framework.Sockets
                     try
                     {
                         Command command;
-                        if (NoReplyCommands.TryDequeue(out command))
+                        if (NoReplyCommandBuffer.TryDequeue(out command))
                         {
                             await _stream.WriteAsync(command.PayLoad, 0, command.PayLoad.Length);
                             _stream.Flush();
-                            Responses.TryAdd(command.Id, null);
+                            ResponseBuffer.TryAdd(command.Id, null);
                         }
 
 
-                        if (Commands.TryDequeue(out command))
+                        if (CommandBuffer.TryDequeue(out command))
                         {
                             await _stream.WriteAsync(command.PayLoad, 0, command.PayLoad.Length);
                             _stream.Flush();
 
                             int retry = 0;
-                            while (!Responses.ContainsKey(command.Id) && retry < 20)
+                            while (!ResponseBuffer.ContainsKey(command.Id) && retry < 20)
                             {
                                 await Task.Delay(50, CancellationToken);
                                 retry++;
                             }
                         }
 
-                        if (Events.TryDequeue(out command))
+                        if (EventBuffer.TryDequeue(out command))
                         {
                             await _stream.WriteAsync(command.PayLoad, 0, command.PayLoad.Length);
                             _stream.Flush();

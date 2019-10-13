@@ -76,7 +76,7 @@ namespace Lego.Ev3.Framework.Sockets
                     {
                         byte[] payLoad = new byte[size];
                         Array.Copy(_input, 3, payLoad, 0, size);
-                        Responses.TryAdd(Response.GetId(payLoad), payLoad);
+                        ResponseBuffer.TryAdd(Response.GetId(payLoad), payLoad);
                     }
                 }
             }, CancellationToken, TaskCreationOptions.LongRunning, TaskScheduler.Current);
@@ -89,31 +89,31 @@ namespace Lego.Ev3.Framework.Sockets
                     try
                     {
                         Command command;
-                        if (NoReplyCommands.TryDequeue(out command))
+                        if (NoReplyCommandBuffer.TryDequeue(out command))
                         {
                             command.PayLoad.CopyTo(_output, 1);
                             await _stream.WriteAsync(_output, 0, _output.Length);
                             _stream.Flush();
-                            Responses.TryAdd(command.Id, null);
+                            ResponseBuffer.TryAdd(command.Id, null);
                         }
 
 
 
-                        if (Commands.TryDequeue(out command))
+                        if (CommandBuffer.TryDequeue(out command))
                         {
                             command.PayLoad.CopyTo(_output, 1);
                             await _stream.WriteAsync(_output, 0, _output.Length);
                             _stream.Flush();
 
                             int retry = 0;
-                            while (!Responses.ContainsKey(command.Id) && retry < 20)
+                            while (!ResponseBuffer.ContainsKey(command.Id) && retry < 20)
                             {
                                 await Task.Delay(50, CancellationToken);
                                 retry++;
                             }
                         }
 
-                        if (Events.TryDequeue(out command))
+                        if (EventBuffer.TryDequeue(out command))
                         {
                             command.PayLoad.CopyTo(_output, 1);
                             await _stream.WriteAsync(_output, 0, _output.Length);
