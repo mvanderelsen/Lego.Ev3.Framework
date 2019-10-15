@@ -1,7 +1,10 @@
 ﻿namespace Lego.Ev3.Framework.Firmware
 {
 
-    internal enum ResponseType
+    /// <summary>
+    /// Response type either Ok or Error
+    /// </summary>
+    public enum ResponseType
     {
         /// <summary>
         /// OK

@@ -25,7 +25,7 @@ namespace Lego.Ev3.Framework.Firmware
             if (globalAllocation > 1024) throw new ArgumentException("Global buffer must be less than 1024 bytes", nameof(globalAllocation));
             if (localAllocation > 64) throw new ArgumentException("Local buffer must be less than 64 bytes", nameof(localAllocation));
 
-            Id = useEventId ? CommandHandle.EVENT_ID : CommandHandle.NewId();
+            Id = useEventId ? EVENT_ID : NewId();
             Type = type;
 
             LittleEndian(0); // Command size, Little Endian. Command size not including these 2 bytes. Blank for setting at ToCommand() method
@@ -71,5 +71,30 @@ namespace Lego.Ev3.Framework.Firmware
 
             return new Command(Id, Type, payLoad);
         }
+
+
+        #region command id
+        private static ushort _id = 0x0001;
+
+        private static readonly object @lock = new object();
+
+        private static ushort NewId()
+        {
+            lock (@lock)
+            {
+                //skip fixed id's reserve 100
+                if (_id > FREE) _id = 0x0000;
+                _id += 1;
+            }
+            return _id;
+        }
+
+
+        //use fixed id for event polling
+        private const ushort EVENT_ID = ushort.MaxValue;
+
+        //free id ushort slots
+        private const ushort FREE = ushort.MaxValue - 100;
+        #endregion
     }
 }

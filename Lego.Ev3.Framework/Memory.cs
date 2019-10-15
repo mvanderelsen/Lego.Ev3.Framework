@@ -16,8 +16,7 @@ namespace Lego.Ev3.Framework
         /// <returns></returns>
         public async Task<MemoryInfo> GetMemoryInfo()
         {
-            int[] values = await MemoryMethods.MemoryUsage(Brick.Socket);
-            return new MemoryInfo(values);
+            return await MemoryMethods.GetMemoryInfo(Brick.Socket);
         }
     }
 }

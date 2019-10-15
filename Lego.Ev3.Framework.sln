@@ -5,6 +5,8 @@ VisualStudioVersion = 16.0.29306.81
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Lego.Ev3.Framework", "Lego.Ev3.Framework\Lego.Ev3.Framework.csproj", "{02793984-5377-4B3A-805D-5F50CF307A0D}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Lego.Ev3.Framework.xUnit", "Lego.Ev3.Framework.xUnit\Lego.Ev3.Framework.xUnit.csproj", "{47FCA405-C717-43B3-B584-1ADD9CA2A35F}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -15,6 +17,10 @@ Global
 		{02793984-5377-4B3A-805D-5F50CF307A0D}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{02793984-5377-4B3A-805D-5F50CF307A0D}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{02793984-5377-4B3A-805D-5F50CF307A0D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{47FCA405-C717-43B3-B584-1ADD9CA2A35F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{47FCA405-C717-43B3-B584-1ADD9CA2A35F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{47FCA405-C717-43B3-B584-1ADD9CA2A35F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{47FCA405-C717-43B3-B584-1ADD9CA2A35F}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

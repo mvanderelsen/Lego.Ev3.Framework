@@ -4,6 +4,7 @@ using Lego.Ev3.Framework.Internals;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
+using System.Text;
 
 namespace Lego.Ev3.Framework
 {
@@ -16,28 +17,28 @@ namespace Lego.Ev3.Framework
         /// Delegate for warnings received from brick
         /// </summary>
         /// <param name="value">list of warnings</param>
-        public delegate void OnWarningsReceived(IEnumerable<Warning> warnings);
+        public delegate void OnWarningReceived(IEnumerable<Warning> warnings);
         /// <summary>
         /// Warnings received event
         /// </summary>
-        public event OnWarningsReceived WarningsReceived;
+        public event OnWarningReceived WarningReceived;
 
         public bool MonitorEvents { get; set; }
 
         private Warning Value { get; set; }
 
-        internal BrickConsole() 
+        internal BrickConsole()
         {
             MonitorEvents = true;
         }
 
         internal ushort BatchCommand(PayLoadBuilder payLoadBuilder, int index)
         {
-            if (!MonitorEvents || WarningsReceived == null) return 0; // no need to poll data
+            if (!MonitorEvents || WarningReceived == null) return 0; // no need to poll data
             return UIReadMethods.GetWarning_BatchCommand(payLoadBuilder, index);
         }
 
-        internal bool SetValue(byte data) 
+        internal bool SetValue(byte data)
         {
             Warning newValue = (Warning)data;
 
@@ -48,8 +49,8 @@ namespace Lego.Ev3.Framework
                 if (Value != Warning.None)
                 {
                     IEnumerable<Warning> warnings = Value.GetFlags();
-                    if (MonitorEvents) WarningsReceived?.Invoke(warnings);
-                    foreach (Warning warning in warnings) 
+                    if (MonitorEvents) WarningReceived?.Invoke(warnings);
+                    foreach (Warning warning in warnings)
                     {
                         Brick.Logger.LogWarning($"Brick warning: {warning}");
                     }
@@ -59,11 +60,28 @@ namespace Lego.Ev3.Framework
         }
 
 
-        public async Task<IEnumerable<Warning>> GetWarnings() 
+
+
+        /// <summary>
+        /// Gets the actual brick name
+        /// </summary>
+        /// <returns></returns>
+        public async Task<string> GetBrickName()
+        {
+            byte[] data = await BrickExplorer.DownloadFile("../sys/settings/BrickName");
+            string name = Encoding.ASCII.GetString(data);
+            return name.TrimEnd('\0', '\n');
+        }
+
+
+        /// <summary>
+        /// Gets any warnings
+        /// </summary>
+        /// <returns></returns>
+        public async Task<IEnumerable<Warning>> GetWarnings()
         {
             return await UIReadMethods.GetWarnings(Brick.Socket);
         }
-
 
 
         /// <summary>
@@ -93,7 +111,7 @@ namespace Lego.Ev3.Framework
         public async Task<Format> GetFormat(InputPortName port, ChainLayer layer = ChainLayer.One)
         {
             int portNumber = port.AbsolutePortNumber(layer);
-            return await InputMethods.GetFormat(Brick.Socket, portNumber);
+            return await InputMethods.GetFormat(Brick.Socket, layer, portNumber);
         }
 
         /// <summary>
@@ -105,7 +123,7 @@ namespace Lego.Ev3.Framework
         public async Task<Format> GetFormat(OutputPortName port, ChainLayer layer = ChainLayer.One)
         {
             int portNumber = port.AbsolutePortNumber(layer);
-            return await InputMethods.GetFormat(Brick.Socket, portNumber);
+            return await InputMethods.GetFormat(Brick.Socket, layer, portNumber);
         }
 
 

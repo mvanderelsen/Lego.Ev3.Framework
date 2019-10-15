@@ -197,10 +197,10 @@ namespace Lego.Ev3.Framework
                 await Stop();
                 await Reset();
 
-                Name = await FileExplorer.GetBrickName();
+                Name = await Console.GetBrickName();
 
                 //TODO Usb
-                bool sdCardPresent = await MemoryMethods.Exists(Socket, FileExplorer.SDCARD_PATH);
+                bool sdCardPresent = await MemoryMethods.Exists(Socket, BrickExplorer.SDCARD_PATH);
                 if (sdCardPresent)
                 {
                     SDCard = new SDCard();
@@ -217,11 +217,10 @@ namespace Lego.Ev3.Framework
             {
                 if (IsConnected) await _socket.Disconnect();
             }
+
             if (IsConnected) Logger.LogInformation("Connected to brick");
-            else
-            {
-                Logger.LogError($"Failed to connect to brick on {_socket.ConnectionInfo}");
-            }
+            else Logger.LogError($"Failed to connect to brick on {_socket.ConnectionInfo}");
+            
             return IsConnected;
         }
 

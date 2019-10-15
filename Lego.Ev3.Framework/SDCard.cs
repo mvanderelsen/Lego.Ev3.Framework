@@ -8,7 +8,7 @@ namespace Lego.Ev3.Framework
     public sealed class SDCard : FileSystem
     {
 
-        internal SDCard() : base(FileExplorer.SDCARD_PATH) { }
+        internal SDCard() : base(BrickExplorer.SDCARD_PATH) { }
        
     }
 }

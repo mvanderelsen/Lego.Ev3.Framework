@@ -82,7 +82,7 @@ namespace Lego.Ev3.Framework.Firmware
         /// </remarks>
         internal static async Task<IEnumerable<PortInfo>> PortScan(Socket socket, ushort maximum = 32)
         {
-            if (maximum < 1 || maximum > 32) throw new ArgumentException("Maximum number of devices must be between 1 and 32", "maximum");
+            if (maximum < 1 || maximum > 32) throw new ArgumentException("Maximum number of devices must be between 1 and 32", nameof(maximum));
             Command cmd = null;
             using (CommandBuilder cb = new CommandBuilder(CommandType.DIRECT_COMMAND_REPLY, maximum, 0))
             {
@@ -95,23 +95,21 @@ namespace Lego.Ev3.Framework.Firmware
             Response response = await socket.Execute(cmd);
 
             List<PortInfo> list = new List<PortInfo>();
-            if (response.Type == ResponseType.OK)
+
+            byte[] data = response.PayLoad;
+            for (int i = 0; i < maximum; i++) //32 = 4 bricks * 8 ports.
             {
-                byte[] data = response.PayLoad;
-                for (int i = 0; i < maximum; i++) //32 = 4 bricks * 8 ports.
+                int d = data[i];
+                if (data[i] <= 120 && Enum.IsDefined(typeof(DeviceType), d))
                 {
-                    int d = data[i];
-                    if (data[i] <= 120 && Enum.IsDefined(typeof(DeviceType), d))
-                    {
-                        list.Add(new PortInfo(i, (DeviceType)d));
-                    }
-                    else list.Add(new PortInfo(i, d));
-
+                    list.Add(new PortInfo(i, (DeviceType)d));
                 }
+                else list.Add(new PortInfo(i, d));
 
-                //TODO full return includes change status
-                //(Data8) ARRAY – First element of data8 array of types (Normally 32) (Data8) CHANGED – Changed status
             }
+
+            //TODO full return includes change status
+            //(Data8) ARRAY – First element of data8 array of types (Normally 32) (Data8) CHANGED – Changed status
             return list;
         }
 
@@ -134,10 +132,9 @@ namespace Lego.Ev3.Framework.Firmware
         /// (Data8) MODES – Number of modes [1-8]
         /// (Data8) VIEW – Number of modes visible within port view app [1-8]
         /// </remarks>
-        internal static async Task<Format> GetFormat(Socket socket, int port)
+        internal static async Task<Format> GetFormat(Socket socket, ChainLayer layer, int port)
         {
-            if (port < 0 || port > 31) throw new ArgumentException("Number of port must be between 0 and 31", "port");
-            ChainLayer layer = GetLayer(port);
+            if (port < 0 || port > 31) throw new ArgumentException("Number of port must be between 0 and 31", nameof(port));
 
             Command cmd = null;
             using (CommandBuilder cb = new CommandBuilder(CommandType.DIRECT_COMMAND_REPLY, 4, 0))
@@ -154,12 +151,8 @@ namespace Lego.Ev3.Framework.Firmware
             }
             Response response = await socket.Execute(cmd);
 
-            if (response.Type == ResponseType.OK)
-            {
-                byte[] data = response.PayLoad;
-                return new Format(data[0], (DataType)data[1], data[2], data[3]);
-            }
-            return new Format(-1, DataType.NONE, -1, -1);
+            byte[] data = response.PayLoad;
+            return new Format(data[0], (DataType)data[1], data[2], data[3]);
         }
 
         /// <summary>
@@ -249,7 +242,7 @@ namespace Lego.Ev3.Framework.Firmware
         /// </remarks>
         internal static async Task<DeviceTypeMode> GetTypeMode(Socket socket, int port)
         {
-            if (port < 0 || port > 31) throw new ArgumentException("Number of port must be between 0 and 31", "port");
+            if (port < 0 || port > 31) throw new ArgumentException("Number of port must be between 0 and 31", nameof(port));
             ChainLayer layer = GetLayer(port);
 
             Command cmd = null;
@@ -265,12 +258,8 @@ namespace Lego.Ev3.Framework.Firmware
             }
             Response response = await socket.Execute(cmd);
 
-            if (response.Type == ResponseType.OK)
-            {
-                byte[] data = response.PayLoad;
-                return new DeviceTypeMode((DeviceType)data[0], (DeviceMode)data[1]);
-            }
-            return new DeviceTypeMode();
+            byte[] data = response.PayLoad;
+            return new DeviceTypeMode((DeviceType)data[0], (DeviceMode)data[1]);
         }
 
         /// <summary>

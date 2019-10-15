@@ -1,18 +1,15 @@
 ﻿using Lego.Ev3.Framework.Core;
 using Lego.Ev3.Framework.Devices;
+using Microsoft.Extensions.Logging;
 using System;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.Extensions.Logging;
 
 namespace Lego.Ev3.Framework.Firmware
 {
-    internal class Socket : IDisposable
+    internal class Socket : ISocket, IDisposable
     {
-        public ConcurrentDictionary<ushort, CommandHandle> Handles { get; } = new ConcurrentDictionary<ushort, CommandHandle>();
-
         private readonly Sockets.ISocket _socket;
 
         public string ConnectionInfo { get { return _socket.ConnectionInfo; } }
@@ -210,15 +207,14 @@ namespace Lego.Ev3.Framework.Firmware
             if (IsConnected)
             {
                 await _socket.Disconnect();
-                Handles.Clear();
             }
         }
-
 
         public async Task<Response> Execute(Command command)
         {
             Response response = await Execute(command, false);
             if (response.Type == ResponseType.ERROR && _socket.IsConnected) throw new FirmwareException(response);
+            if (response.Id != command.Id) throw new InvalidOperationException("response id does not match command id");
             return response;
         }
 
@@ -240,7 +236,7 @@ namespace Lego.Ev3.Framework.Firmware
                                 if (_socket.ResponseBuffer.ContainsKey(id))
                                 {
                                     _socket.ResponseBuffer.TryRemove(id, out _);
-                                    return Response.Ok(command);
+                                    return Response.Ok(id);
                                 }
                                 try
                                 {
@@ -249,14 +245,13 @@ namespace Lego.Ev3.Framework.Firmware
                                 catch (TaskCanceledException) { }
                                 retry++;
                             }
-                            return Response.Error(command);
+                            return Response.Error(id);
                         });
 
                     }
                 case CommandType.DIRECT_COMMAND_REPLY:
                 case CommandType.SYSTEM_COMMAND_REPLY:
                     {
-                        Handles.TryAdd(command.Id, command);
 
                         if (isEvent) _socket.EventBuffer.Enqueue(command);
                         else _socket.CommandBuffer.Enqueue(command);
@@ -271,8 +266,7 @@ namespace Lego.Ev3.Framework.Firmware
                                 if (_socket.ResponseBuffer.ContainsKey(id))
                                 {
                                     _socket.ResponseBuffer.TryGetValue(id, out byte[] payLoad);
-                                    Response response = Response.FromPayLoad(Handles[id], payLoad);
-                                    Handles.TryRemove(id, out _);
+                                    Response response = Response.FromPayLoad(payLoad);
                                     _socket.ResponseBuffer.TryRemove(id, out _);
                                     return response;
                                 }
@@ -284,8 +278,7 @@ namespace Lego.Ev3.Framework.Firmware
                                 catch (TaskCanceledException) { }
                                 retry++;
                             }
-                            Handles.TryRemove(command.Id, out _);
-                            return Response.Error(command);
+                            return Response.Error(id);
                         });
                     }
                 default: throw new NotImplementedException(nameof(command.Type));
@@ -302,7 +295,6 @@ namespace Lego.Ev3.Framework.Firmware
                 if (disposing)
                 {
                     _socket.Dispose();
-                    Handles.Clear();
                 }
 
                 // TODO: free unmanaged resources (unmanaged objects) and override a finalizer below.
@@ -327,6 +319,8 @@ namespace Lego.Ev3.Framework.Firmware
             // TODO: uncomment the following line if the finalizer is overridden above.
             // GC.SuppressFinalize(this);
         }
+
+
         #endregion
 
     }

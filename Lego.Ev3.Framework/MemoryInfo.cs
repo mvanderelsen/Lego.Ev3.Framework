@@ -15,10 +15,10 @@
         /// </summary>
         public int Free { get; }
 
-        internal MemoryInfo(int[] values)
+        internal MemoryInfo(int total, int free)
         {
-            Total = values[0];
-            Free = values[1];
+            Total = total;
+            Free = free;
         }
 
         /// <summary>

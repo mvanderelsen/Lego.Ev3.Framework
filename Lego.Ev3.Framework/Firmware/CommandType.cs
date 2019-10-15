@@ -4,7 +4,7 @@
     /// <summary>
     /// Grouped system commands and direct commands
     /// </summary>
-    internal enum CommandType
+    public enum CommandType
     {
         /// <summary>
         /// Commmand with reply expected

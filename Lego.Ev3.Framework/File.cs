@@ -1,4 +1,5 @@
 ﻿using Lego.Ev3.Framework.Core;
+using Lego.Ev3.Framework.Firmware;
 using System;
 using System.Threading.Tasks;
 
@@ -18,7 +19,7 @@ namespace Lego.Ev3.Framework
         /// <summary>
         /// Size of the file in bytes
         /// </summary>
-        public int Size { get; }
+        public long Size { get; }
 
         /// <summary>
         /// MD5SUM
@@ -35,13 +36,13 @@ namespace Lego.Ev3.Framework
         /// </summary>
         public string Path { get; }
 
-        internal File(string directoryPath, string fileName, string md5sum, int size)
+        internal File(string directoryPath, string fileName, string md5sum, long size)
         {
             FileName = fileName;
             Path = $"{directoryPath}{fileName}";
             MD5SUM = md5sum;
             Size = size;
-            Type = Firmware.FileSystemMethods.GetFileType(fileName);
+            Type = GetFileType(fileName);
         }
 
         /// <summary>
@@ -53,7 +54,7 @@ namespace Lego.Ev3.Framework
         }
 
 
-        internal static string FileSize(int byteLength)
+        internal static string FileSize(long byteLength)
         {
             if (byteLength == 0) return "0 KB";
             if (byteLength > 1048576) // 1024 * 1024
@@ -80,7 +81,7 @@ namespace Lego.Ev3.Framework
         /// </summary>
         public async Task<bool> Delete()
         {
-            return await FileExplorer.DeleteFile(Path);
+            return await BrickExplorer.DeleteFile(Path);
         }
 
         /// <summary>
@@ -89,7 +90,7 @@ namespace Lego.Ev3.Framework
         /// <returns>byte[] data of the file</returns>
         public async Task<byte[]> Download()
         {
-            return await FileExplorer.DownloadFile(Path);
+            return await BrickExplorer.DownloadFile(Path);
         }
 
 
@@ -124,6 +125,76 @@ namespace Lego.Ev3.Framework
             }
         }
 
+        internal static bool IsRobotFile(string filePath)
+        {
+            string ext = System.IO.Path.GetExtension(filePath).ToLower();
+            if (string.IsNullOrWhiteSpace(ext)) return false;
+            return (
+                ext == FILE_TYPE.vmEXT_ARCHIVE
+                || ext == FILE_TYPE.vmEXT_BYTECODE
+                || ext == FILE_TYPE.vmEXT_CONFIG
+                || ext == FILE_TYPE.vmEXT_DATALOG
+                || ext == FILE_TYPE.vmEXT_GRAPHICS
+                || ext == FILE_TYPE.vmEXT_PROGRAM
+                || ext == FILE_TYPE.vmEXT_SOUND
+                || ext == FILE_TYPE.vmEXT_TEXT
+                );
+        }
+
+        internal static FileType GetFileType(string path)
+        {
+            string ext = System.IO.Path.GetExtension(path).ToLower();
+            if (ext == FILE_TYPE.vmEXT_ARCHIVE) return FileType.ArchiveFile;
+            if (ext == FILE_TYPE.vmEXT_BYTECODE) return FileType.ByteCodeFile;
+            if (ext == FILE_TYPE.vmEXT_CONFIG) return FileType.ConfigFile;
+            if (ext == FILE_TYPE.vmEXT_DATALOG) return FileType.DataLogFile;
+            if (ext == FILE_TYPE.vmEXT_GRAPHICS) return FileType.GraphicFile;
+            if (ext == FILE_TYPE.vmEXT_PROGRAM) return FileType.ProgramFile;
+            if (ext == FILE_TYPE.vmEXT_SOUND) return FileType.SoundFile;
+            if (ext == FILE_TYPE.vmEXT_TEXT) return FileType.TextFile;
+            return FileType.SystemFile;
+        }
+
+        internal static string GetExtension(FileType type)
+        {
+            switch (type)
+            {
+                case FileType.ArchiveFile:
+                    {
+                        return FILE_TYPE.vmEXT_ARCHIVE;
+                    }
+                case FileType.ByteCodeFile:
+                    {
+                        return FILE_TYPE.vmEXT_BYTECODE;
+                    }
+                case FileType.ConfigFile:
+                    {
+                        return FILE_TYPE.vmEXT_CONFIG;
+                    }
+                case FileType.DataLogFile:
+                    {
+                        return FILE_TYPE.vmEXT_DATALOG;
+                    }
+                case FileType.GraphicFile:
+                    {
+                        return FILE_TYPE.vmEXT_GRAPHICS;
+                    }
+                case FileType.ProgramFile:
+                    {
+                        return FILE_TYPE.vmEXT_PROGRAM;
+                    }
+                case FileType.SoundFile:
+                    {
+                        return FILE_TYPE.vmEXT_SOUND;
+                    }
+                case FileType.TextFile:
+                    {
+                        return FILE_TYPE.vmEXT_TEXT;
+                    }
+            }
+
+            return null;
+        }
 
         #region operators
         /// <summary>

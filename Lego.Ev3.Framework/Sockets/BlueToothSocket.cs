@@ -26,7 +26,7 @@ namespace Lego.Ev3.Framework.Sockets
             _comPort = comPort;
         }
 
-        public Task<bool> Connect()
+        public Task<bool> Connect(bool startMessageBuffer = true)
         {
             if (!IsConnected)
             {
@@ -38,8 +38,11 @@ namespace Lego.Ev3.Framework.Sockets
                 _serialPort.WriteTimeout = 5000;
                 _serialPort.ReadTimeout = 5000;
                 _reader = new BinaryReader(_serialPort.BaseStream);
-                _serialPort.DataReceived += DataReceived;
-                OpenSocket();
+                if (startMessageBuffer)
+                {
+                    _serialPort.DataReceived += DataReceived;
+                    StartMessageBuffer();
+                }
             }
             return Task.FromResult(IsConnected);
         }
@@ -68,7 +71,7 @@ namespace Lego.Ev3.Framework.Sockets
             ResponseBuffer.TryAdd(Response.GetId(payLoad), payLoad);
         }
 
-        private void OpenSocket()
+        private void StartMessageBuffer()
         {
             Task.Factory.StartNew(async () =>
             {

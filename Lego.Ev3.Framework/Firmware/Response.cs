@@ -22,50 +22,46 @@ namespace Lego.Ev3.Framework.Firmware
     /// Byte 6: System Reply Status – Error, info or success. See the definitions below:
     /// Byte 7 – n: Further
     /// </remarks>
-    internal class Response
+    public class Response
     {
         public ushort Id { get; private set; }
 
         public ResponseType Type { get; private set; }
 
-        public SYSTEM_COMMAND_STATUS Status { get; private set; }
+        public ResponseStatus Status { get; private set; }
 
         public byte[] PayLoad { get; private set; }
 
 
-        public static Response Error(CommandHandle handle)
+        public static Response Error(ushort id)
         {
             return new Response
             {
-                Id = handle.Id,
+                Id = id,
                 Type = ResponseType.ERROR,
-                Status = SYSTEM_COMMAND_STATUS.UNKNOWN_ERROR
+                Status = ResponseStatus.UNKNOWN_ERROR
             };
         }
 
-        public static Response Ok(CommandHandle handle)
+        public static Response Ok(ushort id)
         {
             return new Response
             {
-                Id = handle.Id,
+                Id = id,
                 Type = ResponseType.OK,
-                Status = SYSTEM_COMMAND_STATUS.SUCCESS
+                Status = ResponseStatus.SUCCESS
             };
         }
 
-        public static Response FromPayLoad(CommandHandle handle, byte[] payLoad)
+        public static Response FromPayLoad(byte[] payLoad)
         {
-            Response response = Error(handle);
+            ushort id = GetId(payLoad);
 
-            switch (handle.Type)
+            switch (payLoad[2]) 
             {
-                case CommandType.DIRECT_COMMAND_REPLY:
+                case 0x02: //DIRECT_REPLY
                     {
-                        if (((DIRECT_COMMAND_REPLY_TYPE)(int)payLoad[2]) == DIRECT_COMMAND_REPLY_TYPE.DIRECT_REPLY)
-                        {
-                            response.Type = ResponseType.OK;
-                            response.Status = SYSTEM_COMMAND_STATUS.SUCCESS;
-                        }
+                        Response response = Ok(id);
                         int payLoadLength = payLoad.Length - 3;
                         if (payLoadLength > 0)
                         {
@@ -74,18 +70,14 @@ namespace Lego.Ev3.Framework.Firmware
                         }
                         return response;
                     }
-                case CommandType.SYSTEM_COMMAND_REPLY:
+                case 0x05: //SYSTEM_REPLY_ERROR treat as OK response we need to check the status
+                case 0x03: //SYSTEM_REPLY
                     {
-                        if (((SYSTEM_COMMAND_REPLY_TYPE)(int)payLoad[2]) == SYSTEM_COMMAND_REPLY_TYPE.SYSTEM_REPLY)
-                        {
-                            response.Type = ResponseType.OK;
-                            response.Status = SYSTEM_COMMAND_STATUS.SUCCESS;
-                        }
+                        Response response = Ok(id);
 
-                        //skip OpCode in response
-                        //response.OpCode = (SYSTEM_OP)payLoad[3];
+                        //skip OpCode in response (SYSTEM_OP)payLoad[3];
 
-                        response.Status = (SYSTEM_COMMAND_STATUS)payLoad[4];
+                        response.Status = (ResponseStatus)payLoad[4];
 
                         int payLoadLength = payLoad.Length - 5;
                         if (payLoadLength > 0)
@@ -95,7 +87,11 @@ namespace Lego.Ev3.Framework.Firmware
                         }
                         return response;
                     }
-                default: throw new InvalidOperationException(nameof(handle.Type));
+                case 0x04: //DIRECT_REPLY_ERROR
+                    {
+                        return Error(id);
+                    }
+                default: throw new ArgumentOutOfRangeException(nameof(payLoad));
             }
         }
 

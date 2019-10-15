@@ -12,7 +12,7 @@ namespace Lego.Ev3.Framework.Sockets
 
         bool IsConnected { get; }
 
-        Task<bool> Connect();
+        Task<bool> Connect(bool startMessageBuffer = true);
 
         Task Disconnect();
 

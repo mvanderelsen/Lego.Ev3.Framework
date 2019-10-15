@@ -36,7 +36,7 @@ namespace Lego.Ev3.Framework.Core
         /// <returns></returns>
         public async Task<Directory[]> GetDirectories()
         {
-            Directory[] directories  = await FileExplorer.GetDirectories(_path);
+            Directory[] directories  = await BrickExplorer.GetDirectories(_path);
             return directories.Where(d => !IsReservedDirectoryName(d.Name)).ToArray();
         }
 
@@ -50,7 +50,7 @@ namespace Lego.Ev3.Framework.Core
             if (string.IsNullOrWhiteSpace(name)) throw new ArgumentNullException(nameof(name));
             if (IsReservedDirectoryName(name)) return null;
             string path = $"{_path}{name}";
-            return await FileExplorer.GetDirectory(path);
+            return await BrickExplorer.GetDirectory(path);
         }
 
         /// <summary>
@@ -63,7 +63,7 @@ namespace Lego.Ev3.Framework.Core
             if (string.IsNullOrWhiteSpace(name)) return false;
             if (IsReservedDirectoryName(name)) return false;
             string path = $"{_path}{name}";
-            return await FileExplorer.Exists(path);
+            return await BrickExplorer.Exists(path);
         }
 
         /// <summary>
@@ -76,7 +76,7 @@ namespace Lego.Ev3.Framework.Core
             if (string.IsNullOrWhiteSpace(name)) return null;
             if (IsReservedDirectoryName(name)) return null;
             string path = $"{_path}{name}";
-            bool success = await FileExplorer.CreateDirectory(path);
+            bool success = await BrickExplorer.CreateDirectory(path);
             if (success) return new Directory(path);
             return null;
         }

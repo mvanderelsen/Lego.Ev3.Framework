@@ -207,7 +207,6 @@ namespace Lego.Ev3.Framework.Firmware
         {
             byte b = (byte)((byte)PARAMETER_FORMAT.SHORT | (byte)PARAMETER_TYPE.VARIABLE | (byte)scope | (byte)(value & TERMINATOR));
             _binaryWriter.Write(b);
-            //_binaryWriter.Write(value);
         }
 
         public void VARIABLE_PAR8(byte value, PARAMETER_VARIABLE_SCOPE scope)

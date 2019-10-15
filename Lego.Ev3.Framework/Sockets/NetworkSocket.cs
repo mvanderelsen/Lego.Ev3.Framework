@@ -27,7 +27,7 @@ namespace Lego.Ev3.Framework.Sockets
             _ipAddress = ipAddress;
         }
 
-        public async Task<bool> Connect()
+        public async Task<bool> Connect(bool startMessageBuffer = true)
         {
             if (!IsConnected)
             {
@@ -46,12 +46,12 @@ namespace Lego.Ev3.Framework.Sockets
                 string response = Encoding.UTF8.GetString(payLoad, 0, read);
                 if (string.IsNullOrEmpty(response)) throw new Exception("LEGO EV3 brick did not respond to the unlock command.");
 
-                OpenSocket();
+                if (startMessageBuffer) StartMessageBuffer();
             }
             return IsConnected;
         }
 
-        private void OpenSocket()
+        private void StartMessageBuffer()
         {
             byte[] buffer = new byte[2];
 

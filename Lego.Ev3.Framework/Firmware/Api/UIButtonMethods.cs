@@ -13,17 +13,17 @@ namespace Lego.Ev3.Framework.Firmware
         /// <summary>
         /// Method called from autopoll to build batch command
         /// </summary>
-        internal static DataType Clicked_BatchCommand(PayLoadBuilder payLoadBuilder, int button, int index)
+        internal static ushort Clicked_BatchCommand(PayLoadBuilder payLoadBuilder, int button, int index)
         {
             payLoadBuilder.Raw((byte)OP.opUI_BUTTON);
             payLoadBuilder.Raw((byte)UI_BUTTON_SUBCODE.GET_BUMBED);
             payLoadBuilder.PAR8((byte)button);
             payLoadBuilder.GlobalIndex(index);
-            return DataType.DATA8;
+            return DataType.DATA8.ByteLength();
         }
 
         /// <summary>
-        /// Enable verifying if a button has been pressed
+        /// Enable verifying if a button has been clicked (bumped)
         /// </summary>
         /// <param name="socket">Socket for executing command to brick</param>
         /// <param name="button">
@@ -38,7 +38,7 @@ namespace Lego.Ev3.Framework.Firmware
         /// CMD: PRESSED = 0x09
         /// </remarks>
         /// <returns>true if pressed</returns>
-        internal static async Task<bool> Clicked(Socket socket, int button)
+        public static async Task<bool> Clicked(Socket socket, int button)
         {
             Command cmd = null;
             using (CommandBuilder cb = new CommandBuilder(CommandType.DIRECT_COMMAND_REPLY, 1, 0))
@@ -47,14 +47,7 @@ namespace Lego.Ev3.Framework.Firmware
                 cmd = cb.ToCommand();
             }
             Response response = await socket.Execute(cmd);
-
-            bool isPressed = false;
-            if (response.Type == ResponseType.OK)
-            {
-                byte[] data = response.PayLoad;
-                isPressed = BitConverter.ToBoolean(data, 0);
-            }
-            return isPressed;
+            return BitConverter.ToBoolean(response.PayLoad, 0);
         }
 
 

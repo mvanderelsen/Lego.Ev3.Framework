@@ -10,6 +10,6 @@ namespace Lego.Ev3.Framework
     public class Drive : FileSystem
     {
 
-        internal Drive():base(FileExplorer.PROJECTS_PATH) {}
+        internal Drive():base(BrickExplorer.PROJECTS_PATH) {}
     }
 }

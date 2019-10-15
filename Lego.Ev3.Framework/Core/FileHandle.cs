@@ -11,12 +11,12 @@ namespace Lego.Ev3.Framework.Core
     {
 
         /// <summary>
-        /// Name of the sound file
+        /// Name of the file
         /// </summary>
         public string FileName { get; private set; }
 
         /// <summary>
-        /// Full relative path on brick to file
+        /// Full relative brick file path
         /// </summary>
         public string FilePath { get; internal set; }
 
@@ -25,7 +25,7 @@ namespace Lego.Ev3.Framework.Core
         /// Creates a simple slim filehandle
         /// </summary>
         /// <param name="fileName">name of the file as on brick</param>
-        /// <param name="filePath">full relative path to file on brick</param>
+        /// <param name="filePath">full relative brick file path</param>
         protected FileHandle(string fileName, string filePath)
         {
             FileName = fileName;
@@ -36,11 +36,9 @@ namespace Lego.Ev3.Framework.Core
         /// Deletes this file
         /// Use with care!!
         /// </summary>
-        /// <exception cref="InvalidOperationException"></exception>
-        public async Task Delete()
+        public async Task<bool> Delete()
         {
-            SYSTEM_COMMAND_STATUS status = await FileSystemMethods.DeleteFile(Brick.Socket, FilePath);
-            if (status != SYSTEM_COMMAND_STATUS.SUCCESS) throw new InvalidOperationException(status.ToString());
+            return await SystemMethods.Delete(Brick.Socket, FilePath);
         }
 
         /// <summary>
@@ -49,7 +47,7 @@ namespace Lego.Ev3.Framework.Core
         /// <returns>byte[] data of the file</returns>
         public async Task<byte[]> Download()
         {
-            return await FileSystemMethods.DownLoadFileFromBrick(Brick.Socket, FilePath);
+            return await SystemMethods.DownLoadFile(Brick.Socket, FilePath);
         }
 
         /// <summary>

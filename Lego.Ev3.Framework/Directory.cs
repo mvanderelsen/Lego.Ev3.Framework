@@ -1,5 +1,4 @@
 ﻿using Lego.Ev3.Framework.Core;
-using Lego.Ev3.Framework.Firmware;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
@@ -34,7 +33,7 @@ namespace Lego.Ev3.Framework
         /// <returns><c>File[]</c></returns>
         public async Task<File[]> GetFiles()
         {
-            return await FileExplorer.GetFiles(Path);
+            return await BrickExplorer.GetFiles(Path);
         }
 
 
@@ -46,7 +45,7 @@ namespace Lego.Ev3.Framework
         public async Task<File> GetFile(string fileName)
         {
             string path = $"{Path}{fileName}";
-            return await FileExplorer.GetFile(path);
+            return await BrickExplorer.GetFile(path);
         }
 
         /// <summary>
@@ -121,7 +120,7 @@ namespace Lego.Ev3.Framework
         /// <returns></returns>
         public async Task<File> UploadFile(string localFilePath, string fileName)
         {
-            bool success = await FileExplorer.UploadFile(localFilePath, Path, fileName);
+            bool success = await BrickExplorer.UploadFile(localFilePath, Path, fileName);
             if (success) return await GetFile(fileName);
             return null;
         }
@@ -136,8 +135,8 @@ namespace Lego.Ev3.Framework
         /// <returns></returns>
         public async Task<File> UploadFile(byte[] file, FileType type, string fileName)
         {
-            fileName = System.IO.Path.ChangeExtension(fileName, FileSystemMethods.GetExtension(type));
-            bool success = await FileExplorer.UploadFile(file, Path, fileName);
+            fileName = System.IO.Path.ChangeExtension(fileName, File.GetExtension(type));
+            bool success = await BrickExplorer.UploadFile(file, Path, fileName);
             if (success) return await GetFile(fileName);
             return null;
         }
@@ -153,8 +152,8 @@ namespace Lego.Ev3.Framework
         public async Task<File> UploadFile(System.IO.Stream stream, FileType type, string fileName)
         {
 
-            fileName = System.IO.Path.ChangeExtension(fileName, FileSystemMethods.GetExtension(type));
-            bool success = await FileExplorer.UploadFile(stream, Path, fileName);
+            fileName = System.IO.Path.ChangeExtension(fileName, File.GetExtension(type));
+            bool success = await BrickExplorer.UploadFile(stream, Path, fileName);
             if (success) return await GetFile(fileName);
             return null;
         }

@@ -10,10 +10,10 @@ namespace Lego.Ev3.Framework.Sockets
 {
     internal class UsbSocket : SocketBase, IDisposable, ISocket
     {
-        private byte[] _input;
-        private byte[] _output;
-        private FileStream _stream;
-        private CancellationTokenSource _cancellationTokenSource;
+        public byte[] _input;
+        public byte[] _output;
+        public FileStream _stream;
+        public CancellationTokenSource _cancellationTokenSource;
 
         public CancellationToken CancellationToken { get; private set; }
 
@@ -26,13 +26,13 @@ namespace Lego.Ev3.Framework.Sockets
         /// <summary>
         /// Connect to the EV3 brick.
         /// </summary>
-        public Task<bool> Connect()
+        public Task<bool> Connect(bool startMessageBuffer = true)
         {
             if (IsConnected) return Task.FromResult(true);
             _cancellationTokenSource = new CancellationTokenSource();
             CancellationToken = _cancellationTokenSource.Token;
             ConnectToEv3();
-            OpenSocket();
+            if (startMessageBuffer) StartMessageBuffer();
             return Task.FromResult(IsConnected);
         }
 
@@ -56,28 +56,14 @@ namespace Lego.Ev3.Framework.Sockets
             return Task.CompletedTask;
         }
 
-        private void OpenSocket()
+        private void StartMessageBuffer()
         {
             Task.Factory.StartNew(async () =>
             {
                 while (!CancellationToken.IsCancellationRequested)
                 {
-                    try
-                    {
-                        await _stream.ReadAsync(_input, 0, _input.Length, CancellationToken);
-                    }
-                    catch (TaskCanceledException)
-                    {
-                        break;
-                    }
-
-                    short size = (short)(_input[1] | _input[2] << 8);
-                    if (size > 0)
-                    {
-                        byte[] payLoad = new byte[size];
-                        Array.Copy(_input, 3, payLoad, 0, size);
-                        ResponseBuffer.TryAdd(Response.GetId(payLoad), payLoad);
-                    }
+                    byte[] payLoad = await Read();
+                    if(payLoad != null) ResponseBuffer.TryAdd(Response.GetId(payLoad), payLoad);
                 }
             }, CancellationToken, TaskCreationOptions.LongRunning, TaskScheduler.Current);
 
@@ -91,19 +77,14 @@ namespace Lego.Ev3.Framework.Sockets
                         Command command;
                         if (NoReplyCommandBuffer.TryDequeue(out command))
                         {
-                            command.PayLoad.CopyTo(_output, 1);
-                            await _stream.WriteAsync(_output, 0, _output.Length);
-                            _stream.Flush();
+                            await Write(command);
                             ResponseBuffer.TryAdd(command.Id, null);
                         }
 
 
-
                         if (CommandBuffer.TryDequeue(out command))
                         {
-                            command.PayLoad.CopyTo(_output, 1);
-                            await _stream.WriteAsync(_output, 0, _output.Length);
-                            _stream.Flush();
+                            await Write(command);
 
                             int retry = 0;
                             while (!ResponseBuffer.ContainsKey(command.Id) && retry < 20)
@@ -115,9 +96,7 @@ namespace Lego.Ev3.Framework.Sockets
 
                         if (EventBuffer.TryDequeue(out command))
                         {
-                            command.PayLoad.CopyTo(_output, 1);
-                            await _stream.WriteAsync(_output, 0, _output.Length);
-                            _stream.Flush();
+                            await Write(command);
                         }
                     }
                     catch (TaskCanceledException) { }
@@ -125,6 +104,35 @@ namespace Lego.Ev3.Framework.Sockets
 
 
             }, CancellationToken, TaskCreationOptions.LongRunning, TaskScheduler.Current);
+        }
+
+        internal async Task<byte[]> Read() 
+        {
+            try
+            {
+                await _stream.ReadAsync(_input, 0, _input.Length, CancellationToken);
+            }
+            catch (TaskCanceledException)
+            {
+                return null;
+            }
+
+            short size = (short)(_input[1] | _input[2] << 8);
+            if (size > 0)
+            {
+                byte[] payLoad = new byte[size];
+                Array.Copy(_input, 3, payLoad, 0, size);
+                return payLoad;
+            }
+
+            return null;
+        }
+
+        internal async Task Write(Command command) 
+        {
+            command.PayLoad.CopyTo(_output, 1);
+            await _stream.WriteAsync(_output, 0, _output.Length, CancellationToken);
+            _stream.Flush();
         }
 
 
