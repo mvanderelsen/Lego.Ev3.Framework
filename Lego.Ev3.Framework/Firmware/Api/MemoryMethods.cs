@@ -98,7 +98,5 @@ namespace Lego.Ev3.Framework.Firmware
             return new DirectoryInfo(items,size);
         }
 
-
-
     }
 }

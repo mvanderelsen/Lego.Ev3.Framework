@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace Lego.Ev3.Framework.Firmware
@@ -17,6 +18,7 @@ namespace Lego.Ev3.Framework.Firmware
     {
         private const int PAYLOAD_SIZE = 960;
         private const char LIST_DELIMITER = '\n';
+        private static SemaphoreSlim semaPhoreSlim = new SemaphoreSlim(1);
 
         /// <summary>
         /// Download a file from the brick
@@ -29,33 +31,43 @@ namespace Lego.Ev3.Framework.Firmware
         /// <exception cref="FirmwareException"/>
         public static async Task<byte[]> DownLoadFile(ISocket socket, string brickFilePath)
         {
-            brickFilePath.IsBrickFilePath();
-
-            Response response = await BeginDownload(socket, brickFilePath);
-            if (response.Status == ResponseStatus.UNKNOWN_HANDLE) throw new ArgumentException("File does not exist", nameof(brickFilePath));
-            if (response.Status != ResponseStatus.SUCCESS) throw new FirmwareException(response);
-
-            int fileSize = BitConverter.ToInt32(response.PayLoad, 0);
-            byte handle = response.PayLoad[4];
-
-            List<byte> data = new List<byte>();
-
-            int bytesLoaded = 0;
-            while (bytesLoaded < fileSize)
+            await semaPhoreSlim.WaitAsync(); //stop multithread for same file handle
+            try
             {
-                int payLoadSize = Math.Min(PAYLOAD_SIZE, fileSize - bytesLoaded);
-                response = await ContinueDownload(socket, handle, (ushort)payLoadSize);
-                if (!(response.Status == ResponseStatus.SUCCESS || response.Status == ResponseStatus.END_OF_FILE)) throw new FirmwareException(response);
+                brickFilePath.IsBrickFilePath();
 
-                if (response.PayLoad != null && response.PayLoad.Length > 1)
+                Response response = await BeginDownload(socket, brickFilePath);
+                if (response.Status == ResponseStatus.UNKNOWN_HANDLE) throw new ArgumentException("File does not exist", nameof(brickFilePath));
+                if (response.Status != ResponseStatus.SUCCESS) throw new FirmwareException(response);
+
+                int fileSize = BitConverter.ToInt32(response.PayLoad, 0);
+                byte handle = response.PayLoad[4];
+
+                List<byte> data = new List<byte>();
+
+                int bytesLoaded = 0;
+                while (bytesLoaded < fileSize)
                 {
-                    byte[] chunk = new byte[payLoadSize];
-                    Array.Copy(response.PayLoad, 1, chunk, 0, payLoadSize);
-                    data.AddRange(chunk);
+                    int payLoadSize = Math.Min(PAYLOAD_SIZE, fileSize - bytesLoaded);
+                    response = await ContinueDownload(socket, handle, (ushort)payLoadSize);
+                    if (!(response.Status == ResponseStatus.SUCCESS || response.Status == ResponseStatus.END_OF_FILE)) throw new FirmwareException(response);
+
+                    if (response.PayLoad != null && response.PayLoad.Length > 1)
+                    {
+                        byte[] chunk = new byte[payLoadSize];
+                        Array.Copy(response.PayLoad, 1, chunk, 0, payLoadSize);
+                        data.AddRange(chunk);
+                    }
+                    bytesLoaded += payLoadSize;
                 }
-                bytesLoaded += payLoadSize;
+
+                //await CloseHandle(socket, handle);
+                return data.ToArray();
             }
-            return data.ToArray();
+            finally 
+            {
+                semaPhoreSlim.Release();
+            } 
         }
 
         #region download a file from the Brick
@@ -98,27 +110,35 @@ namespace Lego.Ev3.Framework.Firmware
         /// <exception cref="FirmwareException"/>
         public static async Task<bool> UploadFile(ISocket socket, byte[] file, string brickFilePath)
         {
-            brickFilePath.IsBrickFilePath();
-            if (file == null || file.Length == 0) throw new ArgumentNullException("file data can not be empty", nameof(file));
-
-            int fileSize = file.Length;
-
-            Response response = await BeginUpload(socket, fileSize, brickFilePath);
-            if (response.Status == ResponseStatus.FILE_EXISTS) return false; // do not override existing files
-
-            byte handle = response.PayLoad[0];
-
-            int bytesSent = 0;
-            while (bytesSent < fileSize)
+            await semaPhoreSlim.WaitAsync();
+            try
             {
-                int payLoadSize = Math.Min(PAYLOAD_SIZE, fileSize - bytesSent);
-                byte[] payLoad = new byte[payLoadSize];
-                Array.Copy(file, bytesSent, payLoad, 0, payLoadSize);
-                response = await ContinueUpload(socket, handle, payLoad);
-                if (!(response.Status == ResponseStatus.SUCCESS || response.Status == ResponseStatus.END_OF_FILE)) throw new FirmwareException(response);
-                bytesSent += payLoadSize;
+                brickFilePath.IsBrickFilePath();
+                if (file == null || file.Length == 0) throw new ArgumentNullException("file data can not be empty", nameof(file));
+
+                int fileSize = file.Length;
+
+                Response response = await BeginUpload(socket, fileSize, brickFilePath);
+                if (response.Status == ResponseStatus.FILE_EXISTS) return false; // do not override existing files
+
+                byte handle = response.PayLoad[0];
+
+                int bytesSent = 0;
+                while (bytesSent < fileSize)
+                {
+                    int payLoadSize = Math.Min(PAYLOAD_SIZE, fileSize - bytesSent);
+                    byte[] payLoad = new byte[payLoadSize];
+                    Array.Copy(file, bytesSent, payLoad, 0, payLoadSize);
+                    response = await ContinueUpload(socket, handle, payLoad);
+                    if (!(response.Status == ResponseStatus.SUCCESS || response.Status == ResponseStatus.END_OF_FILE)) throw new FirmwareException(response);
+                    bytesSent += payLoadSize;
+                }
+                return true;
             }
-            return true;
+            finally 
+            {
+                semaPhoreSlim.Release();
+            }
         }
 
         #region upload a file to the brick
@@ -159,108 +179,116 @@ namespace Lego.Ev3.Framework.Firmware
         /// <exception cref="FirmwareException"/>
         public static async Task<DirectoryContent> GetDirectoryContent(ISocket socket, string brickDirectoryPath)
         {
-            brickDirectoryPath = FileSystem.ToBrickDirectoryPath(brickDirectoryPath);
-            brickDirectoryPath.IsBrickDirectoryPath();
-
-            Command cmd = null;
-            using (CommandBuilder cb = new CommandBuilder(CommandType.SYSTEM_COMMAND_REPLY))
+            await semaPhoreSlim.WaitAsync();
+            try
             {
-                cb.OpCode(SYSTEM_OP.LIST_FILES);
-                cb.Raw((ushort)PAYLOAD_SIZE);
-                cb.Raw(brickDirectoryPath);
-                cmd = cb.ToCommand();
-            }
+                brickDirectoryPath = FileSystem.ToBrickDirectoryPath(brickDirectoryPath);
+                brickDirectoryPath.IsBrickDirectoryPath();
 
-
-            Response response = await socket.Execute(cmd);
-            if (!(response.Status == ResponseStatus.SUCCESS || response.Status == ResponseStatus.END_OF_FILE)) throw new FirmwareException(response);
-
-            byte[] data = response.PayLoad;
-            ushort listSize = (ushort)BitConverter.ToUInt32(data, 0);
-            byte handle = data[4];
-
-            List<byte> list = new List<byte>();
-
-            if (data.Length > 5)
-            {
-                byte[] chunk = new byte[data.Length - 5];
-                Array.Copy(data, 5, chunk, 0, chunk.Length);
-                list.AddRange(chunk);
-
-                int bytesRead = chunk.Length;
-                while (bytesRead < listSize)
+                Command cmd = null;
+                using (CommandBuilder cb = new CommandBuilder(CommandType.SYSTEM_COMMAND_REPLY))
                 {
-                    ushort payLoadSize = (ushort)Math.Min(PAYLOAD_SIZE, listSize - bytesRead);
-                    response = await ContinueList(socket, handle, payLoadSize);
-                    if (!(response.Status == ResponseStatus.SUCCESS || response.Status == ResponseStatus.END_OF_FILE)) throw new FirmwareException(response);
+                    cb.OpCode(SYSTEM_OP.LIST_FILES);
+                    cb.Raw((ushort)PAYLOAD_SIZE);
+                    cb.Raw(brickDirectoryPath);
+                    cmd = cb.ToCommand();
+                }
 
-                    data = response.PayLoad;
-                    if (data.Length > 1)
+
+                Response response = await socket.Execute(cmd);
+                if (!(response.Status == ResponseStatus.SUCCESS || response.Status == ResponseStatus.END_OF_FILE)) throw new FirmwareException(response);
+
+                byte[] data = response.PayLoad;
+                ushort listSize = (ushort)BitConverter.ToUInt32(data, 0);
+                byte handle = data[4];
+
+                List<byte> list = new List<byte>();
+
+                if (data.Length > 5)
+                {
+                    byte[] chunk = new byte[data.Length - 5];
+                    Array.Copy(data, 5, chunk, 0, chunk.Length);
+                    list.AddRange(chunk);
+
+                    int bytesRead = chunk.Length;
+                    while (bytesRead < listSize)
                     {
-                        chunk = new byte[data.Length - 1];
-                        Array.Copy(data, 1, chunk, 0, chunk.Length);
-                        list.AddRange(chunk);
+                        ushort payLoadSize = (ushort)Math.Min(PAYLOAD_SIZE, listSize - bytesRead);
+                        response = await ContinueList(socket, handle, payLoadSize);
+                        if (!(response.Status == ResponseStatus.SUCCESS || response.Status == ResponseStatus.END_OF_FILE)) throw new FirmwareException(response);
+
+                        data = response.PayLoad;
+                        if (data.Length > 1)
+                        {
+                            chunk = new byte[data.Length - 1];
+                            Array.Copy(data, 1, chunk, 0, chunk.Length);
+                            list.AddRange(chunk);
+                        }
+                        bytesRead += payLoadSize;
                     }
-                    bytesRead += payLoadSize;
                 }
-            }
 
-            data = list.ToArray();
-            string value = Encoding.UTF8.GetString(data, 0, data.Length).TrimEnd(LIST_DELIMITER);
-            string[] entries = value.Split(LIST_DELIMITER);
+                data = list.ToArray();
+                string value = Encoding.UTF8.GetString(data, 0, data.Length).TrimEnd(LIST_DELIMITER);
+                string[] entries = value.Split(LIST_DELIMITER);
 
-            DirectoryContent contents = new DirectoryContent();
-            List<Directory> directories = new List<Directory>();
-            List<File> files = new List<File>();
-            foreach (string entry in entries) 
-            {
-                string item = entry.Trim();
-                if (string.IsNullOrWhiteSpace(item)) continue;
-                switch (item) 
+                DirectoryContent contents = new DirectoryContent();
+                List<Directory> directories = new List<Directory>();
+                List<File> files = new List<File>();
+                foreach (string entry in entries)
                 {
-                    case FileSystem.ROOT_PATH: 
-                        {
-                            contents.Root = new Directory(item);
-                            break;
-                        }
-                    case FileSystem.PARENT_PATH: 
-                        {
-                            if (brickDirectoryPath == FileSystem.ROOT_PATH) contents.Parent = new Directory(FileSystem.ROOT_PATH);
-                            else 
+                    string item = entry.Trim();
+                    if (string.IsNullOrWhiteSpace(item)) continue;
+                    switch (item)
+                    {
+                        case FileSystem.ROOT_PATH:
                             {
-                                string parent = brickDirectoryPath.Substring(0, brickDirectoryPath.LastIndexOf(FileSystem.DIRECTORY_SEPERATOR));
-                                contents.Parent = new Directory(parent);
+                                contents.Root = new Directory(item);
+                                break;
                             }
-                            break;
-                        }
-                    default: 
-                        {
-                            if (item.EndsWith(FileSystem.DIRECTORY_SEPERATOR))
+                        case FileSystem.PARENT_PATH:
                             {
-                                string directoryPath = $"{brickDirectoryPath}{item}";
-                                directories.Add(new Directory(directoryPath));
-                            }
-                            else 
-                            {
-                                string[] fileInfo = entry.Split(' ');
-                                if (fileInfo.Length >= 3)
+                                if (brickDirectoryPath == FileSystem.ROOT_PATH) contents.Parent = new Directory(FileSystem.ROOT_PATH);
+                                else
                                 {
-                                    string md5sum = fileInfo[0].Trim();
-                                    long byteSize  = Convert.ToInt64(fileInfo[1].Trim(), 16);
-                                    string fileName = string.Join(" ", fileInfo, 2, fileInfo.Length - 2);
-                                    if (!string.IsNullOrWhiteSpace(fileName)) files.Add(new File(brickDirectoryPath, fileName, md5sum, byteSize));
+                                    string parent = brickDirectoryPath.Substring(0, brickDirectoryPath.LastIndexOf(FileSystem.DIRECTORY_SEPERATOR));
+                                    contents.Parent = new Directory(parent);
                                 }
+                                break;
                             }
-                            break;
-                        }
-                }
+                        default:
+                            {
+                                if (item.EndsWith(FileSystem.DIRECTORY_SEPERATOR))
+                                {
+                                    string directoryPath = $"{brickDirectoryPath}{item}";
+                                    directories.Add(new Directory(directoryPath));
+                                }
+                                else
+                                {
+                                    string[] fileInfo = entry.Split(' ');
+                                    if (fileInfo.Length >= 3)
+                                    {
+                                        string md5sum = fileInfo[0].Trim();
+                                        long byteSize = Convert.ToInt64(fileInfo[1].Trim(), 16);
+                                        string fileName = string.Join(" ", fileInfo, 2, fileInfo.Length - 2);
+                                        if (!string.IsNullOrWhiteSpace(fileName)) files.Add(new File(brickDirectoryPath, fileName, md5sum, byteSize));
+                                    }
+                                }
+                                break;
+                            }
+                    }
 
+                }
+                directories.Sort(delegate (Directory obj1, Directory obj2) { return obj1.Name.CompareTo(obj2.Name); });
+                contents.Directories = directories.ToArray();
+                files.Sort(delegate (File obj1, File obj2) { return obj1.FileName.CompareTo(obj2.FileName); });
+                contents.Files = files.ToArray();
+                return contents;
             }
-            directories.Sort(delegate (Directory obj1, Directory obj2) { return obj1.Name.CompareTo(obj2.Name); });
-            contents.Directories = directories.ToArray();
-            files.Sort(delegate (File obj1, File obj2) { return obj1.FileName.CompareTo(obj2.FileName); });
-            contents.Files = files.ToArray();
-            return contents;
+            finally 
+            {
+                semaPhoreSlim.Release();
+            }
         }
 
         #region list directories/files for given brickpath 
