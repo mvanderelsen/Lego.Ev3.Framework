@@ -27,7 +27,7 @@ namespace Lego.Ev3.Framework
         public async void SetValue(LedMode mode)
         {
             Mode = mode;
-            await UIWriteMethods.Led(Brick.Socket, (int)mode);
+            await UIWriteMethods.Led(Brick.Socket, mode);
 
         }
 
@@ -40,7 +40,7 @@ namespace Lego.Ev3.Framework
             if (Mode != LedMode.Green)
             {
                 Mode = LedMode.Green;
-                await UIWriteMethods.Led(Brick.Socket, (int)Mode);
+                await UIWriteMethods.Led(Brick.Socket, Mode);
             }
         }
     }

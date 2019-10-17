@@ -10,7 +10,7 @@ namespace Lego.Ev3.Framework.Firmware
     /// <remarks>
     /// See: LEGO® MINDSTORMS® EV3 Firmware Developer Kit 4.15 User interface operations
     /// </remarks>
-    internal static class UIButtonMethods
+    public static class UIButtonMethods
     {
 
         /// <summary>

@@ -12,7 +12,7 @@ namespace Lego.Ev3.Framework.Firmware
         /// <summary>
         /// Stops current sound playback.
         /// </summary>
-        /// <param name="socket">Socket for executing command to brick</param>
+        /// <param name="socket">socket for executing command to brick</param>
         /// <remarks>
         /// Instruction opSound (CMD, …)
         /// Opcode 0x94
@@ -21,7 +21,7 @@ namespace Lego.Ev3.Framework.Firmware
         /// Description Sound control entry
         /// CMD: BREAK = 0x00 (Stop current sound playback)
         /// </remarks>
-        internal static async Task Break(Socket socket)
+        internal static async Task Break(ISocket socket)
         {
             Command cmd = null;
             using (CommandBuilder cb = new CommandBuilder(CommandType.DIRECT_COMMAND_NO_REPLY))
@@ -36,7 +36,7 @@ namespace Lego.Ev3.Framework.Firmware
         /// <summary>
         /// Plays a tone based on frequency for given duration and at a given volume.
         /// </summary>
-        /// <param name="socket">Socket for executing command to brick</param>
+        /// <param name="socket">socket for executing command to brick</param>
         /// <param name="volume">Specify volume for playback, [0 - 100]</param>
         /// <param name="frequency">Specify frequency, [250 - 10000]</param>
         /// <param name="duration">Specify duration in milliseconds [1 - n]</param>
@@ -53,7 +53,7 @@ namespace Lego.Ev3.Framework.Firmware
         /// (Data16) FREQUENCY – Specify frequency, [250 - 10000]
         /// (Data16) DURATION – Specify duration in millisecond
         /// </remarks>
-        internal static async Task Tone(Socket socket, int volume, int frequency, int duration)
+        internal static async Task Tone(ISocket socket, int volume, int frequency, int duration)
         {
             if (volume < 0 || volume > 100) throw new ArgumentOutOfRangeException("Volume must be between 0 and 100", "volume");
             if (frequency < 250 || frequency > 10000) throw new ArgumentOutOfRangeException("Frequency must be between 250 and 10000", "frequency");
@@ -75,7 +75,7 @@ namespace Lego.Ev3.Framework.Firmware
         /// <summary>
         /// Plays a sound file on the brick at a given volume.
         /// </summary>
-        /// <param name="socket">Socket for executing command to brick</param>
+        /// <param name="socket">socket for executing command to brick</param>
         /// <param name="volume">Specify volume for playback, [0 - 100]</param>
         /// <param name="filePath">FilePath to sound file: ../prjs/myproject/file.rsf</param>
         /// <remarks>
@@ -89,7 +89,7 @@ namespace Lego.Ev3.Framework.Firmware
         /// (Data8) VOLUME – Specify volume for playback, [0 - 100]
         /// (Data8) NAME – First character in filename (Character string)
         /// </remarks>
-        internal static async Task Play(Socket socket, int volume, string filePath)
+        internal static async Task Play(ISocket socket, int volume, string filePath)
         {
             if (volume < 0 || volume > 100) throw new ArgumentOutOfRangeException("Volume must be between 0 and 100", "volume");
 
@@ -111,7 +111,7 @@ namespace Lego.Ev3.Framework.Firmware
         /// <summary>
         /// Repeats playing a sound file on the brick at a given volume.
         /// </summary>
-        /// <param name="socket">Socket for executing command to brick</param>
+        /// <param name="socket">socket for executing command to brick</param>
         /// <param name="volume">Specify volume for playback, [0 - 100]</param>
         /// <param name="filePath">FilePath to sound file: ../prjs/myproject/file.rsf</param>
         /// <remarks>
@@ -125,7 +125,7 @@ namespace Lego.Ev3.Framework.Firmware
         /// (Data8) VOLUME – Specify volume for playback, [0 - 100]
         /// (Data8) NAME – First character in filename (Character string)
         /// </remarks>
-        internal static async Task Repeat(Socket socket, int volume, string filePath)
+        internal static async Task Repeat(ISocket socket, int volume, string filePath)
         {
             if (volume < 0 || volume > 100) throw new ArgumentOutOfRangeException("Volume must be between 0 and 100", "volume");
 
@@ -147,7 +147,7 @@ namespace Lego.Ev3.Framework.Firmware
         /// <summary>
         /// This function enables the program to test if sound is busy (Playing sound or tone)
         /// </summary>
-        /// <param name="socket">Socket for executing command to brick</param>
+        /// <param name="socket">socket for executing command to brick</param>
         /// <returns>Output busy flag, [0 = Ready, 1 = Busy]</returns>
         /// <remarks>
         /// Instruction opSound_Test (BUSY)
@@ -157,7 +157,7 @@ namespace Lego.Ev3.Framework.Firmware
         /// Dispatch status Unchanged
         /// Description This function enables the program to test if sound is busy (Playing sound or tone)
         /// </remarks>
-        internal static async Task<bool> Test(Socket socket)
+        internal static async Task<bool> Test(ISocket socket)
         {
             Command cmd = null;
             using (CommandBuilder cb = new CommandBuilder(CommandType.DIRECT_COMMAND_REPLY, 1, 0))
@@ -181,7 +181,7 @@ namespace Lego.Ev3.Framework.Firmware
         /// Enables program execution to wait for sound ready. (Wait for completion)
         /// Dispatch status Can changed to BUSYBREAK
         /// </summary>
-        /// <param name="socket">Socket for executing command to brick</param>
+        /// <param name="socket">socket for executing command to brick</param>
         /// <remarks>
         /// Instruction opSound_Ready ()
         /// Opcode 0x96
@@ -189,7 +189,7 @@ namespace Lego.Ev3.Framework.Firmware
         /// Dispatch status Can changed to BUSYBREAK
         /// Description Enables program execution to wait for sound ready. (Wait for completion)
         /// </remarks>
-        internal static async Task Ready(Socket socket)
+        internal static async Task Ready(ISocket socket)
         {
             Command cmd = null;
             using (CommandBuilder cb = new CommandBuilder(CommandType.DIRECT_COMMAND_NO_REPLY))
@@ -203,8 +203,8 @@ namespace Lego.Ev3.Framework.Firmware
         /// <summary>
         /// ?? Must be tested
         /// </summary>
-        /// <param name="socket">Socket for executing command to brick</param>
-        internal static async Task Service(Socket socket)
+        /// <param name="socket">socket for executing command to brick</param>
+        internal static async Task Service(ISocket socket)
         {
             Command cmd = null;
             using (CommandBuilder cb = new CommandBuilder(CommandType.DIRECT_COMMAND_NO_REPLY))

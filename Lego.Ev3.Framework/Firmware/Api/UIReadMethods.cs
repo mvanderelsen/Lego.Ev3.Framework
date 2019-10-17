@@ -45,7 +45,7 @@ namespace Lego.Ev3.Framework.Firmware
             return (ushort)(index - startIndex);
         }
 
-        internal static async Task<BatteryValue> GetBatteryValue(Socket socket)
+        internal static async Task<BatteryValue> GetBatteryValue(ISocket socket)
         {
 
             Command cmd = null;
@@ -128,7 +128,7 @@ namespace Lego.Ev3.Framework.Firmware
             return index - startIndex;
         }
 
-        //internal static async Task<USBStickDrive> GetUSBDrive(Socket socket)
+        //internal static async Task<USBStickDrive> GetUSBDrive(ISocket socket)
         //{
 
         //    Command cmd = null;
@@ -201,7 +201,7 @@ namespace Lego.Ev3.Framework.Firmware
         }
 
         //TODO
-        //internal static async Task<SDCardDrive> GetSDCardDrive(Socket socket)
+        //internal static async Task<SDCardDrive> GetSDCardDrive(ISocket socket)
         //{
 
         //    Command cmd = null;
@@ -259,7 +259,7 @@ namespace Lego.Ev3.Framework.Firmware
         //(Data8) DESTINATION – String variable or handle to string
         //Description
         //Enable reading the firmware version currently on the EV3 brick
-        internal static async Task<string> GetFirmwareVersion(Socket socket, int stringLength = -1)
+        internal static async Task<string> GetFirmwareVersion(ISocket socket, int stringLength = -1)
         {
 
             if (stringLength < 1 || stringLength > 255) stringLength = 255;
@@ -287,7 +287,7 @@ namespace Lego.Ev3.Framework.Firmware
         //(Data8) DESTINATION – String variable or handle to string
         //Description
         //Enable reading the OS version currently on the EV3 brick
-        internal static async Task<string> GetFirmwareBuild(Socket socket, int stringLength = -1)
+        internal static async Task<string> GetFirmwareBuild(ISocket socket, int stringLength = -1)
         {
 
             if (stringLength < 1 || stringLength > 255) stringLength = 255;
@@ -314,7 +314,7 @@ namespace Lego.Ev3.Framework.Firmware
         //(Data) DESTINATION – String variable or handle to string
         //Description
         //Enable getting OS version string
-        internal static async Task<string> GetOSVersion(Socket socket, int stringLength = -1)
+        internal static async Task<string> GetOSVersion(ISocket socket, int stringLength = -1)
         {
 
             if (stringLength < 1 || stringLength > 255) stringLength = 255;
@@ -341,7 +341,7 @@ namespace Lego.Ev3.Framework.Firmware
         //(Data8) DESTINATION – String variable or handle to string
         //Description
         //Enable reading the OS build info currently on the EV3 brick
-        internal static async Task<string> GetOSBuild(Socket socket, int stringLength = -1)
+        internal static async Task<string> GetOSBuild(ISocket socket, int stringLength = -1)
         {
 
             if (stringLength < 1 || stringLength > 255) stringLength = 255;
@@ -368,7 +368,7 @@ namespace Lego.Ev3.Framework.Firmware
         //(Data8) DESTINATION – String variable or handle to string
         //Description
         //Enable reading the hardware version on the given hardware
-        internal static async Task<string> GetHardwareVersion(Socket socket, int stringLength = -1)
+        internal static async Task<string> GetHardwareVersion(ISocket socket, int stringLength = -1)
         {
 
             if (stringLength < 1 || stringLength > 255) stringLength = 255;
@@ -405,7 +405,7 @@ namespace Lego.Ev3.Framework.Firmware
         //0x40 : Warning battery low
         //0x80 : Warning busy
         //0x3F : Warnings
-        internal static async Task<IEnumerable<Warning>> GetWarnings(Socket socket)
+        internal static async Task<IEnumerable<Warning>> GetWarnings(ISocket socket)
         {
             Command cmd = null;
             using (CommandBuilder cb = new CommandBuilder(CommandType.DIRECT_COMMAND_REPLY, 1, 0))
@@ -446,7 +446,7 @@ namespace Lego.Ev3.Framework.Firmware
         //Description
         //Enable reading the hardware version on the given hardware
 
-        internal static async Task<string> GetVersion(Socket socket, int stringLength = -1)
+        internal static async Task<string> GetVersion(ISocket socket, int stringLength = -1)
         {
 
             if (stringLength < 1 || stringLength > 255) stringLength = 255;
@@ -473,7 +473,7 @@ namespace Lego.Ev3.Framework.Firmware
         //(Data8) DESTINATION – String variable or handle to string
         //Description
         //Enable reading the IP address when available
-        internal static async Task<string> GetIP(Socket socket, int stringLength = -1)
+        internal static async Task<string> GetIP(ISocket socket, int stringLength = -1)
         {
 
             if (stringLength < 1 || stringLength > 255) stringLength = 255;

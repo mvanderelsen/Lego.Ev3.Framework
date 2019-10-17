@@ -68,7 +68,7 @@ namespace Lego.Ev3.Framework.Firmware
         /// <summary>
         /// Enables a program to read all available devices on input chain
         /// </summary>
-        /// <param name="socket">Socket for executing command to brick</param>
+        /// <param name="socket">socket for executing command to brick</param>
         /// <param name="maximum">Maximum number of devices types (Normally 32)</param>
         /// <returns>List of devices on chain and ports</returns>
         /// <remarks>
@@ -80,7 +80,7 @@ namespace Lego.Ev3.Framework.Firmware
         /// Dispatch status Unchanged
         /// Description Enables a program to read all available devices on input chain
         /// </remarks>
-        internal static async Task<IEnumerable<PortInfo>> PortScan(Socket socket, ushort maximum = 32)
+        internal static async Task<IEnumerable<PortInfo>> PortScan(ISocket socket, ushort maximum = 32)
         {
             if (maximum < 1 || maximum > 32) throw new ArgumentException("Maximum number of devices must be between 1 and 32", nameof(maximum));
             Command cmd = null;
@@ -116,7 +116,7 @@ namespace Lego.Ev3.Framework.Firmware
         /// <summary>
         /// Read information about external device
         /// </summary>
-        /// <param name="socket">Socket for executing command to brick</param>
+        /// <param name="socket">socket for executing command to brick</param>
         /// <param name="port">Port number [0-31]</param>
         /// <returns>Format</returns>
         /// <remarks>
@@ -132,7 +132,7 @@ namespace Lego.Ev3.Framework.Firmware
         /// (Data8) MODES – Number of modes [1-8]
         /// (Data8) VIEW – Number of modes visible within port view app [1-8]
         /// </remarks>
-        internal static async Task<Format> GetFormat(Socket socket, ChainLayer layer, int port)
+        internal static async Task<Format> GetFormat(ISocket socket, ChainLayer layer, int port)
         {
             if (port < 0 || port > 31) throw new ArgumentException("Number of port must be between 0 and 31", nameof(port));
 
@@ -158,7 +158,7 @@ namespace Lego.Ev3.Framework.Firmware
         /// <summary>
         /// Apply new minimum and maximum raw value for device type to be used in scaling PCT and SI value
         /// </summary>
-        /// <param name="socket">Socket for executing command to brick</param>
+        /// <param name="socket">socket for executing command to brick</param>
         /// <param name="type">Device type</param>
         /// <param name="mode">Device mode [0-7]</param>
         /// <param name="minimum">32 bit raw minimum value (Zero point)</param>
@@ -176,7 +176,7 @@ namespace Lego.Ev3.Framework.Firmware
         /// Description
         /// Apply new minimum and maximum raw value for device type to be used in scaling PCT and SI value
         /// </remarks>
-        internal static async Task SetMinMax(Socket socket, DeviceType type, DeviceMode mode, int minimum, int maximum)
+        internal static async Task SetMinMax(ISocket socket, DeviceType type, DeviceMode mode, int minimum, int maximum)
         {
             Command cmd = null;
             using (CommandBuilder cb = new CommandBuilder(CommandType.DIRECT_COMMAND_NO_REPLY))
@@ -195,7 +195,7 @@ namespace Lego.Ev3.Framework.Firmware
         /// <summary>
         /// Apply the default minimum and maximum raw value for device type to be used in scaling PCT and SI value
         /// </summary>
-        /// <param name="socket">Socket for executing command to brick</param>
+        /// <param name="socket">socket for executing command to brick</param>
         /// <param name="type">Device type</param>
         /// <param name="mode">Device mode [0-7]</param>
         /// <returns></returns>
@@ -209,7 +209,7 @@ namespace Lego.Ev3.Framework.Firmware
         /// Description
         /// Apply the default minimum and maximum raw value for device type to be used in scaling PCT and SI value
         /// </remarks>
-        internal static async Task SetDefaultMinMax(Socket socket, DeviceType type, DeviceMode mode)
+        internal static async Task SetDefaultMinMax(ISocket socket, DeviceType type, DeviceMode mode)
         {
             Command cmd = null;
             using (CommandBuilder cb = new CommandBuilder(CommandType.DIRECT_COMMAND_NO_REPLY))
@@ -226,7 +226,7 @@ namespace Lego.Ev3.Framework.Firmware
         /// <summary>
         /// Reads the type and mode of the connected device
         /// </summary>
-        /// <param name="socket">Socket for executing command to brick</param>
+        /// <param name="socket">socket for executing command to brick</param>
         /// <param name="port">Port [0-31]</param>
         /// <returns>TypeMode</returns>
         /// <remarks>
@@ -240,7 +240,7 @@ namespace Lego.Ev3.Framework.Firmware
         /// (Data8) TYPE – See device type list (Please reference section 0)
         /// (Data8) MODE – Device mode [0-7]
         /// </remarks>
-        internal static async Task<DeviceTypeMode> GetTypeMode(Socket socket, int port)
+        internal static async Task<DeviceTypeMode> GetTypeMode(ISocket socket, int port)
         {
             if (port < 0 || port > 31) throw new ArgumentException("Number of port must be between 0 and 31", nameof(port));
             ChainLayer layer = GetLayer(port);
@@ -265,7 +265,7 @@ namespace Lego.Ev3.Framework.Firmware
         /// <summary>
         /// Apply new minimum raw value for device type to be used in scaling PCT and SI value
         /// </summary>
-        /// <param name="socket">Socket for executing command to brick</param>
+        /// <param name="socket">socket for executing command to brick</param>
         /// <param name="type">Device type</param>
         /// <param name="mode">Device mode [0-7]</param>
         /// <param name="minimum">32 bit raw minimum value (Zero point)</param>
@@ -281,7 +281,7 @@ namespace Lego.Ev3.Framework.Firmware
         /// Description
         /// Apply new minimum raw value for device type to be used in scaling PCT and SI value
         /// </remarks>
-        internal static async Task SetMin(Socket socket, DeviceType type, DeviceMode mode, int minimum)
+        internal static async Task SetMin(ISocket socket, DeviceType type, DeviceMode mode, int minimum)
         {
             Command cmd = null;
             using (CommandBuilder cb = new CommandBuilder(CommandType.DIRECT_COMMAND_NO_REPLY))
@@ -299,7 +299,7 @@ namespace Lego.Ev3.Framework.Firmware
         /// <summary>
         /// Apply new minimum raw value for device type to be used in scaling PCT and SI value
         /// </summary>
-        /// <param name="socket">Socket for executing command to brick</param>
+        /// <param name="socket">socket for executing command to brick</param>
         /// <param name="type">Device type</param>
         /// <param name="mode">Device mode [0-7]</param>
         /// <param name="maximum">32 bit raw maximum value (Full scale)</param>
@@ -315,7 +315,7 @@ namespace Lego.Ev3.Framework.Firmware
         /// Description
         /// Apply new minimum raw value for device type to be used in scaling PCT and SI value
         /// </remarks>
-        internal static async Task SetMax(Socket socket, DeviceType type, DeviceMode mode, int maximum)
+        internal static async Task SetMax(ISocket socket, DeviceType type, DeviceMode mode, int maximum)
         {
             Command cmd = null;
             using (CommandBuilder cb = new CommandBuilder(CommandType.DIRECT_COMMAND_NO_REPLY))
@@ -333,7 +333,7 @@ namespace Lego.Ev3.Framework.Firmware
         /// <summary>
         /// Clear all device counters and values
         /// </summary>
-        /// <param name="socket">Socket for executing command to brick</param>
+        /// <param name="socket">socket for executing command to brick</param>
         /// <param name="layer">Specify chain layer number [0 - 3]</param>
         /// <returns></returns>
         /// <remarks>
@@ -345,7 +345,7 @@ namespace Lego.Ev3.Framework.Firmware
         /// Description
         /// Clear all device counters and values
         /// </remarks>
-        internal static async Task Reset(Socket socket, ChainLayer layer)
+        internal static async Task Reset(ISocket socket, ChainLayer layer)
         {
             Command cmd = null;
             using (CommandBuilder cb = new CommandBuilder(CommandType.DIRECT_COMMAND_NO_REPLY))
@@ -361,7 +361,7 @@ namespace Lego.Ev3.Framework.Firmware
         /// <summary>
         /// Clear all device counters and values on all layers
         /// </summary>
-        /// <param name="socket">Socket for executing command to brick</param>
+        /// <param name="socket">socket for executing command to brick</param>
         /// <returns></returns>
         /// <remarks>
         /// Instruction opInput_Device (CMD, …)
@@ -372,7 +372,7 @@ namespace Lego.Ev3.Framework.Firmware
         /// Description
         /// Clear all device counters and values
         /// </remarks>
-        internal static async Task Reset(Socket socket)
+        internal static async Task Reset(ISocket socket)
         {
             Command cmd = null;
             using (CommandBuilder cb = new CommandBuilder(CommandType.DIRECT_COMMAND_NO_REPLY))
@@ -402,7 +402,7 @@ namespace Lego.Ev3.Framework.Firmware
         /// <summary>
         /// Gets the 32 bit raw value on the given sensor port
         /// </summary>
-        /// <param name="socket">Socket for executing command to brick</param>
+        /// <param name="socket">socket for executing command to brick</param>
         /// <param name="port">Port</param>
         /// <returns></returns>
         /// <remarks>
@@ -415,7 +415,7 @@ namespace Lego.Ev3.Framework.Firmware
         /// Returns
         /// (Data32) Value – 32 bit raw value on the given sensor port
         /// </remarks>
-        internal static async Task<int> GetRawValue(Socket socket, int port)
+        internal static async Task<int> GetRawValue(ISocket socket, int port)
         {
             if (port < 0 || port > 31) throw new ArgumentException("Number of port must be between 0 and 31", "port");
             ChainLayer layer = GetLayer(port);
@@ -443,7 +443,7 @@ namespace Lego.Ev3.Framework.Firmware
         /// <summary>
         /// Gets the connection type for the given port
         /// </summary>
-        /// <param name="socket">Socket for executing command to brick</param>
+        /// <param name="socket">socket for executing command to brick</param>
         /// <param name="port">Port number [0 - 31]</param>
         /// <returns></returns>
         /// <remarks>
@@ -456,7 +456,7 @@ namespace Lego.Ev3.Framework.Firmware
         /// Returns
         /// (Data8) CONN – Connection type
         /// </remarks>
-        internal static async Task<ConnectionType> GetConnection(Socket socket, int port)
+        internal static async Task<ConnectionType> GetConnection(ISocket socket, int port)
         {
             if (port < 0 || port > 31) throw new ArgumentException("Number of port must be between 0 and 31", "port");
             ChainLayer layer = GetLayer(port);
@@ -488,7 +488,7 @@ namespace Lego.Ev3.Framework.Firmware
         /// <summary>
         /// Stop all input devices
         /// </summary>
-        /// <param name="socket">Socket for executing command to brick</param>
+        /// <param name="socket">socket for executing command to brick</param>
         /// <param name="layer">Specify chain layer number [0 - 3]</param>
         /// <returns></returns>
         /// <remarks>
@@ -498,7 +498,7 @@ namespace Lego.Ev3.Framework.Firmware
         /// Arguments
         /// (Data8) LAYER – Specify chain layer number [0-3] (-1 = All)
         /// </remarks>
-        internal static async Task Stop(Socket socket, ChainLayer layer)
+        internal static async Task Stop(ISocket socket, ChainLayer layer)
         {
             Command cmd = null;
             using (CommandBuilder cb = new CommandBuilder(CommandType.DIRECT_COMMAND_NO_REPLY))
@@ -514,7 +514,7 @@ namespace Lego.Ev3.Framework.Firmware
         /// <summary>
         /// Stop all input devices on all layers
         /// </summary>
-        /// <param name="socket">Socket for executing command to brick</param>
+        /// <param name="socket">socket for executing command to brick</param>
         /// <returns></returns>
         /// <remarks>
         /// Instruction opInput_Device (CMD, …)
@@ -523,7 +523,7 @@ namespace Lego.Ev3.Framework.Firmware
         /// Arguments
         /// (Data8) LAYER – Specify chain layer number [0-3] (-1 = All)
         /// </remarks>
-        internal static async Task Stop(Socket socket)
+        internal static async Task Stop(ISocket socket)
         {
             Command cmd = null;
             using (CommandBuilder cb = new CommandBuilder(CommandType.DIRECT_COMMAND_NO_REPLY))
@@ -560,7 +560,7 @@ namespace Lego.Ev3.Framework.Firmware
         /// <summary>
         /// Gets the Positive changes since last clear. ( Button pressed)
         /// </summary>
-        /// <param name="socket">Socket for executing command to brick</param>
+        /// <param name="socket">socket for executing command to brick</param>
         /// <param name="port">Port number [0 - 31]</param>
         /// <returns></returns>
         /// <remarks>
@@ -573,7 +573,7 @@ namespace Lego.Ev3.Framework.Firmware
         /// Returns
         /// (DataF) VALUE1 – Positive changes since last clear. ( Button pressed)
         /// </remarks>
-        internal static async Task<int> GetChanges(Socket socket, int port)
+        internal static async Task<int> GetChanges(ISocket socket, int port)
         {
             if (port < 0 || port > 31) throw new ArgumentException("Number of port must be between 0 and 31", "port");
             ChainLayer layer = GetLayer(port);
@@ -600,7 +600,7 @@ namespace Lego.Ev3.Framework.Firmware
         /// <summary>
         /// Clear changes and bumps
         /// </summary>
-        /// <param name="socket">Socket for executing command to brick</param>
+        /// <param name="socket">socket for executing command to brick</param>
         /// <param name="port">Port number [0 - 31]</param>
         /// <returns></returns>
         /// <remarks>
@@ -613,7 +613,7 @@ namespace Lego.Ev3.Framework.Firmware
         /// Description
         /// Clear changes and bumps
         /// </remarks>
-        internal static async Task ClearChanges(Socket socket, int port)
+        internal static async Task ClearChanges(ISocket socket, int port)
         {
             if (port < 0 || port > 31) throw new ArgumentException("Number of port must be between 0 and 31", "port");
             ChainLayer layer = GetLayer(port);
@@ -647,7 +647,7 @@ namespace Lego.Ev3.Framework.Firmware
         /// <summary>
         /// Gets the Negative changes since last clear. (Button release)
         /// </summary>
-        /// <param name="socket">Socket for executing command to brick</param>
+        /// <param name="socket">socket for executing command to brick</param>
         /// <param name="port">Port number [0 - 31]</param>
         /// <returns></returns>
         /// <remarks>
@@ -660,7 +660,7 @@ namespace Lego.Ev3.Framework.Firmware
         /// Returns
         /// (DataF) VALUE1 – Negative changes since last clear. (Button release)
         /// </remarks>
-        internal static async Task<int> GetBumps(Socket socket, int port)
+        internal static async Task<int> GetBumps(ISocket socket, int port)
         {
             if (port < 0 || port > 31) throw new ArgumentException("Number of port must be between 0 and 31", "port");
             ChainLayer layer = GetLayer(port);
@@ -707,7 +707,7 @@ namespace Lego.Ev3.Framework.Firmware
         /// <summary>
         /// Description This function enables reading specific device and mode in SI units
         /// </summary>
-        /// <param name="socket">Socket for executing command to brick</param>
+        /// <param name="socket">socket for executing command to brick</param>
         /// <param name="port">Port</param>
         /// <param name="type">Type of the device (0 = Don’t change type)</param>
         /// <param name="mode"> Device mode [0 - 7] (-1 = Don’t change mode)</param>
@@ -723,7 +723,7 @@ namespace Lego.Ev3.Framework.Firmware
         /// Returns (Depending on number of data samples requested in (VALUES))
         /// (DataF) VALUE1 – First value received from sensor in the specified mode
         /// </remarks>
-        internal static async Task<float> GetReadySIValue(Socket socket, int port, int type = 0, int mode = -1)
+        internal static async Task<float> GetReadySIValue(ISocket socket, int port, int type = 0, int mode = -1)
         {
             if (port < 0 || port > 31) throw new ArgumentException("Number of port must be between 0 and 31", "port");
             ChainLayer layer = GetLayer(port);
@@ -767,7 +767,7 @@ namespace Lego.Ev3.Framework.Firmware
         /// <summary>
         /// This function enables reading specific device and mode in SI units
         /// </summary>
-        /// <param name="socket">Socket for executing command to brick</param>
+        /// <param name="socket">socket for executing command to brick</param>
         /// <param name="port">Port</param>
         /// <param name="type">Type of the device (0 = Don’t change type)</param>
         /// <param name="mode"> Device mode [0 - 7] (-1 = Don’t change mode)</param>
@@ -783,7 +783,7 @@ namespace Lego.Ev3.Framework.Firmware
         /// Dispatch status Unchanged
         /// Description This function enables reading specific device and mode in SI units
         /// </remarks>
-        internal static async Task<float> GetSIValue(Socket socket, int port, ushort type = 0, int mode = -1)
+        internal static async Task<float> GetSIValue(ISocket socket, int port, ushort type = 0, int mode = -1)
         {
             if (port < 0 || port > 31) throw new ArgumentException("Number of port must be between 0 and 31", "port");
             ChainLayer layer = GetLayer(port);
@@ -828,7 +828,7 @@ namespace Lego.Ev3.Framework.Firmware
         /// <summary>
         /// This function enables reading specific device and mode
         /// </summary>
-        /// <param name="socket">Socket for executing command to brick</param>
+        /// <param name="socket">socket for executing command to brick</param>
         /// <param name="port">Port</param>
         /// <param name="type">Type of the device (0 = Don’t change type)</param>
         /// <param name="mode"> Device mode [0 - 7] (-1 = Don’t change mode)</param>
@@ -847,7 +847,7 @@ namespace Lego.Ev3.Framework.Firmware
         ///Returns(Depending on number of data samples requested in (VALUES))
         ///(Data32) VALUE1 – First value received from sensor in the specified mode
         /// </remarks>
-        internal static async Task<int> GetReadyRaw(Socket socket, int port, ushort type = 0, int mode = -1, int numberOfValues = 1)
+        internal static async Task<int> GetReadyRaw(ISocket socket, int port, ushort type = 0, int mode = -1, int numberOfValues = 1)
         {
             if (port < 0 || port > 31) throw new ArgumentException("Number of port must be between 0 and 31", "port");
             ChainLayer layer = GetLayer(port);
@@ -892,7 +892,7 @@ namespace Lego.Ev3.Framework.Firmware
         /// <summary>
         /// This function enables reading specific device and mode in Pct
         /// </summary>
-        /// <param name="socket">Socket for executing command to brick</param>
+        /// <param name="socket">socket for executing command to brick</param>
         /// <param name="port">Port</param>
         /// <param name="type">Type of the device (0 = Don’t change type)</param>
         /// <param name="mode"> Device mode [0 - 7] (-1 = Don’t change mode)</param>
@@ -911,7 +911,7 @@ namespace Lego.Ev3.Framework.Firmware
         ///Returns (Depending on number of data samples requested in (VALUES))
         ///(Data8) VALUE1 – First value received from sensor in the specified mode
         /// </remarks>
-        internal static async Task<int> GetReadyPct(Socket socket, int port, ushort type = 0, int mode = -1, int numberOfValues = 1)
+        internal static async Task<int> GetReadyPct(ISocket socket, int port, ushort type = 0, int mode = -1, int numberOfValues = 1)
         {
             if (port < 0 || port > 31) throw new ArgumentException("Number of port must be between 0 and 31", "port");
             ChainLayer layer = GetLayer(port);

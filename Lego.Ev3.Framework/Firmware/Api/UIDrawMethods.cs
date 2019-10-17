@@ -14,7 +14,7 @@ namespace Lego.Ev3.Framework.Firmware
         //(Data8) NAME – First character in filename(Character string)
         //Description
         //Enable displaying BMP file from icon file within running project.
-        internal static async Task BMPFile(Socket socket, string path, int x = 0, int y = 0, UIColor color = UIColor.Black)
+        internal static async Task BMPFile(ISocket socket, string path, int x = 0, int y = 0, UIColor color = UIColor.Black)
         {
             Command cmd = null;
             using (CommandBuilder cb = new CommandBuilder(CommandType.DIRECT_COMMAND_NO_REPLY))
@@ -36,7 +36,7 @@ namespace Lego.Ev3.Framework.Firmware
         //CMD: UPDATE = 0x00
         //Description
         //Automatically triggers a refreshes of the display.
-        internal static async Task Update(Socket socket)
+        internal static async Task Update(ISocket socket)
         {
             Command cmd = null;
             using (CommandBuilder cb = new CommandBuilder(CommandType.DIRECT_COMMAND_NO_REPLY))
@@ -51,7 +51,7 @@ namespace Lego.Ev3.Framework.Firmware
         //CMD: UPDATE = 0x00
         //Description
         //Automatically triggers a refreshes of the display.
-        internal static async Task Flush(Socket socket)
+        internal static async Task Flush(ISocket socket)
         {
             Command cmd = null;
             using (CommandBuilder cb = new CommandBuilder(CommandType.DIRECT_COMMAND_NO_REPLY))

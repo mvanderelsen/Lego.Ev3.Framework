@@ -61,7 +61,6 @@ namespace Lego.Ev3.Framework.Firmware
                     bytesLoaded += payLoadSize;
                 }
 
-                //await CloseHandle(socket, handle);
                 return data.ToArray();
             }
             finally 
