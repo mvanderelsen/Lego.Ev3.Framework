@@ -76,7 +76,7 @@ namespace Lego.Ev3.Framework.Firmware
                                 }
 
 
-                                buttonByteLength = buttons.ClickBatchCommand(cb, index);
+                                buttonByteLength = buttons.BatchCommand(cb, index);
                                 index += buttonByteLength;
 
                                 batteryByteLength = battery.BatchCommand(cb, index);
@@ -167,7 +167,7 @@ namespace Lego.Ev3.Framework.Firmware
                             {
                                 byte[] buttonData = new byte[buttonByteLength];
                                 Array.Copy(data, index, buttonData, 0, buttonByteLength);
-                                buttons.ClickBatchCommandReturn(buttonData);
+                                buttons.BatchCommandReturn(buttonData);
                                 index += buttonByteLength;
                             }
 

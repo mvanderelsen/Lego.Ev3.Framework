@@ -8,7 +8,6 @@ namespace Lego.Ev3.Framework
 {
     /// <summary>
     /// LEGO® MINDSTORMS® EV3 Color Sensor
-    /// TODO: other color modes
     /// </summary>
     public sealed class ColorSensor : InputDevice
     {

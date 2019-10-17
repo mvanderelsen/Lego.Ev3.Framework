@@ -6,6 +6,10 @@
     public enum ButtonType
     {
         /// <summary>
+        /// No Button
+        /// </summary>
+        None = 0,
+        /// <summary>
         /// Up Button
         /// </summary>
         Up = 1,
@@ -28,6 +32,10 @@
         /// <summary>
         /// Back Button
         /// </summary>
-        Back = 6
+        Back = 6,
+        /// <summary>
+        /// Any Button
+        /// </summary>
+        Any = 7
     }
 }

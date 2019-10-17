@@ -1,5 +1,4 @@
-﻿using System.Threading;
-using Lego.Ev3.Framework.Firmware;
+﻿using Lego.Ev3.Framework.Firmware;
 
 namespace Lego.Ev3.Framework
 {
@@ -14,11 +13,15 @@ namespace Lego.Ev3.Framework
         /// </summary>
         public ButtonType Type { get; }
 
+        /// <summary>
+        /// Mode of the button
+        /// </summary>
+        public ButtonMode Mode { get; private set; }
 
         /// <summary>
-        /// Delegate for button click events
+        /// Delegate for button events
         /// </summary>
-        /// <param name="button">The button that was clicked</param>
+        /// <param name="button">The button that was clicked, pressed depending on mode</param>
         public delegate void OnClicked(Button button);
 
         /// <summary>
@@ -29,21 +32,22 @@ namespace Lego.Ev3.Framework
         internal Button(ButtonType type)
         {
             Type = type;
+            Mode = ButtonMode.Click;
         }
 
-
-        internal void ClickBatchCommand(PayLoadBuilder payLoadBuilder, int index)
+        public void SetMode(ButtonMode mode) 
         {
-            UIButtonMethods.Clicked_BatchCommand(payLoadBuilder, (int)Type, index);
+            Mode = mode;
+        }
+
+        internal void BatchCommand(PayLoadBuilder payLoadBuilder, int index)
+        {
+            UIButtonMethods.BatchCommand(payLoadBuilder, Type, Mode, index);
         }
 
         internal void RaiseClickEvent()
         {
-            if (Clicked != null)
-            {
-                if (Brick.Socket.SynchronizationContext == SynchronizationContext.Current) Clicked(this);
-                else Brick.Socket.SynchronizationContext.Post(delegate { Clicked(this); }, null);
-            }
+            Clicked?.Invoke(this);
         }
 
         internal bool OnClickSubscribed
@@ -53,15 +57,5 @@ namespace Lego.Ev3.Framework
                 return Clicked != null;
             }
         }
-
-
-        /*
-
-        TESTSHORTPRESS
-        TESTLONGPRESS
-        PRESSED
-        GET_BUMBED
-
-        */
     }
 }
