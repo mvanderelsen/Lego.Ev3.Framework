@@ -85,12 +85,12 @@ namespace Lego.Ev3.Framework
 
 
         /// <summary>
-        /// Gets the brick IP address if assigned else null
+        /// Gets the brick IP address if assigned else string.Empty
         /// </summary>
         /// <returns></returns>
-        public async Task<string> GetIpAddress()
+        public async Task<string> GetIPAddress()
         {
-            return await UIReadMethods.GetIP(Brick.Socket);
+            return await UIReadMethods.GetIPAddress(Brick.Socket);
         }
 
         /// <summary>
