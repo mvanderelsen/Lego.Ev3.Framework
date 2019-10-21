@@ -135,7 +135,7 @@ namespace Lego.Ev3.Framework
         /// <returns></returns>
         public async Task<File> UploadFile(byte[] file, FileType type, string fileName)
         {
-            fileName = System.IO.Path.ChangeExtension(fileName, File.GetExtension(type));
+            fileName = $"{System.IO.Path.GetFileNameWithoutExtension(fileName)}{File.GetExtension(type)}";
             bool success = await BrickExplorer.UploadFile(file, Path, fileName);
             if (success) return await GetFile(fileName);
             return null;

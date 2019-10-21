@@ -102,6 +102,33 @@ namespace Lego.Ev3.Framework.Core
         /// </summary>
         /// <param name="bitmap"></param>
         /// <returns></returns>
+        public static byte[] BitmapToRGF(byte[] bitmap) 
+        {
+            using (MemoryStream stream = new MemoryStream(bitmap))
+            {
+                return BitmapToRGF(stream);
+            }
+        }
+
+        /// <summary>
+        /// Converts a bitmap to a rgf byte[]
+        /// </summary>
+        /// <param name="stream"></param>
+        /// <returns></returns>
+        public static byte[] BitmapToRGF(Stream stream)
+        {
+            using (Bitmap bmp = new Bitmap(stream))
+            {
+                return BitmapToRGF(bmp);
+            }
+        }
+
+
+        /// <summary>
+        /// Converts a bitmap to a rgf byte[]
+        /// </summary>
+        /// <param name="bitmap"></param>
+        /// <returns></returns>
         public static byte[] BitmapToRGF(Bitmap bitmap)
         {
             int width = bitmap.Width;
