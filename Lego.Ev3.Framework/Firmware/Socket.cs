@@ -108,11 +108,7 @@ namespace Lego.Ev3.Framework.Firmware
 
                             Response response = await Brick.Socket.Execute(cmd, true);
 
-                            if (response.Type == ResponseType.ERROR)
-                            {
-                                if (!_socket.CancellationToken.IsCancellationRequested) throw new FirmwareException(response);
-                                else continue;
-                            }
+                            if (response.Type == ResponseType.ERROR) continue;
 
                             byte[] data = response.PayLoad;
                             if (data.Length != index)
@@ -179,7 +175,7 @@ namespace Lego.Ev3.Framework.Firmware
                                 index += batteryByteLength;
                             }
 
-                            if (warningByteLength > 0) 
+                            if (warningByteLength > 0)
                             {
                                 console.SetValue(data[index]);
                                 index += warningByteLength;
