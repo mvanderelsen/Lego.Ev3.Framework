@@ -12,7 +12,7 @@
 		<PackageTags>Lego, Ev3, Mindstorms</PackageTags>
 		<PackageLicenseFile>license.md</PackageLicenseFile>
 		<PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
-		<PackageReadmeFile>readme.md</PackageReadmeFile>
+		<PackageReadmeFile>nuget.md</PackageReadmeFile>
 		<Title>Lego Ev3 Framework</Title>
 		<GenerateDocumentationFile>True</GenerateDocumentationFile>
 	</PropertyGroup>
@@ -35,7 +35,7 @@
 			<Visible>false</Visible>
 			<PackagePath>\</PackagePath>
 		</None>
-		<None Include="..\readme.md">
+		<None Include="..\nuget.md">
 			<Pack>True</Pack>
 			<Visible>false</Visible>
 			<PackagePath>\</PackagePath>
