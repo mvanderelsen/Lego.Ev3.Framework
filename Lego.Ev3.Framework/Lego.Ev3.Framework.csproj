@@ -2,17 +2,15 @@
 
 	<PropertyGroup>
 		<TargetFramework>net9.0</TargetFramework>
+		<PackageId>Lego.Ev3.Framework</PackageId>
+		<Version>1.0.0</Version>
 		<Authors>Martijn van der Elsen</Authors>
-		<Company />
 		<Description>C# communication framework for the LEGO® MINDSTORMS® EV3 Brick.</Description>
 		<GeneratePackageOnBuild>true</GeneratePackageOnBuild>
 		<RepositoryUrl>https://github.com/mvanderelsen/Lego.Ev3.Framework</RepositoryUrl>
 		<RepositoryType>GitHub</RepositoryType>
 		<PackageTags>Lego, Ev3, Mindstorms</PackageTags>
-		<PackageLicenseExpression></PackageLicenseExpression>
-		<PackageLicenseFile></PackageLicenseFile>
 		<PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
-		<PackageIcon>nuget.png</PackageIcon>
 		<PackageReadmeFile>readme.md</PackageReadmeFile>
 		<Title>Lego Ev3 Framework</Title>
 		<GenerateDocumentationFile>True</GenerateDocumentationFile>
@@ -31,11 +29,6 @@
 	</ItemGroup>
 
 	<ItemGroup>
-		<None Include="..\nuget.png">
-			<Pack>True</Pack>
-			<Visible>false</Visible>
-			<PackagePath>\</PackagePath>
-		</None>
 		<None Include="..\readme.md">
 			<Pack>True</Pack>
 			<Visible>false</Visible>
