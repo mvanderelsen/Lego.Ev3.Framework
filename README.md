@@ -2,19 +2,21 @@
 A C# communication framework for the LEGO® MINDSTORMS® EV3 Brick.
 
 ## Requirements
-No need to install software on the brick. This API will run on brick firmware version V1.09H
+* No need to install software on the brick. This API will run on brick firmware version V1.09H.
+* Will require Net9.0+ to run
 
 ## Links
 * [Documentation](https://github.com/mvanderelsen/Lego.Ev3.Framework/wiki)
 * [Examples](https://github.com/mvanderelsen/Lego.Ev3.Framework.Examples)
 
 ## Dependencies
-* .Net Standard 2.0
-* Microsoft.Extensions.DependencyInjection
-* Microsoft.Extensions.Logging
+* HidSharp
+* Microsoft.Extensions.Logging.Abstractions
 * Microsoft.Extensions.Options.ConfigurationExtensions
-* System.Drawing.Common
 * System.IO.Ports
+
+## OS
+Should run on Windows, OSX and Linux. (Windows 11 tested) 
 
 ## License
 MIT

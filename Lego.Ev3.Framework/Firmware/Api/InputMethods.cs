@@ -117,6 +117,7 @@ namespace Lego.Ev3.Framework.Firmware
         /// Read information about external device
         /// </summary>
         /// <param name="socket">socket for executing command to brick</param>
+        /// <param name="layer">Brick chain layer</param>
         /// <param name="port">Port number [0-31]</param>
         /// <returns>Format</returns>
         /// <remarks>

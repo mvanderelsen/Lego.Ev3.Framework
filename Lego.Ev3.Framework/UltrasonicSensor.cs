@@ -9,7 +9,7 @@ namespace Lego.Ev3.Framework
     /// <summary>
     /// LEGO® MINDSTORMS® EV3 Ultrasonic Sensor
     /// </summary>
-    public class UltrasonicSensor : Sensor
+    public sealed class UltrasonicSensor : Sensor
     {
         /// <summary>
         /// Delegate for input changed on sensor

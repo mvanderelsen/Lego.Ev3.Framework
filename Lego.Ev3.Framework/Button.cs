@@ -35,6 +35,10 @@ namespace Lego.Ev3.Framework
             Mode = ButtonMode.Click;
         }
 
+        /// <summary>
+        /// Set the button mode
+        /// </summary>
+        /// <param name="mode">The desired button mode</param>
         public void SetMode(ButtonMode mode) 
         {
             Mode = mode;

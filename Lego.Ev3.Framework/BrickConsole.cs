@@ -16,15 +16,22 @@ namespace Lego.Ev3.Framework
         /// <summary>
         /// Delegate for warnings received from brick
         /// </summary>
-        /// <param name="value">list of warnings</param>
+        /// <param name="warnings">list of warnings</param>
         public delegate void OnWarningReceived(IEnumerable<Warning> warnings);
+        
         /// <summary>
         /// Warnings received event
         /// </summary>
         public event OnWarningReceived WarningReceived;
 
+        /// <summary>
+        /// Set to true to start event monitor polling
+        /// </summary>
         public bool MonitorEvents { get; set; }
 
+        /// <summary>
+        /// Brick Warning flag
+        /// </summary>
         private Warning Value { get; set; }
 
         internal BrickConsole()

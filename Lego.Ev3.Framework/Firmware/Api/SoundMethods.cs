@@ -24,7 +24,7 @@ namespace Lego.Ev3.Framework.Firmware
         internal static async Task Break(ISocket socket)
         {
             Command cmd = null;
-            using (CommandBuilder cb = new CommandBuilder(CommandType.DIRECT_COMMAND_NO_REPLY))
+            using (CommandBuilder cb = new(CommandType.DIRECT_COMMAND_NO_REPLY))
             {
                 cb.OpCode(OP.opSOUND);
                 cb.Raw((byte)SOUND_SUBCODE.BREAK);

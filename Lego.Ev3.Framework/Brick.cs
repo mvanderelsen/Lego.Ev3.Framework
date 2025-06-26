@@ -162,10 +162,11 @@ namespace Lego.Ev3.Framework
         /// <summary>
         /// Connect the brick and start event monitor
         /// </summary>
-        /// <returns></returns>
-        public async Task<bool> Connect()
+        /// <param name="cancellationToken">optional cancellationToken</param>
+        /// <returns>true if connected</returns>
+        public async Task<bool> Connect(CancellationToken cancellationToken = default)
         {
-            if (IsConnected) throw new InvalidOperationException("brick is already connected");
+            if (IsConnected) return true;
 
             switch (Options.Socket.Type)
             {
@@ -191,7 +192,7 @@ namespace Lego.Ev3.Framework
 
             try
             {
-                if (!_socket.IsConnected) await _socket.Connect();
+                if (!_socket.IsConnected) await _socket.Connect(cancellationToken);
 
                 //reset and stop all devices. Might be overkill but just to make sure nothing is running.
                 await Stop();
@@ -199,7 +200,7 @@ namespace Lego.Ev3.Framework
 
                 Name = await Console.GetBrickName();
 
-                //TODO Usb
+                //TODO Usb drive attached to brick
                 bool sdCardPresent = await MemoryMethods.Exists(Socket, BrickExplorer.SDCARD_PATH);
                 if (sdCardPresent)
                 {
@@ -213,9 +214,10 @@ namespace Lego.Ev3.Framework
                 if(Options.EventMonitor.Enabled && IsConnected) Socket.StartEventMonitor(this);
 
             }
-            catch (Exception)
+            catch (Exception e)
             {
-                if (IsConnected) await _socket.Disconnect();
+                Logger.LogError(e, "Unexpected exception occured");
+                if (IsConnected) _socket.Disconnect();
             }
 
             if (IsConnected) Logger.LogInformation("Connected to brick");
@@ -257,7 +259,7 @@ namespace Lego.Ev3.Framework
             {
                 await Stop();
                 await Led.Reset();
-                await _socket.Disconnect();
+                _socket.Disconnect();
                 Logger.LogInformation("Disconnected from brick");
             }
         }
@@ -323,8 +325,7 @@ namespace Lego.Ev3.Framework
             bool autoDevicesConnected = false;
 
             IEnumerable<PortInfo> list = await InputMethods.PortScan(Socket);
-            List<PortInfo> devices = new List<PortInfo>();
-            devices.AddRange(list);
+            List<PortInfo> devices = [.. list];
 
             for (int layer = 0; layer < 4; layer++)
             {
@@ -508,7 +509,7 @@ namespace Lego.Ev3.Framework
                 await Disconnect();
             }
 
-            Logger.LogInformation($"PowerUpSelfTest: {((errorDetected) ? "ERROR" : "OK")}");
+            Logger.LogInformation($"PowerUpSelfTest: {(errorDetected ? "ERROR" : "OK")}");
             return !errorDetected;
         }
 

@@ -96,6 +96,10 @@ namespace Lego.Ev3.Framework
             await OutputMethods.Reset(Brick.Socket, Layer, PortFlag);
         }
 
+        /// <summary>
+        /// This function resets the tacho count
+        /// </summary>
+        /// <returns></returns>
         public async Task ResetTachoCount() 
         {
             await OutputMethods.ResetTachoCount(Brick.Socket, Layer, PortFlag);

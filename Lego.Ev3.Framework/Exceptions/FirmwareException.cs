@@ -3,6 +3,9 @@ using System;
 
 namespace Lego.Ev3.Framework
 {
+    /// <summary>
+    /// FirmwareException
+    /// </summary>
     public class FirmwareException : Exception
     {
         internal FirmwareException(Response response) : base("Firmware api method returned an invalid response") 

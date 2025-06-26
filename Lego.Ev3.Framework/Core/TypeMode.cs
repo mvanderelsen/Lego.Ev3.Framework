@@ -3,7 +3,7 @@
     /// <summary>
     /// The device Type and Mode
     /// </summary>
-    public struct DeviceTypeMode
+    public readonly struct DeviceTypeMode
     {
         /// <summary>
         /// Type of the device

@@ -9,7 +9,7 @@
 
         public static int AbsolutePortNumber(this OutputPortName port, ChainLayer layer)
         {
-            return (((int)layer * 4) + 16) + (int)port;
+            return ((int)layer * 4) + 16 + (int)port;
         }
 
         public static OutputPortFlag ToFlag(this OutputPortName port) 

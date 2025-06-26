@@ -3,7 +3,7 @@
     /// <summary>
     /// Format return type of method opInput_Device CMD: GET_FORMAT
     /// </summary>
-    public struct Format
+    public readonly struct Format
     {
         /// <summary>
         /// Number of data sets

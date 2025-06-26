@@ -1,5 +1,4 @@
 ﻿using Lego.Ev3.Framework.Firmware;
-using System;
 using System.Collections.Concurrent;
 using System.Threading;
 using System.Threading.Tasks;
@@ -12,19 +11,19 @@ namespace Lego.Ev3.Framework.Sockets
 
         bool IsConnected { get; }
 
-        Task<bool> Connect(bool startMessageBuffer = true);
+        Task<bool> Connect(CancellationToken cancellationToken = default);
 
-        Task Disconnect();
+        void Disconnect();
 
         CancellationToken CancellationToken { get; }
 
-        ConcurrentDictionary<ushort, byte[]> ResponseBuffer { get; }
+        ConcurrentDictionary<ushort, byte[]> Responses { get; }
 
-        ConcurrentQueue<Command> NoReplyCommandBuffer { get; }
+        ConcurrentQueue<Command> Events { get; }
 
-        ConcurrentQueue<Command> CommandBuffer { get; }
+        ConcurrentDictionary<ushort, Command> Commands { get; }
 
-        ConcurrentQueue<Command> EventBuffer { get; }
+        void Enqueue(Command command, bool isEvent);
 
         void Dispose();
     }

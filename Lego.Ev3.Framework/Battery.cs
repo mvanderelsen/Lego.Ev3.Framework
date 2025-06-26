@@ -1,6 +1,5 @@
 ﻿using Lego.Ev3.Framework.Core;
 using Lego.Ev3.Framework.Firmware;
-using System.Threading;
 using System.Threading.Tasks;
 
 namespace Lego.Ev3.Framework

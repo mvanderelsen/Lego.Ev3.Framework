@@ -24,15 +24,32 @@ namespace Lego.Ev3.Framework.Firmware
     /// </remarks>
     public class Response
     {
+        /// <summary>
+        /// Id
+        /// </summary>
         public ushort Id { get; private set; }
 
+        /// <summary>
+        /// Type
+        /// </summary>
         public ResponseType Type { get; private set; }
 
+        /// <summary>
+        /// Status
+        /// </summary>
         public ResponseStatus Status { get; private set; }
 
+        /// <summary>
+        /// PayLoad
+        /// </summary>
         public byte[] PayLoad { get; private set; }
 
 
+        /// <summary>
+        /// Error Response
+        /// </summary>
+        /// <param name="id"></param>
+        /// <returns></returns>
         public static Response Error(ushort id)
         {
             return new Response
@@ -43,6 +60,11 @@ namespace Lego.Ev3.Framework.Firmware
             };
         }
 
+        /// <summary>
+        /// Ok Response
+        /// </summary>
+        /// <param name="id"></param>
+        /// <returns></returns>
         public static Response Ok(ushort id)
         {
             return new Response
@@ -53,6 +75,12 @@ namespace Lego.Ev3.Framework.Firmware
             };
         }
 
+        /// <summary>
+        /// Gets a Response from payload
+        /// </summary>
+        /// <param name="payLoad"></param>
+        /// <returns></returns>
+        /// <exception cref="ArgumentOutOfRangeException"></exception>
         public static Response FromPayLoad(byte[] payLoad)
         {
             ushort id = GetId(payLoad);
@@ -95,6 +123,11 @@ namespace Lego.Ev3.Framework.Firmware
             }
         }
 
+        /// <summary>
+        /// Gets the Response id from the payload
+        /// </summary>
+        /// <param name="payLoad"></param>
+        /// <returns></returns>
         public static ushort GetId(byte[] payLoad)
         {
             return (ushort)(payLoad[0] | (payLoad[1] << 8));

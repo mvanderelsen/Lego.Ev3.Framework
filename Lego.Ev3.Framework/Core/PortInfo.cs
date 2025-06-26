@@ -3,7 +3,7 @@
     /// <summary>
     /// A device
     /// </summary>
-    public struct PortInfo
+    public readonly struct PortInfo
     {
         /// <summary>
         /// Port number in chain

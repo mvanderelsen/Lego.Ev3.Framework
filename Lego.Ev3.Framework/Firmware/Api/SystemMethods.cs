@@ -18,7 +18,7 @@ namespace Lego.Ev3.Framework.Firmware
     {
         private const int PAYLOAD_SIZE = 960;
         private const char LIST_DELIMITER = '\n';
-        private static SemaphoreSlim semaPhoreSlim = new SemaphoreSlim(1);
+        private static SemaphoreSlim semaPhoreSlim = new(1);
 
         /// <summary>
         /// Download a file from the brick
@@ -286,7 +286,7 @@ namespace Lego.Ev3.Framework.Firmware
             }
             finally 
             {
-                semaPhoreSlim.Release();
+               semaPhoreSlim.Release();
             }
         }
 

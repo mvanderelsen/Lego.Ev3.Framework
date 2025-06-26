@@ -15,6 +15,7 @@ namespace Lego.Ev3.Framework.Firmware
         /// </summary>
         /// <param name="socket">socket for executing command to brick</param>
         /// <param name="ledMode">Pattern of the led</param>
+        /// <param name="requireReply">leave false</param>
         public static async Task Led(ISocket socket, LedMode ledMode, bool requireReply = false)
         {
             Command cmd = null;

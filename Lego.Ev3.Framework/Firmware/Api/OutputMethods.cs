@@ -46,6 +46,7 @@ namespace Lego.Ev3.Framework.Firmware
         /// <param name="socket">socket for executing command to brick</param>
         /// <param name="layer">Specify chain layer number [0 - 3]</param>
         /// <param name="ports">Output bit field [0x00 – 0x0F]</param>
+        /// <param name="requireReply"></param>
         /// <remarks>
         /// Instruction opOutput_Reset (LAYER, NOS)
         /// Opcode 0xA2
@@ -74,6 +75,7 @@ namespace Lego.Ev3.Framework.Firmware
         /// <param name="layer">Specify chain layer number [0 - 3]</param>
         /// <param name="ports">Output bit field [0x00 – 0x0F]</param>
         /// <param name="brake">Specify break level [0: Float, 1: Break]</param>
+        /// <param name="requireReply"></param>
         /// <remarks>
         /// Instruction opOutput_Stop (LAYER, NOS, BRAKE)
         /// Opcode 0xA3
@@ -104,6 +106,7 @@ namespace Lego.Ev3.Framework.Firmware
         /// <param name="layer">Specify chain layer number [0 - 3]</param>
         /// <param name="ports">Output bit field [0x00 – 0x0F]</param>
         /// <param name="power">Specify output power [-100 – 100 %]</param>
+        /// <param name="requireReply"></param>
         /// <remarks>
         /// Instruction opOutput_Power (LAYER, NOS, POWER)
         /// Opcode 0xA4
@@ -137,6 +140,7 @@ namespace Lego.Ev3.Framework.Firmware
         /// <param name="layer">Specify chain layer number [0 - 3]</param>
         /// <param name="ports">Output bit field [0x00 – 0x0F]</param>
         /// <param name="speed">Specify output speed [-100 – 100 %]</param>
+        /// <param name="requireReply"></param>
         /// <remarks>
         /// Instruction opOutput_Speed (LAYER, NOS, SPEED)
         /// Opcode 0xA5
@@ -168,6 +172,7 @@ namespace Lego.Ev3.Framework.Firmware
         /// <param name="socket">socket for executing command to brick</param>
         /// <param name="layer">Specify chain layer number [0 - 3]</param>
         /// <param name="ports">Output bit field [0x00 – 0x0F]</param>
+        /// <param name="requireReply"></param>
         /// <remarks>
         /// Instruction opOutput_Start (LAYER, NOS)
         /// Opcode 0xA6
@@ -196,6 +201,7 @@ namespace Lego.Ev3.Framework.Firmware
         /// <param name="layer">Specify chain layer number [0 - 3]</param>
         /// <param name="ports">Output bit field [0x00 – 0x0F]</param>
         /// <param name="polarity">Polarity -1 : backward 0 : opposite direction 1 : forward</param>
+        /// <param name="requireReply"></param>
         /// <remarks>
         /// Instruction opOutput_Polarity (LAYER, NOS, POL)
         /// Opcode 0xA7
@@ -324,6 +330,7 @@ namespace Lego.Ev3.Framework.Firmware
         /// <param name="tachoPulsesContinuesRun">Tacho pulses during continues run</param>
         /// <param name="tachoPulsesRampDown">Tacho pulses during ramp down</param>
         /// <param name="brake">Specify break level, [0: Float, 1: Break]</param>
+        /// <param name="requireReply"></param>
         /// <remarks>
         /// Instruction opOutput_Step_Power (LAYER, NOS, POWER, STEP1, STEP2, STEP3, BRAKE)
         /// Opcode 0xAC
@@ -374,6 +381,7 @@ namespace Lego.Ev3.Framework.Firmware
         /// <param name="timeContinuesRun">Time in milliseconds for continues run</param>
         /// <param name="timeRampDown">Time in milliseconds for ramp down</param>
         /// <param name="brake">Specify break level, [0: Float, 1: Break]</param>
+        /// <param name="requireReply"></param>
         /// <remarks>
         /// Instruction opOutput_Time_Power (LAYER, NOS, POWER, STEP1, STEP2, STEP3, BRAKE)
         /// Opcode 0xAD
@@ -425,6 +433,7 @@ namespace Lego.Ev3.Framework.Firmware
         /// <param name="tachoPulsesContinuesRun">Tacho pulses during continues run</param>
         /// <param name="tachoPulsesRampDown">Tacho pulses during ramp down</param>
         /// <param name="brake">Specify break level, [0: Float, 1: Break]</param>
+        /// <param name="requireReply"></param>
         /// <remarks>
         /// Instruction opOutput_Step_Speed (LAYER, NOS, SPEED, STEP1, STEP2, STEP3, BRAKE)
         /// Opcode 0xAE
@@ -476,6 +485,7 @@ namespace Lego.Ev3.Framework.Firmware
         /// <param name="timeContinuesRun">Time in milliseconds for continues run</param>
         /// <param name="timeRampDown">Time in milliseconds for ramp down</param>
         /// <param name="brake">Specify break level, [0: Float, 1: Break]</param>
+        /// <param name="requireReply"></param>
         /// <remarks>
         /// Instruction opOutput_Time_Speed (LAYER, NOS, SPEED, STEP1, STEP2, STEP3, BRAKE)
         /// Opcode 0xAF
@@ -528,6 +538,7 @@ namespace Lego.Ev3.Framework.Firmware
         /// </param>
         /// <param name="tachoCounts">Tacho pulses, 0 = Infinite</param>
         /// <param name="brake">Specify break level, [0: Float, 1: Break]</param>
+        /// <param name="requireReply"></param>
         /// <remarks>
         /// Instruction opOutput_Step_Sync (LAYER, NOS, SPEED, TURN, STEP, BRAKE)
         /// Opcode 0xB0
@@ -576,6 +587,7 @@ namespace Lego.Ev3.Framework.Firmware
         /// </param>
         /// <param name="time">Time in milliseconds, 0 = Infinite</param>
         /// <param name="brake">Specify break level, [0: Float, 1: Break]</param>
+        /// <param name="requireReply"></param>
         /// <remarks>
         /// Instruction opOutput_Time_Sync (LAYER, NOS, SPEED, TURN, STEP, BRAKE)
         /// Opcode 0xB1
@@ -615,6 +627,7 @@ namespace Lego.Ev3.Framework.Firmware
         /// <param name="socket">socket for executing command to brick</param>
         /// <param name="layer">Specify chain layer number [0 - 3]</param>
         /// <param name="ports">Output bit field [0x00 – 0x0F]</param>
+        /// <param name="requireReply"></param>
         /// <remarks>
         /// Instruction opOutput_Clr_Count (LAYER, NOS)
         /// Opcode 0xB2
@@ -642,7 +655,7 @@ namespace Lego.Ev3.Framework.Firmware
         /// </summary>
         /// <param name="socket">socket for executing command to brick</param>
         /// <param name="layer">Specify chain layer number [0 - 3]</param>
-        /// <param name="ports">Output bit field [0x00 – 0x0F]</param>
+        /// <param name="port">Output bit field [0x00 – 0x0F]</param>
         /// <remarks>
         /// Instruction opOutput_Get_Count (LAYER, NOS, *TACHO)
         /// Opcode 0xB3
@@ -675,6 +688,7 @@ namespace Lego.Ev3.Framework.Firmware
         /// This function should be called a program end. It enables breaking the motor for a short period and right after floating the motors. The function relates to the layer on which it is executed.
         /// </summary>
         /// <param name="socket">socket for executing command to brick</param>
+        /// <param name="requireReply"></param>
         /// <remarks>
         /// Instruction opOutput_Prg_Stop
         /// Opcode 0xB4
